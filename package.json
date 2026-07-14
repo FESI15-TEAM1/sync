@@ -2,6 +2,24 @@
   "name": "sync",
   "version": "0.1.0",
   "private": true,
+  "description": "Sharing my own playlists on streaming services",
+  "contributors": [
+    {
+      "name": "고명한",
+      "email": "rhaudgks04@gmail.com",
+      "url": "https://github.com/Gomyeunghan"
+    },
+    {
+      "name": "김현주",
+      "email": "khjoo1203@naver.com",
+      "url": "https://github.com/kkhhjjoo"
+    },
+    {
+      "name": "박민규",
+      "email": "aldrb0306@gmail.com",
+      "url": "https://github.com/minguru"
+    }
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
