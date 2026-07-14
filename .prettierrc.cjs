@@ -9,5 +9,6 @@ module.exports = {
   singleQuote: true, //문자열에 작은따옴표 사용
   tabWidth: 2, //들여쓰기 크기
   trailingComma: 'all', //가능한 모든 곳에 후행 쉼표(trailing comma)를 붙이는 설정
+  plugins: ['prettier-plugin-tailwindcss'], // 프리티어 자동정렬
   useTabs: false, //Tab 대신 Space 사용
 };
