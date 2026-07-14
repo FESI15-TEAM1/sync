@@ -24,7 +24,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prettier-watch": "onchange \"**/*\" -- prettier --write --ignore-unknown {{changed}}"
   },
   "dependencies": {
     "next": "16.2.10",
@@ -39,6 +40,10 @@
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "eslint-plugin-simple-import-sort": "^13.0.0",
+    "onchange": "^7.1.0",
+    "prettier": "^3.9.5",
+    "prettier-plugin-tailwindcss": "^0.8.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
