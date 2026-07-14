@@ -7,7 +7,7 @@ labels: refactor
 
 ## ♻️ 리팩터링 대상
 
-<p style="color: gray; font-size: 11px; font-style: normal;">ex) /app/page.tsx</p>
+<!-- ex) /app/page.tsx -->
 
 ## 🤔 이유
 
