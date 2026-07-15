@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: 'Sharing my own playlists with others on streaming platforms.',
 };
 
+import { CounterStoreProvider } from '@/providers/counter-store-provider';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -14,7 +16,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={`h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <CounterStoreProvider>{children}</CounterStoreProvider>
+      </body>
     </html>
   );
 }
