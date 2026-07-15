@@ -1,4 +1,5 @@
 import { HomePage } from '@/components/pages/home-page';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 export default function Home() {
   return (
