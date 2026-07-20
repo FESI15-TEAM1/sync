@@ -1,7 +1,7 @@
 // src/providers/counter-store-provider.tsx
 'use client';
 
-import { type ReactNode, createContext, useState, useContext } from 'react';
+import { createContext, type ReactNode, useContext, useState } from 'react';
 import { useStore } from 'zustand';
 
 import { type CounterStore, createCounterStore } from '@/stores/counter-store';
