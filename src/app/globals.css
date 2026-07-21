@@ -1,1 +1,21 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+body {
+  font-family: var(--font-noto-sans), var(--font-pretendard);
+}
+
+@theme {
+  /* Accents */
+  --color-accents-indigo: #6155f5;
+  --color-accents-blue: #0088ff;
+
+  /* Backgrounds */
+  --color-bg-sidebar: #000000;
+  --color-bg-page: #121212;
+  --color-bg-card: #1e1e1e;
+  --color-bg-card-hover: #2a2a2a;
+
+  /* Text */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b3b3b3;
+}
