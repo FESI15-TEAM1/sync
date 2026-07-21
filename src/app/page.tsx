@@ -9,13 +9,9 @@ export default function Home() {
     <>
       <div className="flex h-screen w-full flex-col items-center justify-center">
         <h1 className="text-4xl font-bold">Hello World!!</h1>
+        <h1 className="text-4xl font-bold">세상아 안녕??</h1>
       </div>
-
       <HomePage />
-
-      <Bell width={20} height={20} />
-
-      <Image src="/bell.svg" alt="종 모양 아이콘" width={20} height={20} />
     </>
   );
 }
