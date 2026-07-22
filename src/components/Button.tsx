@@ -10,12 +10,15 @@ export default function Button({
   size = 'md',
   isDisabled,
   variant = 'primary',
+  className,
+  ...props
 }: {
   children: ReactNode;
   onClick: () => void;
   size?: 'sm' | 'md' | 'lg';
   isDisabled: boolean;
   variant?: 'primary' | 'secondary' | 'outline';
+  className?: string;
 }) {
   const button = twMerge(
     clsx(
@@ -43,7 +46,12 @@ export default function Button({
   );
 
   return (
-    <button className={button} onClick={onClick} disabled={isDisabled}>
+    <button
+      className={`${button} ${className}`}
+      onClick={onClick}
+      disabled={isDisabled}
+      {...props}
+    >
       {children}
     </button>
   );
