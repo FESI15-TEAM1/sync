@@ -10,7 +10,7 @@ type InputProps = {
   errorMessage?: string;
 };
 
-const Input = ({
+export default function Input ({
   label,
   placeholder,
   value,
@@ -18,7 +18,7 @@ const Input = ({
   width = 255,
   height = 44,
   errorMessage,
-}: InputProps) => {
+}: InputProps) {
   return (
     <div className="flex w-full flex-col gap-1">
       {label ? <label className="text-base font-bold text-white ml-2">{label}</label> : null}
@@ -36,5 +36,3 @@ const Input = ({
     </div>
   );
 };
-
-export default Input;
