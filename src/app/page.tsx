@@ -1,7 +1,7 @@
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import Image from 'next/image';
+'use client';
 
-import Bell from '@/assets/icon/bell.svg'; // SVGR library
+import { useState } from 'react';
+
 import { HomePage } from '@/components/pages/home-page';
 
 export default function Home() {
@@ -11,6 +11,7 @@ export default function Home() {
         <h1 className="text-4xl font-bold">Hello World!!</h1>
         <h1 className="text-4xl font-bold">세상아 안녕??</h1>
       </div>
+      
       <HomePage />
     </>
   );
