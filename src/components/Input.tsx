@@ -4,8 +4,8 @@ type InputProps = {
   label?: string;
   placeholder?: string;
   value: string;
-  width?: number;
-  height?: number;
+  width?: number | string;
+  height?: number | string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   errorMessage?: string;
 };
