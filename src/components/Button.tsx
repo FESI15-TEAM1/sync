@@ -1,12 +1,12 @@
 'use client';
 
 import clsx from 'clsx';
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 export default function Button({
   children,
-  onClick,
+  onClick = () => console.log('click'),
   size = 'md',
   isDisabled,
   variant = 'primary',
@@ -28,15 +28,16 @@ export default function Button({
       },
       // 버튼타입 기본 / outline 팔로우 버튼
       {
-        'bg-accents-indigo text-text-primary enalbed:hover:bg-accents-blue disabled:bg-bg-card-hover disabled:bg-bg-card-hover':
+        'bg-primary text-text-primary hover:bg-secondary':
           variant === 'primary',
-        'border-2 border-text-secondary text-text-secondary enalbed:hover:border-text-primary enalbed:hover:text-text-primary disabled:bg-bg-card-hover disabled:bg-bg-card-hover':
+        'border-2 border-[#88888] text-[#595959] enabled:hover:border-text-primary enabled:hover:text-text-primary':
           variant === 'outline',
       },
       // disabled
       {
         'cursor-pointer': !isDisabled,
-        'cursor-not-allowed': isDisabled,
+        'disabled:bg-disabled disabled:text-text-secondary cursor-not-allowed':
+          isDisabled,
       },
     ),
   );
