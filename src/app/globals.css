@@ -5,15 +5,18 @@ body {
 }
 
 @theme {
-  /* Accents */
-  --color-accents-indigo: #6155f5;
-  --color-accents-blue: #0088ff;
+  /* Accents (포인트 컬러) */
+  --color-primary: #6155f5; /* 기존 accents-indigo — 메인 액션 (버튼, 링크) */
+  --color-secondary: #0088ff; /* 기존 accents-blue — 보조 포인트 */
+  --color-disabled: #4d4d4d; /* disabled 버튼 비활성화 텝 */
 
-  /* Backgrounds */
-  --color-bg-sidebar: #000000;
-  --color-bg-page: #121212;
-  --color-bg-card: #1e1e1e;
-  --color-bg-card-hover: #2a2a2a;
+  /* Backgrounds (depth 순서) */
+  --color-bg-primary: #1e1e1e;
+  --color-input: #2a2a2a; /* 기존 bg-card-hover — 카드ㅗhover + 인풋 디폴트 배경 공용이라 hover 이름 뗌 */
+  --color-bg-card: #2a2a2a;
+
+  /* Border */
+  --color-border: #4d4d4d; /* 인풋 테두리 */
 
   /* Text */
   --color-text-primary: #ffffff;
