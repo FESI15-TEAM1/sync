@@ -32,7 +32,7 @@ export default function RootLayout({
       lang="ko"
       className={`h-full antialiased ${pretendard.variable} ${noto.variable}`}
     >
-      <body className={`flex min-h-full flex-col`}>
+      <body className={`bg-bg-primary flex min-h-full flex-col`}>
         <CounterStoreProvider>{children}</CounterStoreProvider>
       </body>
     </html>
