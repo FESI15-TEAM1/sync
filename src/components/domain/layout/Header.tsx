@@ -2,7 +2,7 @@ import Image from 'next/image';
 
 import Bell from '@/assets/icons/bell.svg';
 import SyncLogo from '@/assets/icons/syncLogo.svg';
-import initImage from '@/assets/imgaes/mook.jpg';
+import initImage from '@/assets/images/mook.jpg';
 
 import HamburgerButton from './HamburgerButton';
 
