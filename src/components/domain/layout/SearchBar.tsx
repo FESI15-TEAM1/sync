@@ -17,7 +17,7 @@ export default function SearchBar() {
   return (
     <div className="relative flex w-full">
       <input
-        className="bg-bg-card text-text-primary w-full rounded-full px-6 py-2"
+        className="bg-bg-card text-text-primary w-full rounded-full px-6 py-2 pr-10"
         placeholder="검색어 를 입력해 주세요"
         onChange={(e) => setQuery(e.target.value)}
       ></input>
