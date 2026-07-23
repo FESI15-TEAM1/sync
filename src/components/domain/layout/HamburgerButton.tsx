@@ -22,17 +22,17 @@ export default function HamburgerButton({
       className="relative flex h-6 w-8 cursor-pointer flex-col justify-center gap-1.5"
     >
       <span
-        className={`bg-text-primary block h-1 w-8 rounded-xl transition-all duration-300 ${
-          isOpen ? 'translate-y-2.5 rotate-45' : ''
+        className={`bg-text-primary block h-0.75 w-7 rounded-xl transition-all duration-300 ${
+          isOpen ? 'translate-y-2 rotate-45' : ''
         }`}
       />
       <span
-        className={`bg-text-primary block h-1 w-8 rounded-xl transition-all duration-300 ${
+        className={`bg-text-primary block h-0.75 w-7 rounded-xl transition-all duration-300 ${
           isOpen ? 'opacity-0' : 'opacity-100'
         }`}
       />
       <span
-        className={`bg-text-primary block h-1 w-8 rounded-xl transition-all duration-300 ${
+        className={`bg-text-primary block h-0.75 w-7 rounded-xl transition-all duration-300 ${
           isOpen ? '-translate-y-2.5 -rotate-45' : ''
         }`}
       />
