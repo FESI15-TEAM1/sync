@@ -24,7 +24,7 @@ export default function Input ({
       {label ? <label className="text-base font-bold text-white ml-2">{label}</label> : null}
       <input
         type="text"
-        className="w-full rounded-md border text-base border-border bg-bg-card px-3 py-2 text-white placeholder:text-white focus:outline-none"
+        className="w-full rounded-md border text-base border-border bg-bg-card px-3 py-2 text-white placeholder:text-text-secondary focus:outline-none"
         placeholder={placeholder}
         value={value}
         onChange={onChange}
