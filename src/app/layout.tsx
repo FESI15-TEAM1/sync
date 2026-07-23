@@ -38,7 +38,7 @@ export default function RootLayout({
     >
       <body className={`bg-bg-primary flex min-h-full flex-col`}>
         <Header />
-        <Sidebar />
+        <Sidebar initialOpen={false} />
         <CounterStoreProvider>{children}</CounterStoreProvider>
       </body>
     </html>
