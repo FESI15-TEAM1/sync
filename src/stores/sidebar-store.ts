@@ -23,4 +23,3 @@ export const createSideBarStore = (
     toggle: () => set((state) => ({ isOpen: !state.isOpen })),
   }));
 };
-h;
