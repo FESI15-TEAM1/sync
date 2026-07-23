@@ -1,44 +1,33 @@
-'use client';
-
-import { clsx } from 'clsx';
 import { type ChangeEvent } from 'react';
-import { twMerge } from 'tailwind-merge';
 
-type InputProps = {
+import { fieldStyle } from '@/components/Input';
+
+type TextareaProps = {
   label?: string;
   placeholder?: string;
   value: string;
   width?: number | string;
   height?: number | string;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
   errorMessage?: string;
 };
 
-// 인풋 스타일 공유 사용!
-export const fieldStyle = twMerge(
-  clsx(
-    'border-border bg-bg-card placeholder:text-text-secondary w-full rounded-md border px-3 py-2 text-base text-white focus:outline-none',
-  ),
-);
-
-export default function Input({
+export default function Textarea({
   label,
   placeholder,
   value,
   onChange,
   width = 255,
-  height = 44,
+  height = 100,
   errorMessage,
-}: InputProps) {
+}: TextareaProps) {
   return (
     <div className="flex w-full flex-col gap-1">
       {label ? (
         <label className="ml-2 text-base font-bold text-white">{label}</label>
       ) : null}
-      <input
-        type="text"
+      <textarea
         className={`${fieldStyle}`}
-
         placeholder={placeholder}
         value={value}
         onChange={onChange}

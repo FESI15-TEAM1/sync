@@ -24,7 +24,7 @@ export default function Button({
 }) {
   const button = twMerge(
     clsx(
-      'w-full max-w-96 rounded-3xl text-base font-bold transition-all',
+      'w-full rounded-3xl text-base font-bold transition-all',
       // 버튼 크기 (size)
       {
         'px-3 py-1 text-sm': size === 'sm',
