@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { clsx } from 'clsx';
+import { type ChangeEvent, useState } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 type InputProps = {
   label?: string;
@@ -9,9 +11,16 @@ type InputProps = {
   width?: number | string;
   height?: number | string;
   type?: 'text' | 'password' | 'email';
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   errorMessage?: string;
 };
+
+// 인풋 스타일 공유 사용!
+export const fieldStyle = twMerge(
+  clsx(
+    'border-border bg-bg-card placeholder:text-text-secondary w-full rounded-md border px-3 py-2 text-base text-white focus:outline-none',
+  ),
+);
 
 export default function Input({
   label,
@@ -39,7 +48,7 @@ export default function Input({
       <div className="relative" style={{ width, height }}>
         <input
           type={inputType}
-          className="border-border bg-bg-card placeholder:text-text-secondary h-full w-full rounded-md border px-3 py-2 text-base text-white focus:outline-none"
+          className={`${fieldStyle} h-full`}
           style={{ paddingRight: isPassword ? 44 : undefined }}
           placeholder={placeholder}
           value={value}
