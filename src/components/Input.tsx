@@ -4,6 +4,9 @@ import { clsx } from 'clsx';
 import { type ChangeEvent, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
+import EyeIcon from '@/assets/icons/eye.svg';
+import EyeOffIcon from '@/assets/icons/eye-off.svg';
+
 type InputProps = {
   label?: string;
   placeholder?: string;
@@ -48,8 +51,7 @@ export default function Input({
       <div className="relative" style={{ width, height }}>
         <input
           type={inputType}
-          className={`${fieldStyle} h-full`}
-          style={{ paddingRight: isPassword ? 44 : undefined }}
+          className={`${fieldStyle} h-full ${isPassword ? 'pr-11' : ''}`}
           placeholder={placeholder}
           value={value}
           onChange={onChange}
@@ -61,7 +63,11 @@ export default function Input({
             onClick={() => setIsPasswordVisible((prev) => !prev)}
             className="text-text-secondary hover:text-text-primary absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"
           >
-            {isPasswordVisible ? <EyeOffIcon /> : <EyeIcon />}
+            {isPasswordVisible ? (
+              <EyeOffIcon width={20} height={20} aria-hidden />
+            ) : (
+              <EyeIcon width={20} height={20} aria-hidden />
+            )}
           </button>
         ) : null}
       </div>
@@ -69,47 +75,5 @@ export default function Input({
         <p className="text-sm text-red-500">{errorMessage}</p>
       ) : null}
     </div>
-  );
-}
-
-function EyeIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-
-function EyeOffIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M10.7 5.1A11 11 0 0 1 12 5c6.5 0 10 7 10 7a18 18 0 0 1-1.7 2.6" />
-      <path d="M6.6 6.6C3.6 8.5 2 12 2 12s3.5 7 10 7a9.8 9.8 0 0 0 5.4-1.6" />
-      <path d="M14.1 14.1a3 3 0 0 1-4.2-4.2" />
-      <path d="m3 3 18 18" />
-    </svg>
   );
 }

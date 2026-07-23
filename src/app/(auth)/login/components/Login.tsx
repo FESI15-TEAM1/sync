@@ -5,11 +5,13 @@ import { useState } from 'react';
 
 import Button from '@/components/Button';
 import Input from '@/components/Input';
+import { getEmailError, getPasswordError } from '@/lib/auth-validation';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const handleSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault();
   };
@@ -26,22 +28,33 @@ export default function Login() {
       <form className="flex flex-col gap-5">
         <Input
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder={'이메일을 입력해주세요.'}
+          onChange={(e) => {
+            const value = e.target.value;
+            setEmail(value);
+            setEmailError(getEmailError(value));
+          }}
+          placeholder="이메일을 입력해주세요."
           width="100%"
           label="이메일"
+          errorMessage={emailError}
         />
         <Input
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder={'비밀번호를 입력해주세요.'}
+          onChange={(e) => {
+            const value = e.target.value;
+            setPassword(value);
+            setPasswordError(getPasswordError(value));
+          }}
+          placeholder="비밀번호를 입력해주세요."
           width="100%"
           label="비밀번호"
+          type="password"
+          errorMessage={passwordError}
         />
         <Button
           size="md"
           variant="primary"
-          isDisabled={!email || !password}
+          isDisabled={!email || !password || !!emailError || !!passwordError}
           onClick={() => handleSubmit()}
         >
           로그인
