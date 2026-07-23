@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import Button from '@/components/Button';
 import Input from '@/components/Input';
+import { getEmailError, getPasswordError } from '@/lib/auth-validation';
 
 export default function Signup() {
   const [nickname, setNickname] = useState('');
@@ -20,6 +21,7 @@ export default function Signup() {
   const [emailError, setEmailError] = useState('');
   const [isNicknameValid, setIsNicknameValid] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
+
   const [isVerificationSent, setIsVerificationSent] = useState(false);
 
   const handleCheckNickname = () => {
@@ -100,7 +102,11 @@ export default function Signup() {
               label="이메일"
               errorMessage={emailError}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setEmail(value);
+                setEmailError(getEmailError(value));
+              }}
               width="100%"
             />
             <div className="w-30 shrink-0">
@@ -124,14 +130,22 @@ export default function Signup() {
             label="비밀번호"
             errorMessage={passwordError}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              setPassword(value);
+              setPasswordError(getPasswordError(value));
+            }}
             width="100%"
           />
           <Input
             label="비밀번호 확인"
             errorMessage={passwordConfirmError}
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              setConfirmPassword(value);
+              setPasswordConfirmError(getPasswordError(value));
+            }}
             width="100%"
           />
           <div className="w-full">
