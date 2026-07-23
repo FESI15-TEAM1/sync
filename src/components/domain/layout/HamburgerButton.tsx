@@ -12,7 +12,7 @@ export default function HamburgerButton() {
       role="button"
       aria-expanded={isOpen}
       aria-label={isOpen ? '메뉴 닫기' : '메뉴 열기'}
-      className="relative flex h-6 w-8 cursor-pointer flex-col justify-center gap-1.5"
+      className="relative flex h-6 w-8 cursor-pointer flex-col justify-center gap-1.5 lg:hidden"
     >
       <span
         className={`bg-text-primary block h-0.75 w-7 rounded-xl transition-all duration-300 ${
