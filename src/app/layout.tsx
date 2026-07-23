@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: 'Sharing my own playlists with others on streaming platforms.',
 };
 
+import { type ReactNode } from 'react';
+
 import { CounterStoreProvider } from '@/providers/counter-store-provider';
 
 const noto = Noto_Sans({
@@ -25,7 +27,7 @@ const pretendard = localFont({
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   return (
     <html

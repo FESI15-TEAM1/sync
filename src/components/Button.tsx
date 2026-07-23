@@ -1,6 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
+import { type ComponentPropsWithoutRef } from 'react';
 import { type ReactNode } from 'react';
 import { twMerge } from 'tailwind-merge';
 
@@ -12,7 +13,8 @@ export default function Button({
   variant = 'primary',
   className,
   ...props
-}: {
+}: ComponentPropsWithoutRef<'button'> & {
+  // ComponentPropsWithoutRef == 이컴포넌트 태그가 받을 수 있는 모든 속성 중 ref만 빼고 button테그의 속성을 사용한다.
   children: ReactNode;
   onClick: () => void;
   size?: 'sm' | 'md' | 'lg';
