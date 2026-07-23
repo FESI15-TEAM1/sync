@@ -13,7 +13,7 @@ import { type ReactNode } from 'react';
 
 import Header from '@/components/domain/layout/Header';
 import Sidebar from '@/components/domain/layout/Sidebar';
-import { CounterStoreProvider } from '@/providers/counter-store-provider';
+import { SidebarStoreProvider } from '@/providers/sidebar-store-provider';
 
 const noto = Noto_Sans({
   weight: ['100', '300', '400', '500', '700', '900'],
@@ -37,9 +37,13 @@ export default function RootLayout({
       className={`h-full antialiased ${pretendard.variable} ${noto.variable}`}
     >
       <body className={`bg-bg-primary flex min-h-full flex-col`}>
-        <Header />
-        <Sidebar initialOpen={false} />
-        <CounterStoreProvider>{children}</CounterStoreProvider>
+        <SidebarStoreProvider>
+          <Header />
+          <div className="flex flex-1">
+            <Sidebar />
+            <main className="flex-1">{children}</main>
+          </div>
+        </SidebarStoreProvider>
       </body>
     </html>
   );
