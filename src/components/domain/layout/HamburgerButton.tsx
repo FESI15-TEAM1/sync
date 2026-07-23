@@ -1,25 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useSidebarStore } from '@/providers/sidebar-store-provider';
 
-export default function HamburgerButton({
-  initialOpen = false,
-}: {
-  initialOpen?: boolean;
-}) {
-  const [isOpen, setIsOpen] = useState(initialOpen);
+export default function HamburgerButton() {
+  const isOpen = useSidebarStore((state) => state.isOpen);
+  const toggle = useSidebarStore((state) => state.toggle);
 
-  const handleToggle = () => {
-    setIsOpen(!isOpen);
-    console.log(isOpen);
-  };
   return (
     <div
-      onClick={handleToggle}
+      onClick={toggle}
       role="button"
       aria-expanded={isOpen}
       aria-label={isOpen ? '메뉴 닫기' : '메뉴 열기'}
-      className="relative flex h-6 w-8 cursor-pointer flex-col justify-center gap-1.5"
+      className="relative flex h-6 w-8 cursor-pointer flex-col justify-center gap-1.5 lg:hidden"
     >
       <span
         className={`bg-text-primary block h-0.75 w-7 rounded-xl transition-all duration-300 ${

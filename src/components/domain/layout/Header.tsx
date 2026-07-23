@@ -10,7 +10,7 @@ export default function Header() {
   const defaultImage = initImage;
 
   return (
-    <div className="bg-bg-card flex items-center justify-between px-4 py-4 text-center shadow-md">
+    <div className="bg-bg-card z-50 flex items-center justify-between px-4 py-4 text-center shadow-md">
       <div className="flex items-center gap-3">
         <HamburgerButton />
         <div className="flex items-center">
