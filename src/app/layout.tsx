@@ -11,6 +11,8 @@ export const metadata: Metadata = {
 
 import { type ReactNode } from 'react';
 
+import Header from '@/components/domain/layout/Header';
+import Sidebar from '@/components/domain/layout/Sidebar';
 import { CounterStoreProvider } from '@/providers/counter-store-provider';
 
 const noto = Noto_Sans({
@@ -35,6 +37,8 @@ export default function RootLayout({
       className={`h-full antialiased ${pretendard.variable} ${noto.variable}`}
     >
       <body className={`bg-bg-primary flex min-h-full flex-col`}>
+        <Header />
+        <Sidebar />
         <CounterStoreProvider>{children}</CounterStoreProvider>
       </body>
     </html>
