@@ -48,8 +48,8 @@ export default function AddPage() {
     );
   };
 
-  const handleSubmit = (e?: SubmitEvent<HTMLFormElement>) => {
-    e?.preventDefault();
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
     console.log({
       groupName,
       isPublic,
@@ -60,7 +60,7 @@ export default function AddPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-5 py-6">
-      <form className="flex flex-col gap-5">
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
         <div className="flex items-center gap-3">
           <label
             htmlFor="image-upload"
@@ -142,7 +142,6 @@ export default function AddPage() {
           isDisabled={
             !groupName || !groupDescription || selectedPlaylists.length === 0
           }
-          onClick={() => handleSubmit()}
         >
           그룹 생성하기
         </Button>
