@@ -6,23 +6,19 @@ import { useState } from 'react';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import { getEmailError, getPasswordError } from '@/lib/auth-validation';
+import { type SubmitEvent } from 'react';
 
 export default function Signup() {
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [verificationCodeError, setVerificationCodeError] = useState('');
-  const [isVerificationCodeValid, setIsVerificationCodeValid] = useState(false);
   const [nicknameError, setNicknameError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [passwordConfirmError, setPasswordConfirmError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [isNicknameValid, setIsNicknameValid] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
-
-  const [isVerificationSent, setIsVerificationSent] = useState(false);
 
   const handleCheckNickname = () => {
     if (!nickname.trim) {
@@ -40,8 +36,8 @@ export default function Signup() {
     }
   };
 
-  const handleSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
-    e?.preventDefault();
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
     if (!isNicknameValid) {
       setNicknameError('닉네임 중복확인을 해주세요');
       return;
@@ -57,13 +53,7 @@ export default function Signup() {
       return;
     }
   };
-  const handleVerifyCode = () => {
-    if (!verificationCode.trim) {
-      setVerificationCodeError('인증코드를 입력해주세요.');
-      setIsVerificationCodeValid(false);
-      return;
-    }
-  };
+
   return (
     <main className="bg-bg-primary flex min-h-screen w-full flex-1 justify-center px-5 py-10">
       <div className="flex w-full max-w-md flex-col">
@@ -77,7 +67,7 @@ export default function Signup() {
             지금 바로 그룹을 만들어보세요.
           </p>
         </div>
-        <form className="flex flex-col gap-5">
+        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
           <div className="flex items-end gap-3">
             <Input
               label="닉네임"
@@ -157,7 +147,6 @@ export default function Signup() {
                 !isEmailValid ||
                 password !== confirmPassword
               }
-              onClick={() => handleSubmit()}
             >
               회원가입
             </Button>
