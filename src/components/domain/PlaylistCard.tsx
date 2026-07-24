@@ -3,6 +3,7 @@ import Image from 'next/image';
 import mookImage from '../../assets/images/mook.jpg';
 
 export default function PlaylistCard({
+  img,
   title,
   trackCount,
 }: {
