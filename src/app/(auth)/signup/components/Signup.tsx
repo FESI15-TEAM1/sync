@@ -6,6 +6,7 @@ import { useState } from 'react';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import { getEmailError, getPasswordError } from '@/lib/auth-validation';
+import { type SubmitEvent } from 'react';
 
 export default function Signup() {
   const [nickname, setNickname] = useState('');
@@ -35,7 +36,7 @@ export default function Signup() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!isNicknameValid) {
       setNicknameError('닉네임 중복확인을 해주세요');
