@@ -12,18 +12,17 @@ export default function PlaylistCard({
   trackCount: number;
 }) {
   return (
-    <div className="bg-bg-card text-text-primary hover:-translate-y- flex max-w-42.5 flex-col gap-2 rounded-2xl px-3 py-5 transition duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-2xl">
+    <div className="bg-bg-card text-text-primary hover:-translate-y- flex h-57.5 w-42.5 flex-col gap-2 rounded-2xl px-3 py-5 transition duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-2xl">
       <Image
         className="rounded-2xl"
-        src={mookImage}
+        src={img ? img : mookImage}
         alt="플레이리스트 대표 이미지"
         width={150}
         height={150}
       />
       <div className="items-baseline">
-        <h3>{title}</h3>
-
-        <span title={title} className="text-sm text-ellipsis">
+        <h4 className="truncate text-base">{title}</h4>
+        <span title={title} className="text-sm">
           {trackCount}곡
         </span>
       </div>
