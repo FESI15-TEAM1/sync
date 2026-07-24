@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import Button from '@/components/ui/button';
+import MoreIcon from '@/assets/icons/more.svg';
+import IconButton from '@/components/IconButton';
 
 type Playlist = {
   id: string;
@@ -73,7 +74,44 @@ export default function GroupDetail({
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-5 py-6">
-      <section className="flex items-start gap-4"></section>
+      <section className="flex items-start gap-4">
+        <div className="bg-input size-20 shrink-0 rounded-2xl" aria-hidden />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <h1 className="text-text-primary text-xl font-bold">
+              {MOCK_GROUP.name}
+            </h1>
+            <div className="relative shrink-0" ref={menuRef}>
+              {isLeader && (
+                <>
+                  <IconButton
+                    size="sm"
+                    onClick={() => setIsMenuOpen((prev) => !prev)}
+                  >
+                    <MoreIcon />
+                  </IconButton>
+                  {isMenuOpen && (
+                    <div className="absolute right-0 top-8 w-40 rounded-lg bg-zinc-800 p-2">
+                      <div
+                        className="cursor-pointer px-4 py-3 hover:bg-zinc-700"
+                        onClick={handleEditGroupInfo}
+                      >
+                        그룹 정보 수정
+                      </div>
+                      <div
+                        className="cursor-pointer px-4 py-3 hover:bg-zinc-700"
+                        onClick={handleEditPlaylists}
+                      >
+                        플레이리스트 편집
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
