@@ -15,7 +15,7 @@ export default function PlaylistCard({
     <div className="bg-bg-card text-text-primary hover:-translate-y- flex max-w-42.5 flex-col gap-2 rounded-2xl px-3 py-5 transition duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-2xl">
       <Image
         className="rounded-2xl"
-        src={mookImage}
+        src={img ? img : mookImage}
         alt="플레이리스트 대표 이미지"
         width={150}
         height={150}
