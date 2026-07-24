@@ -1,4 +1,4 @@
-import Player from './_components/Player';
+import Stream from './playroom';
 
 export default async function page({
   params,
@@ -9,8 +9,7 @@ export default async function page({
 
   return (
     <>
-      <h1>{playroomId}&#39;s playroom let&#39;s listen together~ yey!</h1>
-      <Player />
+      <Stream playroomId={playroomId} />
     </>
   );
 }

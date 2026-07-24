@@ -10,6 +10,7 @@ import SearchBar from './SearchBar';
 export default function Sidebar() {
   const pathname = usePathname();
   const isOpen = useSidebarStore((state) => state.isOpen);
+  const toggle = useSidebarStore((state) => state.toggle);
 
   useEffect(() => {
     if (isOpen) {
@@ -50,18 +51,21 @@ export default function Sidebar() {
           <Link
             href={'/stage'}
             className={`${checkSamePathname('/stage', pathname)}`}
+            onClick={toggle}
           >
             스테이지
           </Link>
           <Link
             href={'/group'}
             className={`${checkSamePathname('/group', pathname)}`}
+            onClick={toggle}
           >
             내 그룹
           </Link>
           <Link
             href={'/playlist'}
             className={`${checkSamePathname('/playlist', pathname)}`}
+            onClick={toggle}
           >
             내 플레이리스트
           </Link>

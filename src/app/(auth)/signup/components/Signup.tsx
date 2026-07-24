@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { type SubmitEvent } from 'react';
 
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 import { getEmailError, getPasswordError } from '@/lib/auth-validation';
-import { type SubmitEvent } from 'react';
 
 export default function Signup() {
   const [nickname, setNickname] = useState('');
