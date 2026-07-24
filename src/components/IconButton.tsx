@@ -6,14 +6,12 @@ import { twMerge } from 'tailwind-merge';
 export default function IconButton({
   children,
   variants,
-  onClick,
   size,
   className,
   ...props
 }: ComponentPropsWithoutRef<'button'> & {
   children: ReactNode; // 아이콘 컴포넌트를 받아옵니다
   variants?: 'primary' | 'secondary';
-  onClick: () => void;
   size: 'sm' | 'md' | 'lg';
   className?: string;
 }) {
@@ -34,11 +32,7 @@ export default function IconButton({
 
   return (
     <>
-      <button
-        className={`${buttonStyle} ${className}`}
-        onClick={onClick}
-        {...props}
-      >
+      <button className={`${buttonStyle} ${className}`} {...props}>
         {children}
       </button>
     </>
