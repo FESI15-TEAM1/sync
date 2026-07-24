@@ -1,18 +1,24 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 import mookImage from '../../assets/images/mook.jpg';
 
 export default function PlaylistCard({
+  id,
   img,
   title,
   trackCount,
 }: {
+  id: string | number;
   img?: string;
   title: string;
   trackCount: number;
 }) {
   return (
-    <div className="bg-bg-card text-text-primary hover:-translate-y- flex h-57.5 w-42.5 flex-col gap-2 rounded-2xl px-3 py-5 transition duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-2xl">
+    <Link
+      href={`/playlist/${id}`}
+      className="bg-bg-card text-text-primary hover:-translate-y- flex h-57.5 w-42.5 flex-col gap-2 rounded-2xl px-3 py-5 transition duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-2xl"
+    >
       <Image
         className="rounded-2xl"
         src={img ? img : mookImage}
@@ -26,6 +32,6 @@ export default function PlaylistCard({
           {trackCount}곡
         </span>
       </div>
-    </div>
+    </Link>
   );
 }

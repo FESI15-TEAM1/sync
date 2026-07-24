@@ -7,6 +7,7 @@ export default function PlaylistCardList({ data }: { data: PlaylistItem[] }) {
       {data.map((item) => {
         return (
           <PlaylistCard
+            id={item.id}
             key={item.id}
             title={item.title}
             trackCount={item.trackCount}
