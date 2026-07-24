@@ -13,7 +13,8 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const handleSubmit = () => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     console.log(email, password);
   };
 
@@ -26,7 +27,7 @@ export default function Login() {
         </p>
       </div>
 
-      <form className="flex flex-col gap-5">
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
         <Input
           value={email}
           onChange={(e) => {
@@ -56,7 +57,6 @@ export default function Login() {
           size="md"
           variant="primary"
           isDisabled={!email || !password || !!emailError || !!passwordError}
-          onClick={handleSubmit}
         >
           로그인
         </Button>

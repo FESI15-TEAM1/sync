@@ -7,7 +7,6 @@ import { twMerge } from 'tailwind-merge';
 
 export default function Button({
   children,
-  onClick = () => console.log('click'),
   size = 'md',
   isDisabled,
   variant = 'primary',
@@ -16,7 +15,6 @@ export default function Button({
 }: ComponentPropsWithoutRef<'button'> & {
   // ComponentPropsWithoutRef == 이컴포넌트 태그가 받을 수 있는 모든 속성 중 ref만 빼고 button테그의 속성을 사용한다.
   children: ReactNode;
-  onClick: () => void;
   size?: 'sm' | 'md' | 'lg';
   isDisabled: boolean;
   variant?: 'primary' | 'secondary' | 'outline';
@@ -50,7 +48,6 @@ export default function Button({
   return (
     <button
       className={`${button} ${className}`}
-      onClick={onClick}
       disabled={isDisabled}
       {...props}
     >
