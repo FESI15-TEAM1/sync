@@ -99,7 +99,7 @@ export default function PlayroomList() {
       <IconButton
         variants="primary"
         size="lg"
-        className="fixed right-5 bottom-5 z-100"
+        className="fixed right-5 bottom-5 z-10"
         onClick={handleDrirectToCreate}
       >
         <span className="text-3xl text-white">+</span>
