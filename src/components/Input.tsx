@@ -1,7 +1,7 @@
 'use client';
 
 import { clsx } from 'clsx';
-import { type ChangeEvent, useState } from 'react';
+import { type ChangeEvent, type KeyboardEvent, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import EyeIcon from '@/assets/icons/eye.svg';
@@ -15,6 +15,7 @@ type InputProps = {
   height?: number | string;
   type?: 'text' | 'password' | 'email';
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
   errorMessage?: string;
 };
 
@@ -30,6 +31,7 @@ export default function Input({
   placeholder,
   value,
   onChange,
+  onKeyDown,
   width = 255,
   height = 44,
   type = 'text',
@@ -55,6 +57,7 @@ export default function Input({
           placeholder={placeholder}
           value={value}
           onChange={onChange}
+          onKeyDown={onKeyDown}
         />
         {isPassword ? (
           <button

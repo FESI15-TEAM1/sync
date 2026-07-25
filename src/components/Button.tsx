@@ -47,7 +47,7 @@ export default function Button({
 
   return (
     <button
-      className={`${button} ${className}`}
+      className={twMerge(button, className)}
       disabled={isDisabled}
       {...props}
     >

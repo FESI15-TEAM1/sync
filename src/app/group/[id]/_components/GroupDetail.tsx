@@ -4,13 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 
 import MoreIcon from '@/assets/icons/more.svg';
 import Button from '@/components/Button';
+import PlaylistCard from '@/components/domain/PlaylistCard';
 import IconButton from '@/components/IconButton';
 
-type Playlist = {
-  id: string;
-  title: string;
-  songCount: number;
-};
+import PlaylistEditModal, { type EditablePlaylist } from './PlaylistEditModal';
 
 type GroupDetailProps = {
   groupId: string;
@@ -24,11 +21,29 @@ const MOCK_GROUP = {
   inviteCode: 'IN9X2K',
 };
 
-const MOCK_PLAYLISTS: Playlist[] = [
-  { id: '1', title: '유저3의 플레이', songCount: 5 },
-  { id: '2', title: '명한이 리스트', songCount: 10 },
-  { id: '3', title: '비오는날 째즈맨', songCount: 15 },
-  { id: '4', title: '내 플레이리스트', songCount: 12 },
+const MOCK_ADDED_PLAYLISTS: EditablePlaylist[] = [
+  {
+    id: '1',
+    title: '비 오는 날 감성',
+    subtitle: 'ㄹㅇ좋음',
+    trackCount: 18,
+  },
+  {
+    id: '2',
+    title: 'Midnight Rain',
+    subtitle: 'Aria Chen',
+    trackCount: 12,
+  },
+];
+
+const MOCK_AVAILABLE_PLAYLISTS: EditablePlaylist[] = [
+  { id: '3', title: 'jpop', subtitle: 'ㄹㅇ좋음', trackCount: 20 },
+  {
+    id: '4',
+    title: '습할때 듣는노래',
+    subtitle: 'Aria Chen',
+    trackCount: 15,
+  },
 ];
 
 export default function GroupDetail({
@@ -36,8 +51,12 @@ export default function GroupDetail({
   isLeader = false,
 }: GroupDetailProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isPlaylistEditing, setIsPlaylistEditing] = useState(false);
-  const [selectedPlaylistIds, setSelectedPlaylistIds] = useState<string[]>([]);
+  const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
+  const [playlists, setPlaylists] =
+    useState<EditablePlaylist[]>(MOCK_ADDED_PLAYLISTS);
+  const [availablePlaylists, setAvailablePlaylists] = useState<
+    EditablePlaylist[]
+  >(MOCK_AVAILABLE_PLAYLISTS);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,6 +74,7 @@ export default function GroupDetail({
   const handleJoin = () => {
     console.log('Join group', groupId);
   };
+
   const handleEditGroupInfo = () => {
     setIsMenuOpen(false);
     console.log('Edit group info', groupId);
@@ -62,20 +82,19 @@ export default function GroupDetail({
 
   const handleEditPlaylists = () => {
     setIsMenuOpen(false);
-    setIsPlaylistEditing(true);
+    setIsPlaylistModalOpen(true);
   };
 
-  const togglePlaylist = (id: string) => {
-    if (!isPlaylistEditing) return;
-
-    setSelectedPlaylistIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+  const handleSavePlaylists = (nextPlaylists: EditablePlaylist[]) => {
+    const nextIds = new Set(nextPlaylists.map((item) => item.id));
+    const removed = playlists.filter((item) => !nextIds.has(item.id));
+    const keptAvailable = availablePlaylists.filter(
+      (item) => !nextIds.has(item.id),
     );
-  };
 
-  const handleSavePlaylists = () => {
-    console.log('Save playlists', selectedPlaylistIds);
-    setIsPlaylistEditing(false);
+    setPlaylists(nextPlaylists);
+    setAvailablePlaylists([...keptAvailable, ...removed]);
+    setIsPlaylistModalOpen(false);
   };
 
   return (
@@ -94,18 +113,18 @@ export default function GroupDetail({
                     size="sm"
                     onClick={() => setIsMenuOpen((prev) => !prev)}
                   >
-                    <MoreIcon />
+                    <MoreIcon className="text-white" />
                   </IconButton>
                   {isMenuOpen && (
-                    <div className="absolute top-8 right-0 w-40 rounded-lg bg-zinc-800 p-2">
+                    <div className="absolute top-8 right-0 w-max min-w-40 rounded-lg bg-zinc-800 p-2">
                       <div
-                        className="cursor-pointer px-4 py-3 hover:bg-zinc-700"
+                        className="cursor-pointer px-4 py-3 whitespace-nowrap text-white hover:bg-zinc-700"
                         onClick={handleEditGroupInfo}
                       >
                         그룹 정보 수정
                       </div>
                       <div
-                        className="cursor-pointer px-4 py-3 hover:bg-zinc-700"
+                        className="cursor-pointer px-4 py-3 whitespace-nowrap text-white hover:bg-zinc-700"
                         onClick={handleEditPlaylists}
                       >
                         플레이리스트 편집
@@ -117,8 +136,7 @@ export default function GroupDetail({
             </div>
           </div>
           <p className="text-text-secondary mt-1 text-sm">
-            멤버 {MOCK_GROUP.memberCount}명 · 플레이리스트{' '}
-            {MOCK_GROUP.playlistCount}개
+            멤버 {MOCK_GROUP.memberCount}명 · 플레이리스트 {playlists.length}개
           </p>
           <p className="text-text-secondary mt-0.5 text-sm">
             초대코드 {MOCK_GROUP.inviteCode}
@@ -137,51 +155,26 @@ export default function GroupDetail({
         </Button>
       ) : null}
 
-      {isPlaylistEditing && (
-        <Button
-          variant="primary"
-          size="md"
-          isDisabled={selectedPlaylistIds.length === 0}
-          onClick={handleSavePlaylists}
-        >
-          선택 완료
-        </Button>
-      )}
-
       <section>
-        <ul className="grid grid-cols-2 gap-3">
-          {MOCK_PLAYLISTS.map((playlist) => {
-            const isSelected = selectedPlaylistIds.includes(playlist.id);
-
-            return (
-              <li key={playlist.id} className="relative">
-                <button
-                  type="button"
-                  onClick={() => togglePlaylist(playlist.id)}
-                  aria-pressed={isPlaylistEditing ? isSelected : undefined}
-                  className="bg-bg-card flex w-full flex-col gap-2 rounded-2xl p-3 text-left"
-                >
-                  <div
-                    className="bg-input aspect-square w-full rounded-xl"
-                    aria-hidden
-                  />
-                  <div className="min-w-0">
-                    <p className="text-text-primary truncate text-sm font-bold">
-                      {playlist.title}
-                    </p>
-                    <p className="text-text-secondary text-xs">
-                      {playlist.songCount}곡
-                    </p>
-                  </div>
-                </button>
-                {isPlaylistEditing && isSelected && (
-                  <div className='pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl bg-[rgba(0,0,0,50%)] after:block after:text-white after:content-["selected"]' />
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        <div className="grid grid-cols-2 items-center justify-items-center gap-1">
+          {playlists.map((playlist) => (
+            <PlaylistCard
+              key={playlist.id}
+              id={playlist.id}
+              title={playlist.title}
+              trackCount={playlist.trackCount}
+            />
+          ))}
+        </div>
       </section>
+
+      <PlaylistEditModal
+        isOpen={isPlaylistModalOpen}
+        addedPlaylists={playlists}
+        availablePlaylists={availablePlaylists}
+        onClose={() => setIsPlaylistModalOpen(false)}
+        onSave={handleSavePlaylists}
+      />
     </main>
   );
 }
