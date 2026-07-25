@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import MoreIcon from '@/assets/icons/more.svg';
+import Button from '@/components/Button';
 import IconButton from '@/components/IconButton';
 
 type Playlist = {
@@ -36,14 +37,14 @@ export default function GroupDetail({
 }: GroupDetailProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPlaylistEditing, setIsPlaylistEditing] = useState(false);
-  const [selectedPlaylistIds, setSelectedPlaylistId] = useState<string[]>([]);
+  const [selectedPlaylistIds, setSelectedPlaylistIds] = useState<string[]>([]);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isMenuOpen) return;
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current?.contains(event.target as Node)) {
+      if (!menuRef.current?.contains(event.target as Node)) {
         setIsMenuOpen(false);
       }
     };
@@ -67,9 +68,14 @@ export default function GroupDetail({
   const togglePlaylist = (id: string) => {
     if (!isPlaylistEditing) return;
 
-    setSelectedPlaylistId((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    setSelectedPlaylistIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
+  };
+
+  const handleSavePlaylists = () => {
+    console.log('Save playlists', selectedPlaylistIds);
+    setIsPlaylistEditing(false);
   };
 
   return (
@@ -91,7 +97,7 @@ export default function GroupDetail({
                     <MoreIcon />
                   </IconButton>
                   {isMenuOpen && (
-                    <div className="absolute right-0 top-8 w-40 rounded-lg bg-zinc-800 p-2">
+                    <div className="absolute top-8 right-0 w-40 rounded-lg bg-zinc-800 p-2">
                       <div
                         className="cursor-pointer px-4 py-3 hover:bg-zinc-700"
                         onClick={handleEditGroupInfo}
@@ -110,7 +116,71 @@ export default function GroupDetail({
               )}
             </div>
           </div>
+          <p className="text-text-secondary mt-1 text-sm">
+            멤버 {MOCK_GROUP.memberCount}명 · 플레이리스트{' '}
+            {MOCK_GROUP.playlistCount}개
+          </p>
+          <p className="text-text-secondary mt-0.5 text-sm">
+            초대코드 {MOCK_GROUP.inviteCode}
+          </p>
         </div>
+      </section>
+
+      {!isLeader ? (
+        <Button
+          variant="primary"
+          size="md"
+          isDisabled={false}
+          onClick={handleJoin}
+        >
+          참여하기
+        </Button>
+      ) : null}
+
+      {isPlaylistEditing && (
+        <Button
+          variant="primary"
+          size="md"
+          isDisabled={selectedPlaylistIds.length === 0}
+          onClick={handleSavePlaylists}
+        >
+          선택 완료
+        </Button>
+      )}
+
+      <section>
+        <ul className="grid grid-cols-2 gap-3">
+          {MOCK_PLAYLISTS.map((playlist) => {
+            const isSelected = selectedPlaylistIds.includes(playlist.id);
+
+            return (
+              <li key={playlist.id} className="relative">
+                <button
+                  type="button"
+                  onClick={() => togglePlaylist(playlist.id)}
+                  aria-pressed={isPlaylistEditing ? isSelected : undefined}
+                  className="bg-bg-card flex w-full flex-col gap-2 rounded-2xl p-3 text-left"
+                >
+                  <div
+                    className="bg-input aspect-square w-full rounded-xl"
+                    aria-hidden
+                  />
+                  <div className="min-w-0">
+                    <p className="text-text-primary truncate text-sm font-bold">
+                      {playlist.title}
+                    </p>
+                    <p className="text-text-secondary text-xs">
+                      {playlist.songCount}곡
+                    </p>
+                  </div>
+                </button>
+                {isPlaylistEditing && isSelected && (
+                  <div className='pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl bg-[rgba(0,0,0,50%)] after:block after:text-white after:content-["selected"]' />
+                )}
+              </li>
+            );
+          })}
+        </ul>
       </section>
     </main>
   );
