@@ -1,172 +1,188 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
-import SettingsIcon from '@/assets/icons/settings.svg';
 import Button from '@/components/Button';
-import IconButton from '@/components/IconButton';
 
-type Playlist = {
+type GroupRequest = {
   id: number;
-  title: string;
-  songCount: number;
+  requester: string;
+  message: string;
+  meta: string;
+  actionLabel: string;
   gradientClassName: string;
 };
 
-const MOCK_GROUP = {
-  name: '인디밴드 러버스',
-  memberCount: 32,
-  playlistCount: 14,
-  inviteCode: 'IN9X2K',
+type MyGroup = {
+  id: string;
+  name: string;
+  memberCount: number;
+  playlistCount: number;
+  gradientClassName: string;
 };
 
-const MOCK_PLAYLISTS: Playlist[] = [
+const MOCK_REQUESTS: GroupRequest[] = [
   {
     id: 1,
-    title: '비 오는 날 감성',
-    songCount: 18,
+    requester: '도윤',
+    message: '"비 오는 날 감성" 플레이리스트에서 그룹 생성 요청을 했습니다.',
+    meta: '게시글에서 참여 신청 · 3분 전',
+    actionLabel: '그룹 선택하기',
     gradientClassName: 'from-[#6366f1] to-[#c084fc]',
   },
   {
     id: 2,
-    title: '헤비로테',
-    songCount: 32,
+    requester: '도윤',
+    message: '"인디밴드 러버스" 그룹에 참여 요청을 했습니다.',
+    meta: '게시글에서 참여 신청 · 3분 전',
+    actionLabel: '수락하기',
+    gradientClassName: 'from-[#38bdf8] to-[#4f46e5]',
+  },
+];
+
+const MOCK_GROUPS: MyGroup[] = [
+  {
+    id: '1',
+    name: '인디밴드 러버스',
+    memberCount: 32,
+    playlistCount: 14,
+    gradientClassName: 'from-[#6366f1] to-[#c084fc]',
+  },
+  {
+    id: '2',
+    name: '비 오는 날 감성 모임',
+    memberCount: 12,
+    playlistCount: 12,
     gradientClassName: 'from-[#38bdf8] to-[#4f46e5]',
   },
   {
-    id: 3,
-    title: '어쿠스틱 셋리스트',
-    songCount: 11,
+    id: '3',
+    name: '헤비로테 클럽',
+    memberCount: 12,
+    playlistCount: 12,
     gradientClassName: 'from-[#34d399] to-[#a3e635]',
   },
   {
-    id: 4,
-    title: '신스팝 모음',
-    songCount: 20,
+    id: '4',
+    name: '신스팝 러버스',
+    memberCount: 12,
+    playlistCount: 12,
     gradientClassName: 'from-[#d946ef] to-[#6366f1]',
-  },
-  {
-    id: 5,
-    title: '라이브 다시듣기',
-    songCount: 9,
-    gradientClassName: 'from-[#fbbf24] to-[#f43f5e]',
   },
 ];
 
 export default function GroupPage() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
-  useEffect(() => {
-    if (!isMenuOpen) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMenuOpen]);
-
-  const handleSharePlaylist = () => {
-    //플레이리스트 공유 플로우 연동
-    console.log('공유하기 버튼 클릭');
+  const handleReject = (id: number) => {
+    // 요청 거절 API 연동
+    console.log('요청 거절', id);
   };
 
-  const handleEditGroupInfo = () => {
-    setIsMenuOpen(false);
-    //그룹 정보 수정 페이지 이동
-    console.log('그룹 정보 수정 버튼 클릭');
+  const handleAccept = (id: number) => {
+    // 요청 수락/그룹 선택 API 연동
+    console.log('요청 수락', id);
   };
 
-  const handleEditPlaylists = () => {
-    setIsMenuOpen(false);
-    //플레이리스트 편집 모드 연동
-    console.log('플레이리스트 편집 버튼 클릭');
+  const handleJoinByCode = () => {
+    // 코드로 참여하기 플로우 연동
+    console.log('코드로 참여하기 버튼 클릭');
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-5 py-8 md:px-8">
-      <section className="bg-bg-card flex flex-col gap-5 rounded-3xl p-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:p-6">
-        <div className="flex min-w-0 items-center gap-4 sm:gap-5">
-          <div
-            aria-hidden
-            className="size-16 shrink-0 rounded-2xl bg-linear-to-br from-[#7c5cff] to-[#f0abfc] sm:size-20"
-          />
-          <div className="min-w-0">
-            <h1 className="text-text-primary truncate text-2xl font-bold sm:text-3xl">
-              {MOCK_GROUP.name}
-            </h1>
-            <p className="text-text-secondary mt-1.5 text-sm sm:text-base">
-              멤버 {MOCK_GROUP.memberCount}명 · 플레이리스트{' '}
-              {MOCK_GROUP.playlistCount}개 · 초대코드 {MOCK_GROUP.inviteCode}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-3">
-          <Button
-            size="md"
-            isDisabled={false}
-            className="w-auto rounded-2xl px-5"
-            onClick={handleSharePlaylist}
-          >
-            플레이리스트 공유
-          </Button>
-
-          <div className="relative" ref={menuRef}>
-            <IconButton
-              variants="secondary"
-              size="lg"
-              className="border-text-secondary/30 border"
-              onClick={() => setIsMenuOpen((prev) => !prev)}
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-5 py-6">
+      {MOCK_REQUESTS.length > 0 && (
+        <section className="flex flex-col gap-3">
+          {MOCK_REQUESTS.map((request) => (
+            <div
+              key={request.id}
+              className="bg-bg-card flex flex-col gap-3 rounded-2xl p-4"
             >
-              <SettingsIcon className="text-text-primary size-5" />
-            </IconButton>
-
-            {isMenuOpen && (
-              <div className="absolute top-12 right-0 z-10 w-max min-w-40 rounded-lg bg-zinc-800 p-2">
+              <div className="flex items-start gap-3">
                 <div
-                  className="cursor-pointer px-4 py-3 whitespace-nowrap text-white hover:bg-zinc-700"
-                  onClick={handleEditGroupInfo}
-                >
-                  그룹 정보 수정
-                </div>
-                <div
-                  className="cursor-pointer px-4 py-3 whitespace-nowrap text-white hover:bg-zinc-700"
-                  onClick={handleEditPlaylists}
-                >
-                  플레이리스트 편집
+                  aria-hidden
+                  className={`size-10 shrink-0 rounded-full bg-linear-to-br ${request.gradientClassName}`}
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-text-primary text-sm leading-snug">
+                    <span className="font-semibold">{request.requester}</span>
+                    님이 {request.message}
+                  </p>
+                  <p className="text-text-secondary mt-1 text-xs">
+                    {request.meta}
+                  </p>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="flex flex-col gap-5">
-        <h2 className="text-text-primary text-xl font-bold">
-          멤버들이 공유한 플레이리스트
-        </h2>
-
-        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-5">
-          {MOCK_PLAYLISTS.map((playlist) => (
-            <div key={playlist.id} className="flex flex-col gap-3">
-              <div
-                aria-hidden
-                className={`aspect-square rounded-2xl bg-linear-to-br ${playlist.gradientClassName}`}
-              />
-              <div className="min-w-0">
-                <h4 className="text-text-primary truncate text-base font-semibold">
-                  {playlist.title}
-                </h4>
-                <span className="text-text-secondary text-sm">
-                  {playlist.songCount}곡
-                </span>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  isDisabled={false}
+                  size="md"
+                  type="button"
+                  onClick={() => handleReject(request.id)}
+                  className="text-text-secondary hover:text-text-primary cursor-pointer rounded-full px-4 py-1.5 text-sm transition-colors"
+                >
+                  거절
+                </Button>
+                <Button
+                  variant="primary"
+                  size="md"
+                  isDisabled={false}
+                  type="button"
+                  onClick={() => handleAccept(request.id)}
+                  className="bg-primary hover:bg-secondary text-text-primary cursor-pointer rounded-full px-4 py-1.5 text-sm font-semibold transition-colors"
+                >
+                  {request.actionLabel}
+                </Button>
               </div>
             </div>
+          ))}
+        </section>
+      )}
+
+      <section className="flex gap-3">
+        <Button
+          variant="outline"
+          size="md"
+          isDisabled={false}
+          onClick={handleJoinByCode}
+        >
+          코드로 참여하기
+        </Button>
+        <Button
+          variant="primary"
+          size="md"
+          isDisabled={false}
+          onClick={() => router.push('/group/add')}
+        >
+          그룹 만들기
+        </Button>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-text-primary text-xl font-bold">내 그룹</h2>
+        <div className="flex flex-col gap-3">
+          {MOCK_GROUPS.map((group) => (
+            <Link
+              key={group.id}
+              href={`/group/${group.id}`}
+              className="bg-bg-card hover:bg-input flex items-center gap-4 rounded-2xl p-3 transition-colors"
+            >
+              <div
+                aria-hidden
+                className={`size-14 shrink-0 rounded-xl bg-linear-to-br ${group.gradientClassName}`}
+              />
+              <div className="min-w-0">
+                <h3 className="text-text-primary truncate text-base font-semibold">
+                  {group.name}
+                </h3>
+                <p className="text-text-secondary mt-0.5 text-sm">
+                  멤버 {group.memberCount}명 · 플레이리스트{' '}
+                  {group.playlistCount}개
+                </p>
+              </div>
+            </Link>
           ))}
         </div>
       </section>
