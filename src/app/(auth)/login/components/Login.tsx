@@ -36,7 +36,6 @@ export default function Login() {
             setEmailError(getEmailError(value));
           }}
           placeholder="이메일을 입력해주세요."
-          className="w-full"
           label="이메일"
           errorMessage={emailError}
         />
@@ -48,7 +47,6 @@ export default function Login() {
             setPasswordError(getPasswordError(value));
           }}
           placeholder="비밀번호를 입력해주세요."
-          className="w-full"
           label="비밀번호"
           type="password"
           errorMessage={passwordError}
