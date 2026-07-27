@@ -1,5 +1,3 @@
-import PlaylistCard from '@/components/domain/PlaylistCard';
-
 import PlaylistCardList from './_components/PlayListCardLIst';
 
 export const data = {
