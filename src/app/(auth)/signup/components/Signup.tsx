@@ -74,7 +74,6 @@ export default function Signup() {
               errorMessage={nicknameError}
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
-              width="100%"
             />
             <div className="w-30 shrink-0">
               <Button
@@ -97,7 +96,6 @@ export default function Signup() {
                 setEmail(value);
                 setEmailError(getEmailError(value));
               }}
-              width="100%"
             />
             <div className="w-30 shrink-0">
               <Button
@@ -125,7 +123,6 @@ export default function Signup() {
               setPassword(value);
               setPasswordError(getPasswordError(value));
             }}
-            width="100%"
           />
           <Input
             label="비밀번호 확인"
@@ -136,7 +133,6 @@ export default function Signup() {
               setConfirmPassword(value);
               setPasswordConfirmError(getPasswordError(value));
             }}
-            width="100%"
           />
           <div className="w-full">
             <Button

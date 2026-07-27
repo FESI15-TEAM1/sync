@@ -1,20 +1,14 @@
 'use client';
 
 import { clsx } from 'clsx';
-import { type ChangeEvent, useState } from 'react';
+import { type InputHTMLAttributes, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import EyeIcon from '@/assets/icons/eye.svg';
 import EyeOffIcon from '@/assets/icons/eye-off.svg';
 
-type InputProps = {
+type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
-  placeholder?: string;
-  value: string;
-  width?: number | string;
-  height?: number | string;
-  type?: 'text' | 'password' | 'email';
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   errorMessage?: string;
 };
 
@@ -27,16 +21,14 @@ export const fieldStyle = twMerge(
 
 export default function Input({
   label,
-  placeholder,
-  value,
-  onChange,
-  width = 255,
-  height = 44,
   type = 'text',
   errorMessage,
+  ...props
 }: InputProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
   const isPassword = type === 'password';
+
   const inputType = isPassword
     ? isPasswordVisible
       ? 'text'
@@ -45,18 +37,18 @@ export default function Input({
 
   return (
     <div className="flex w-full flex-col gap-1">
-      {label ? (
+      {label && (
         <label className="ml-2 text-base font-bold text-white">{label}</label>
-      ) : null}
-      <div className="relative" style={{ width, height }}>
+      )}
+
+      <div className={twMerge('relative')}>
         <input
+          {...props}
           type={inputType}
-          className={`${fieldStyle} h-full ${isPassword ? 'pr-11' : ''}`}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
+          className={twMerge(fieldStyle, isPassword && 'pr-11')}
         />
-        {isPassword ? (
+
+        {isPassword && (
           <button
             type="button"
             aria-label={isPasswordVisible ? '비밀번호 숨기기' : '비밀번호 보기'}
@@ -69,11 +61,10 @@ export default function Input({
               <EyeIcon width={20} height={20} aria-hidden />
             )}
           </button>
-        ) : null}
+        )}
       </div>
-      {errorMessage ? (
-        <p className="text-sm text-red-500">{errorMessage}</p>
-      ) : null}
+
+      {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}
     </div>
   );
 }
