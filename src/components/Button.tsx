@@ -16,13 +16,13 @@ export default function Button({
   // ComponentPropsWithoutRef == 이컴포넌트 태그가 받을 수 있는 모든 속성 중 ref만 빼고 button테그의 속성을 사용한다.
   children: ReactNode;
   size?: 'sm' | 'md' | 'lg';
-  isDisabled: boolean;
+  isDisabled?: boolean;
   variant?: 'primary' | 'secondary' | 'outline';
   className?: string;
 }) {
   const button = twMerge(
     clsx(
-      'w-full rounded-3xl text-base font-bold transition-all',
+      'rounded-3xl text-base font-bold transition-all text-nowrap',
       // 버튼 크기 (size)
       {
         'px-3 py-1 text-sm': size === 'sm',
