@@ -1,9 +1,19 @@
+'use client';
+
 import ChatMembers from '@/app/playroom/[playroomId]/_components/ChatMembers';
 import Player from '@/app/playroom/[playroomId]/_components/Player';
 
 import PlayroomHeader from './_components/Header';
+import { useChat } from './_hooks/useChat';
+
+export type ChatMessage = {
+  username: string;
+  message: string;
+};
 
 export default function Stream({ playroomId }: { playroomId: number }) {
+  const { messages, sendMessage } = useChat(playroomId);
+
   // playroomId로 데이터를 가져와서 Player, Playlist, Chatting 컴포넌트에 전달합니다.
 
   const playroomDummy = {
@@ -50,7 +60,7 @@ export default function Stream({ playroomId }: { playroomId: number }) {
 
       {/* <Playlist /> */}
 
-      <ChatMembers />
+      <ChatMembers messages={messages} onSend={sendMessage} />
     </>
   );
 }

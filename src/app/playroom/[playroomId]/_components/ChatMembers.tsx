@@ -1,9 +1,10 @@
 'use client';
 
 import { clsx } from 'clsx';
-import { useState } from 'react';
+import { type SubmitEvent, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
+import { type ChatMessage } from '../playroom';
 import ChatBox from './ChatBox';
 import Member from './Member';
 
@@ -16,12 +17,10 @@ export function TabButton({
   isActive: boolean;
   onClick: () => void;
 }) {
-  const tabButtonStyles = clsx(
-    'text-xs text-text-secondary hover:text-text-primary cursor-pointer transition-all duration-300 ease-in-out border-b-1 border-border py-2',
-  );
-  const tabButtonActiveStyles = clsx(
-    'font-bold text-text-primary border-b-2 border-primary',
-  );
+  const tabButtonStyles =
+    'text-xs text-text-secondary hover:text-text-primary cursor-pointer transition-all duration-300 ease-in-out border-b-1 border-border py-2';
+  const tabButtonActiveStyles =
+    'font-bold text-text-primary border-b-2 border-primary';
 
   return (
     <div
@@ -35,15 +34,32 @@ export function TabButton({
   );
 }
 
-export default function ChatMembers() {
+export default function ChatMembers({
+  messages,
+  onSend,
+}: {
+  messages: ChatMessage[];
+  onSend: (message: string) => void;
+}) {
   const [currentTab, setCurrentTab] = useState<'chatting' | 'members'>(
     'chatting',
   );
+  const [chat, setChat] = useState('');
+
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const message = chat.trim();
+    if (!message) return;
+
+    onSend(message);
+    setChat('');
+  };
 
   return (
     <div className="border-border bg-bg-card mt-4 rounded-xl border-1">
       {/* 탭 버튼 */}
-      <div className="hover:text-text-primary grid w-full cursor-pointer grid-cols-2 text-center">
+      <div className="grid w-full grid-cols-2 text-center">
         <TabButton
           tabname="채팅"
           isActive={currentTab === 'chatting'}
@@ -64,30 +80,34 @@ export default function ChatMembers() {
             {/* 채팅 로그 */}
             <div className="flex w-full flex-1 flex-col-reverse overflow-y-auto px-4 pb-2">
               <div className="flex h-max flex-col-reverse gap-2">
-                <ChatBox username="울랄라" message="안녕하세요" />
-                <ChatBox username="rlarhkdxor" message="안녕하세요~!" />
-                <ChatBox username="옴니버스" message="좋은 하루 되셍!" />
-                <ChatBox username="yeye" message="좋은 노래네요!" />
-                <ChatBox username="holymoly" message="노래 링크 부탁들혀요" />
-                <ChatBox username="dbsehdwn1" message="쒸엣" />
-                <ChatBox username="나랏말싸미" message="김미김미" />
-                <ChatBox
-                  username="컨셉에사로잡혀"
-                  message="power overwhelming"
-                />
+                {messages.map((message, index) => (
+                  <ChatBox
+                    key={index}
+                    username={message.username}
+                    message={message.message}
+                  />
+                ))}
               </div>
             </div>
             {/* 채팅 입력 인풋 */}
-            <div className="border-border flex items-center gap-2 border-t-1 px-4 py-2">
+            <form
+              onSubmit={handleSubmit}
+              className="border-border flex items-center gap-2 border-t-1 px-4 py-2"
+            >
               <input
                 type="text"
+                value={chat}
+                onChange={(event) => setChat(event.target.value)}
                 className="border-border bg-input text-text-primary placeholder:text-text-secondary outline-primary flex w-full justify-between gap-2 rounded-full border-1 px-4 py-3 text-sm shadow-none focus:outline-2"
                 placeholder="채팅 입력"
               />
-              <button className="bg-primary text-text-primary flex h-11 w-12 cursor-pointer items-center justify-center rounded-full text-base whitespace-nowrap">
+              <button
+                type="submit"
+                className="bg-primary text-text-primary flex h-11 w-12 cursor-pointer items-center justify-center rounded-full text-base whitespace-nowrap"
+              >
                 &gt;
               </button>
-            </div>
+            </form>
           </>
         ) : (
           // 멤버 탭 내용
