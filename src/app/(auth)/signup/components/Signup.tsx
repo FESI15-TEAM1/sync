@@ -96,7 +96,6 @@ export default function Signup() {
                 setEmail(value);
                 setEmailError(getEmailError(value));
               }}
-              width="w-full"
             />
             <div className="w-30 shrink-0">
               <Button
@@ -134,7 +133,6 @@ export default function Signup() {
               setConfirmPassword(value);
               setPasswordConfirmError(getPasswordError(value));
             }}
-            width="w-full"
           />
           <div className="w-full">
             <Button
