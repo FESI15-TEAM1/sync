@@ -10,6 +10,6 @@ export default async function GroupDetailPage({
   const { id } = await params;
   const { role } = await searchParams;
 
-  // TODO: 임시 — 리더 UI 확인용. 끝나면 role === 'leader' 로 되돌리기
-  return <GroupDetail groupId={id} isJoined />;
+  // TODO: 임시 — 리더 UI 확인용. 끝나면 role === 'leader' 로 되돌리기  isJoined도 추가함
+  return <GroupDetail groupId={id} isLeader />;
 }
