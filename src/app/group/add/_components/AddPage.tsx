@@ -161,7 +161,6 @@ export default function AddPage() {
                       onClick={() => togglePlaylist(playlist.id)}
                     >
                       <PlaylistCard
-                        id={playlist.id}
                         title={playlist.title}
                         trackCount={playlist.songCount}
                       />
