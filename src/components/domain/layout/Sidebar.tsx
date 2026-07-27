@@ -45,7 +45,11 @@ export default function Sidebar() {
       >
         <SearchBar />
         <div className="text-text-primary text- flex flex-col gap-9 p-4">
-          <Link href={'/'} className={`${checkSamePathname('/', pathname)}`}>
+          <Link
+            href={'/'}
+            className={`${checkSamePathname('/', pathname)}`}
+            onClick={toggle}
+          >
             홈
           </Link>
           <Link
