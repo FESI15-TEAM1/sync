@@ -9,8 +9,6 @@ import EyeOffIcon from '@/assets/icons/eye-off.svg';
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
-  width?: string;
-  height?: string;
   errorMessage?: string;
 };
 
@@ -23,8 +21,6 @@ export const fieldStyle = twMerge(
 
 export default function Input({
   label,
-  width,
-  height,
   type = 'text',
   errorMessage,
   ...props
@@ -45,7 +41,7 @@ export default function Input({
         <label className="ml-2 text-base font-bold text-white">{label}</label>
       )}
 
-      <div className={twMerge('relative', width, height)}>
+      <div className={twMerge('relative')}>
         <input
           {...props}
           type={inputType}
