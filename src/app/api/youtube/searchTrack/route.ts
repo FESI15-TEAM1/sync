@@ -9,7 +9,12 @@ export const GET = async (req: NextRequest) => {
   try {
     const data = await request('search', {
       method: 'GET',
-      params: { part: 'snippet', type: 'video', maxResults: '10', q },
+      params: {
+        part: 'snippet',
+        type: 'video',
+        maxResults: '10',
+        q,
+      },
     });
     return Response.json(data);
   } catch (err) {
