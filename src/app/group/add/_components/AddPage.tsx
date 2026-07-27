@@ -88,14 +88,14 @@ export default function AddPage() {
           value={groupName}
           placeholder="그룹 이름을 입력해주세요."
           onChange={(e) => setGroupName(e.target.value)}
-          width="100%"
+          width="w-full"
         />
         <Input
           label="그룹 소개"
           value={groupDescription}
           placeholder="그룹 이름을 입력해주세요."
           onChange={(e) => setGroupDescription(e.target.value)}
-          width="100%"
+          width="w-full"
         />
         <fieldset className="flex flex-col gap-2">
           <legend className="text-md ml-2 font-bold text-white">

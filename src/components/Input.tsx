@@ -1,16 +1,25 @@
 'use client';
 
+import { clsx } from 'clsx';
 import { type InputHTMLAttributes, useState } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 import EyeIcon from '@/assets/icons/eye.svg';
 import EyeOffIcon from '@/assets/icons/eye-off.svg';
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
-  width?: number | string;
-  height?: number | string;
+  width?: string;
+  height?: string;
   errorMessage?: string;
 };
+
+// 인풋 스타일 공유 사용!
+export const fieldStyle = twMerge(
+  clsx(
+    'border-border bg-bg-card placeholder:text-text-secondary w-full rounded-md border px-3 py-2 text-base text-white focus:outline-none',
+  ),
+);
 
 export default function Input({
   label,
@@ -36,19 +45,11 @@ export default function Input({
         <label className="ml-2 text-base font-bold text-white">{label}</label>
       )}
 
-      <div
-        className="relative"
-        style={{
-          width,
-          height,
-        }}
-      >
+      <div className={twMerge('relative', width, height)}>
         <input
           {...props}
           type={inputType}
-          className={`border-border bg-bg-card placeholder:text-text-secondary h-full w-full rounded-md border px-3 py-2 text-base text-white focus:outline-none ${
-            isPassword ? 'pr-11' : ''
-          }`}
+          className={twMerge(fieldStyle, 'h-full', isPassword && 'pr-11')}
         />
 
         {isPassword && (

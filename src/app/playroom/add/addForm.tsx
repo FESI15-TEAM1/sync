@@ -54,7 +54,7 @@ export default function AddForm() {
         <Input
           label="제목"
           placeholder="예: 금귀인 내가 말아주는 플레이리스트!"
-          width="100%"
+          width="w-full"
           onChange={(e) => {
             setTitle(e.target.value);
           }}
@@ -65,7 +65,7 @@ export default function AddForm() {
         <Textarea
           label="내용"
           placeholder="플레이룸을 설명하는 내용입니다."
-          width="100%"
+          width="w-full"
           onChange={(e) => {
             setDescription(e.target.value);
           }}
