@@ -1,7 +1,8 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import type { ReactNode } from 'react';
+
 interface Track {
   id: number;
   videoId: string;
@@ -12,7 +13,13 @@ interface Track {
 
 import defaultImg from '@/assets/images/default.png';
 import Track from '@/components/domain/Track';
-export default function TrackList({ trackList }: { trackList: Track[] }) {
+export default function TrackList({
+  trackList,
+  Button,
+}: {
+  trackList: Track[];
+  Button?: ReactNode;
+}) {
   const router = useParams();
   console.log(router.id);
   const img = defaultImg;
@@ -31,6 +38,7 @@ export default function TrackList({ trackList }: { trackList: Track[] }) {
             img={item.thumbnail}
             title={item.title}
             artist={item.artist}
+            Button={Button}
           />
         );
       })}
