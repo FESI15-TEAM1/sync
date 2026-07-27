@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import MoreIcon from '@/assets/icons/more.svg';
@@ -53,6 +54,7 @@ export default function GroupDetail({
   isLeader = false,
   isJoined = false,
 }: GroupDetailProps) {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
@@ -81,7 +83,7 @@ export default function GroupDetail({
 
   const handleEditGroupInfo = () => {
     setIsMenuOpen(false);
-    console.log('Edit group info', groupId);
+    router.push(`/group/${groupId}/edit`);
   };
 
   const handleEditPlaylists = () => {
