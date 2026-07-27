@@ -7,11 +7,13 @@ import Button from '@/components/Button';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import IconButton from '@/components/IconButton';
 
+import GroupLeaveModal from './GroupLeaveModal';
 import PlaylistEditModal, { type EditablePlaylist } from './PlaylistEditModal';
 
 type GroupDetailProps = {
   groupId: string;
   isLeader?: boolean;
+  isJoined?: boolean;
 };
 
 const MOCK_GROUP = {
@@ -49,9 +51,11 @@ const MOCK_AVAILABLE_PLAYLISTS: EditablePlaylist[] = [
 export default function GroupDetail({
   groupId,
   isLeader = false,
+  isJoined = false,
 }: GroupDetailProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [playlists, setPlaylists] =
     useState<EditablePlaylist[]>(MOCK_ADDED_PLAYLISTS);
   const [availablePlaylists, setAvailablePlaylists] = useState<
@@ -85,6 +89,16 @@ export default function GroupDetail({
     setIsPlaylistModalOpen(true);
   };
 
+  const handleLeaveGroup = () => {
+    setIsMenuOpen(false);
+    setIsLeaveModalOpen(true);
+  };
+
+  const handleConfirmLeave = () => {
+    console.log('Leave group', groupId);
+    setIsLeaveModalOpen(false);
+  };
+
   const handleSavePlaylists = (nextPlaylists: EditablePlaylist[]) => {
     const nextIds = new Set(nextPlaylists.map((item) => item.id));
     const removed = playlists.filter((item) => !nextIds.has(item.id));
@@ -107,7 +121,7 @@ export default function GroupDetail({
               {MOCK_GROUP.name}
             </h1>
             <div className="relative shrink-0" ref={menuRef}>
-              {isLeader && (
+              {(isLeader || isJoined) && (
                 <>
                   <IconButton
                     size="sm"
@@ -117,18 +131,29 @@ export default function GroupDetail({
                   </IconButton>
                   {isMenuOpen && (
                     <div className="absolute top-8 right-0 w-max min-w-40 rounded-lg bg-zinc-800 p-2">
-                      <div
-                        className="cursor-pointer px-4 py-3 whitespace-nowrap text-white hover:bg-zinc-700"
-                        onClick={handleEditGroupInfo}
-                      >
-                        그룹 정보 수정
-                      </div>
-                      <div
-                        className="cursor-pointer px-4 py-3 whitespace-nowrap text-white hover:bg-zinc-700"
-                        onClick={handleEditPlaylists}
-                      >
-                        플레이리스트 편집
-                      </div>
+                      {isLeader ? (
+                        <>
+                          <div
+                            className="cursor-pointer px-4 py-3 whitespace-nowrap text-white hover:bg-zinc-700"
+                            onClick={handleEditGroupInfo}
+                          >
+                            그룹 정보 수정
+                          </div>
+                          <div
+                            className="cursor-pointer px-4 py-3 whitespace-nowrap text-white hover:bg-zinc-700"
+                            onClick={handleEditPlaylists}
+                          >
+                            플레이리스트 편집
+                          </div>
+                        </>
+                      ) : (
+                        <div
+                          className="cursor-pointer px-4 py-3 whitespace-nowrap text-red-500 hover:bg-zinc-700"
+                          onClick={handleLeaveGroup}
+                        >
+                          그룹 탈퇴하기
+                        </div>
+                      )}
                     </div>
                   )}
                 </>
@@ -144,7 +169,7 @@ export default function GroupDetail({
         </div>
       </section>
 
-      {!isLeader ? (
+      {!isLeader && !isJoined ? (
         <Button
           variant="primary"
           size="md"
@@ -174,6 +199,13 @@ export default function GroupDetail({
         availablePlaylists={availablePlaylists}
         onClose={() => setIsPlaylistModalOpen(false)}
         onSave={handleSavePlaylists}
+      />
+
+      <GroupLeaveModal
+        isOpen={isLeaveModalOpen}
+        groupName={MOCK_GROUP.name}
+        onClose={() => setIsLeaveModalOpen(false)}
+        onConfirm={handleConfirmLeave}
       />
     </main>
   );
