@@ -36,9 +36,9 @@ export default function AddPage() {
     // 기존에 저장되어 있던 미리보기 URL을 확인하면서 상태 업데이트
     setCoverPreview((prev) => {
       // 이전 미리보기 URL이 있다면 더 이상 사용하지 않으므로 메모리에서 해제
-        if (prev) URL.revokeObjectURL(prev);
+      if (prev) URL.revokeObjectURL(prev);
       // 새로 만든 이미지 미리보기 URL을 상태에 저장
-        return url;
+      return url;
     });
   };
 
@@ -88,14 +88,12 @@ export default function AddPage() {
           value={groupName}
           placeholder="그룹 이름을 입력해주세요."
           onChange={(e) => setGroupName(e.target.value)}
-          width="w-full"
         />
         <Input
           label="그룹 소개"
           value={groupDescription}
           placeholder="그룹 이름을 입력해주세요."
           onChange={(e) => setGroupDescription(e.target.value)}
-          width="w-full"
         />
         <fieldset className="flex flex-col gap-2">
           <legend className="text-md ml-2 font-bold text-white">
@@ -163,6 +161,7 @@ export default function AddPage() {
                       onClick={() => togglePlaylist(playlist.id)}
                     >
                       <PlaylistCard
+                        id={playlist.id}
                         title={playlist.title}
                         trackCount={playlist.songCount}
                       />
