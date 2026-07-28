@@ -69,9 +69,9 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
             <IconButton
               type="button"
               variants="primary"
-              size="md"
+              size="lg"
               onClick={() => avatarInputRef.current?.click()}
-              className="bg-primary text-text-primary text-md hover: absolute right-1 bottom-1 flex size-9 items-center justify-center rounded-full opacity-90 shadow-md transition-opacity"
+              className="text-text-primary hover: absolute right-1 bottom-1 flex size-9 items-center justify-center rounded-full text-lg opacity-90 shadow-md transition-opacity"
               aria-label="프로필 사진 변경"
             >
               +
