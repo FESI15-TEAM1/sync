@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import Button from '@/components/Button';
+import KebabModal from '@/components/domain/KebabModal';
+
 type Playlist = {
   id: number;
   title: string;
@@ -64,6 +67,7 @@ export default function Profile({
       <div className="flex flex-col gap-5">
         <div className="flex justify-end">
           <div className="relative" ref={menuRef}></div>
+          {/* <KebabModal /> */}
         </div>
       </div>
     </div>
