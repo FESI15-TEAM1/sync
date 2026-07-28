@@ -48,7 +48,7 @@ export default function Input({
           {...props}
           ref={ref}
           type={inputType}
-          className={twMerge(fieldStyle, isPassword && 'pr-11')}
+          className={twMerge(fieldStyle, isPassword && 'pr-11', props.className)}
         />
 
         {isPassword && (

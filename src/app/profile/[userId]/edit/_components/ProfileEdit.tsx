@@ -50,21 +50,30 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-8">
         <div className="flex justify-center pt-4">
           <div className="relative">
-            <Button
-              variant="primary"
-              size="md"
+            <button
+              type="button"
               onClick={() => avatarInputRef.current?.click()}
+              className="bg-bg-card size-48 overflow-hidden rounded-full"
             >
               {avatarPreview ? (
                 <Image
                   src={avatarPreview}
                   alt="프로필"
+                  width={192}
+                  height={192}
                   className="size-full object-cover"
                 />
               ) : null}
-            </Button>
+            </button>
 
-            <IconButton variants="primary" size="md">
+            <IconButton
+              type="button"
+              variants="primary"
+              size="md"
+              onClick={() => avatarInputRef.current?.click()}
+              className="bg-primary text-text-primary text-md hover: absolute right-1 bottom-1 flex size-9 items-center justify-center rounded-full opacity-90 shadow-md transition-opacity"
+              aria-label="프로필 사진 변경"
+            >
               +
             </IconButton>
 
@@ -74,7 +83,7 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
               accept="image/*"
               className="hidden"
               onChange={handleAvatarChange}
-            ></Input>
+            />
           </div>
         </div>
 
@@ -85,20 +94,28 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
           />
-          <div className="flex w-full flex-col gap-1">
-            <label htmlFor="bio" className="ml-2 text-base text-white">
-              자기소개
-            </label>
-            <Textarea
-              id="bio"
-              name="bio"
-              rows={4}
-              placeholder="자기소개를 입력하세요"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              className={`${fieldStyle} min-h-[7rem] resize-none`}
-            />
-          </div>
+          <Textarea
+            label="자기소개"
+            placeholder="자기소개를 입력하세요"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            width="100%"
+            height={112}
+          />
+        </div>
+
+        <div className="flex flex-1 flex-col justify-end gap-3">
+          <Button type="submit" variant="primary" size="lg" className="w-full">
+            저장하기
+          </Button>
+
+          <button
+            type="button"
+            onClick={handleWithDraw}
+            className="self-end text-sm text-red-400"
+          >
+            회원탈퇴
+          </button>
         </div>
       </form>
     </div>
