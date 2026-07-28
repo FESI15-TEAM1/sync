@@ -23,6 +23,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:https": "next dev --experimental-https",
+    "dev:ws": "node scripts/mock-stomp-server.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -32,6 +33,7 @@
     "test:watch": "jest --watchAll"
   },
   "dependencies": {
+    "@stomp/stompjs": "^7.3.0",
     "@tanstack/react-query": "^5.101.2",
     "@tanstack/react-query-devtools": "^5.101.2",
     "class-variance-authority": "^0.7.1",
@@ -67,7 +69,8 @@
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5",
-    "typescript-eslint": "^8.65.0"
+    "typescript-eslint": "^8.65.0",
+    "ws": "^8.21.1"
   },
   "engines": {
     "node": ">=22",

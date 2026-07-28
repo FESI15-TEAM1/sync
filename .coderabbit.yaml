@@ -1,0 +1,26 @@
+language: ko-KR
+
+reviews:
+  poem: true
+  profile: chill
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+      # - develop
+  instructions: |
+    - '컴포넌트 파일/함수: PascalCase'
+    - '페이지 파일: Next.js 기본 규칙 (page.tsx, layout.tsx)'
+    - '훅(Hook): camelCase + use 접두사'
+    - '일반 함수/변수: camelCase'
+    - 'API 함수: 동사 + 명사 (camelCase)'
+    - '상수: SCREAMING_SNAKE_CASE'
+    - '타입/인터페이스: PascalCase'
+    - '이벤트 핸들러: handle 접두사'
+    - 'Boolean 변수: is / has 접두사'
+    - '에러가 발생할 수 있는 곳에는 반드시 try-catch로 처리한다'
+    - 'API 응답 데이터는 항상 TypeScript 타입을 정의한다'
+  path_filters:
+    - '!**/.history/**'
+    - '!package-lock.json'
