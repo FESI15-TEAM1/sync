@@ -1,7 +1,7 @@
 'use client';
 
 import { clsx } from 'clsx';
-import { type InputHTMLAttributes, useState } from 'react';
+import { type InputHTMLAttributes, type Ref, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import EyeIcon from '@/assets/icons/eye.svg';
@@ -10,6 +10,7 @@ import EyeOffIcon from '@/assets/icons/eye-off.svg';
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
   errorMessage?: string;
+  ref?: Ref<HTMLInputElement>;
 };
 
 // 인풋 스타일 공유 사용!
@@ -23,6 +24,7 @@ export default function Input({
   label,
   type = 'text',
   errorMessage,
+  ref,
   ...props
 }: InputProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -44,6 +46,7 @@ export default function Input({
       <div className={twMerge('relative')}>
         <input
           {...props}
+          ref={ref}
           type={inputType}
           className={twMerge(fieldStyle, isPassword && 'pr-11')}
         />
