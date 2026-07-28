@@ -6,6 +6,7 @@ import { type ChangeEvent, type SubmitEvent, useRef, useState } from 'react';
 import Button from '@/components/Button';
 import IconButton from '@/components/IconButton';
 import Input from '@/components/Input';
+import Textarea from '@/components/Textarea';
 
 type ProfileEditPageProps = {
   profileId: number;
@@ -74,6 +75,29 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
               className="hidden"
               onChange={handleAvatarChange}
             ></Input>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-5">
+          <Input
+            label="닉네임"
+            placeholder="닉네임을 입력하세요"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+          />
+          <div className="flex w-full flex-col gap-1">
+            <label htmlFor="bio" className="ml-2 text-base text-white">
+              자기소개
+            </label>
+            <Textarea
+              id="bio"
+              name="bio"
+              rows={4}
+              placeholder="자기소개를 입력하세요"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              className={`${fieldStyle} min-h-[7rem] resize-none`}
+            />
           </div>
         </div>
       </form>
