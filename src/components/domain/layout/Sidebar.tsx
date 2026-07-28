@@ -41,7 +41,7 @@ export default function Sidebar() {
       <div
         className={`${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } item-center bg-bg-primary fixed top-20 z-40 float-start flex h-screen w-full flex-col gap-4 px-7 py-3 shadow-xl transition-transform duration-300 ease-in-out lg:static lg:h-auto lg:w-64 lg:translate-x-0 lg:px-1`}
+        } item-center bg-bg-primary fixed top-20 z-40 float-start flex h-full w-full flex-col gap-4 px-7 py-3 shadow-xl transition-transform duration-300 ease-in-out lg:relative lg:top-0 lg:w-64 lg:translate-x-0 lg:px-1`}
       >
         <SearchBar />
         <div className="text-text-primary text- flex flex-col gap-9 p-4">
