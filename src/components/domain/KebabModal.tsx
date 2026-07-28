@@ -57,12 +57,13 @@ function KebabItem({ children, onClick, variant = 'default' }: KebabItemProps) {
   const textColor = variant === 'danger' ? 'text-red-500' : 'text-white';
 
   return (
-    <div
-      className={`cursor-pointer px-4 py-3 whitespace-nowrap ${textColor} hover:bg-zinc-700`}
+    <button
+      type="button"
+      className={`w-full cursor-pointer px-4 py-3 text-left whitespace-nowrap ${textColor} hover:bg-zinc-700`}
       onClick={onClick}
     >
       {children}
-    </div>
+    </button>
   );
 }
 
