@@ -55,11 +55,18 @@ function PlaylistRow({
 
 export default function PlaylistEditModal({
   isOpen,
+  ...props
+}: PlaylistEditModalProps) {
+  if (!isOpen) return null;
+  return <PlaylistEditModalContent {...props} />;
+}
+
+function PlaylistEditModalContent({
   addedPlaylists,
   availablePlaylists,
   onClose,
   onSave,
-}: PlaylistEditModalProps) {
+}: Omit<PlaylistEditModalProps, 'isOpen'>) {
   const [query, setQuery] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -97,7 +104,7 @@ export default function PlaylistEditModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen onClose={onClose}>
       {/* Header */}
       <Modal.Header>플레이리스트 목록</Modal.Header>
 

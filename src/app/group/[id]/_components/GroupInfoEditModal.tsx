@@ -25,10 +25,17 @@ type GroupInfoEditModalProps = {
 
 export default function GroupInfoEditModal({
   isOpen,
+  ...props
+}: GroupInfoEditModalProps) {
+  if (!isOpen) return null;
+  return <GroupInfoEditModalContent {...props} />;
+}
+
+function GroupInfoEditModalContent({
   groupInfo,
   onClose,
   onSave,
-}: GroupInfoEditModalProps) {
+}: Omit<GroupInfoEditModalProps, 'isOpen'>) {
   const [name, setName] = useState(groupInfo.name);
   const [description, setDescription] = useState(groupInfo.description);
   const [isPublic, setIsPublic] = useState(groupInfo.isPublic);
@@ -52,7 +59,7 @@ export default function GroupInfoEditModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen onClose={onClose}>
       <Modal.Header>그룹 정보 수정</Modal.Header>
 
       <Modal.Body>

@@ -146,21 +146,25 @@ export default function GroupDetail({
         </div>
 
         {/* 그룹 정보 수정 모달 */}
-        <GroupInfoEditModal
-          isOpen={isEditGroupInfoOpen}
-          groupInfo={groupInfo}
-          onClose={() => setIsEditGroupInfoOpen(false)}
-          onSave={handleSaveGroupInfo}
-        />
+        {isEditGroupInfoOpen && (
+          <GroupInfoEditModal
+            isOpen={isEditGroupInfoOpen}
+            groupInfo={groupInfo}
+            onClose={() => setIsEditGroupInfoOpen(false)}
+            onSave={handleSaveGroupInfo}
+          />
+        )}
 
         {/* 플레이리스트 편집 모달 */}
-        <PlaylistEditModal
-          isOpen={isEditPlaylistsOpen}
-          addedPlaylists={playlists}
-          availablePlaylists={availablePlaylists}
-          onClose={() => setIsEditPlaylistsOpen(false)}
-          onSave={handleSavePlaylists}
-        />
+        {isEditPlaylistsOpen && (
+          <PlaylistEditModal
+            isOpen={isEditPlaylistsOpen}
+            addedPlaylists={playlists}
+            availablePlaylists={availablePlaylists}
+            onClose={() => setIsEditPlaylistsOpen(false)}
+            onSave={handleSavePlaylists}
+          />
+        )}
 
         {/* 그룹 탈퇴 모달 */}
         <GroupLeaveModal
