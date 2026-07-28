@@ -7,6 +7,7 @@ import defaultCover from '@/assets/images/default.png';
 import Button from '@/components/Button';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import Input from '@/components/Input';
+import { getRandomGradientClassName } from '@/lib/gradient';
 
 type Playlist = {
   id: string;
@@ -55,6 +56,7 @@ export default function AddPage() {
       isPublic,
       selectedPlaylists,
       coverPreview: coverPreview ?? defaultCover.src,
+      gradientClassName: getRandomGradientClassName(),
     });
   };
 
