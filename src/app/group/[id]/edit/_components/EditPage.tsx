@@ -5,6 +5,7 @@ import { type ChangeEvent, type SubmitEvent, useState } from 'react';
 
 import defaultCover from '@/assets/images/default.png';
 import Button from '@/components/Button';
+import BackButton from '@/components/common/BackButton';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import Input from '@/components/Input';
 
@@ -64,6 +65,7 @@ export default function EditPage({ groupId }: EditPageProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-5 py-6">
+      <BackButton />
       <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
         <div className="flex items-center gap-3">
           <label
