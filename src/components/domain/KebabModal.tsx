@@ -1,85 +1,71 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 import MoreIcon from '@/assets/icons/more.svg';
 import IconButton from '@/components/IconButton';
 
-type EditModalProps = {
-  isLeader: boolean;
-  onEditGroupInfo: () => void;
-  onEditPlaylists: () => void;
-  onLeaveGroup: () => void;
+type KebabModalProps = {
+  children: ReactNode;
 };
 
-export default function KebabModal({
-  isLeader,
-  onEditGroupInfo,
-  onEditPlaylists,
-  onLeaveGroup,
-}: EditModalProps) {
+type KebabItemProps = {
+  children: ReactNode;
+  onClick: () => void;
+  variant?: 'default' | 'danger';
+};
+
+function KebabModal({ children }: KebabModalProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isMenuOpen) return;
 
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) {
         setIsMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [isMenuOpen]);
-
-  const handleEditGroupInfo = () => {
-    setIsMenuOpen(false);
-    onEditGroupInfo();
-  };
-
-  const handleEditPlaylists = () => {
-    setIsMenuOpen(false);
-    onEditPlaylists();
-  };
-
-  const handleLeaveGroup = () => {
-    setIsMenuOpen(false);
-    onLeaveGroup();
-  };
 
   return (
     <div className="relative shrink-0" ref={menuRef}>
       <IconButton size="sm" onClick={() => setIsMenuOpen((prev) => !prev)}>
         <MoreIcon className="text-white" />
       </IconButton>
+
       {isMenuOpen && (
-        <div className="absolute top-8 right-0 z-10 w-max min-w-40 rounded-lg bg-zinc-800 p-2">
-          {isLeader ? (
-            <>
-              <div
-                className="cursor-pointer px-4 py-3 whitespace-nowrap text-white hover:bg-zinc-700"
-                onClick={handleEditGroupInfo}
-              >
-                그룹 정보 수정
-              </div>
-              <div
-                className="cursor-pointer px-4 py-3 whitespace-nowrap text-white hover:bg-zinc-700"
-                onClick={handleEditPlaylists}
-              >
-                플레이리스트 편집
-              </div>
-            </>
-          ) : (
-            <div
-              className="cursor-pointer px-4 py-3 whitespace-nowrap text-red-500 hover:bg-zinc-700"
-              onClick={handleLeaveGroup}
-            >
-              그룹 탈퇴하기
-            </div>
-          )}
+        <div
+          className="absolute top-8 right-0 z-10 w-max min-w-40 rounded-lg bg-zinc-800 p-2"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          {children}
         </div>
       )}
     </div>
   );
 }
+
+function KebabItem({ children, onClick, variant = 'default' }: KebabItemProps) {
+  const textColor = variant === 'danger' ? 'text-red-500' : 'text-white';
+
+  return (
+    <div
+      className={`cursor-pointer px-4 py-3 whitespace-nowrap ${textColor} hover:bg-zinc-700`}
+      onClick={onClick}
+    >
+      {children}
+    </div>
+  );
+}
+
+KebabModal.Item = KebabItem;
+
+export default KebabModal;
