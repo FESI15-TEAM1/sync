@@ -9,7 +9,7 @@ import Input from '@/components/Input';
 import Modal from '@/components/Modal';
 
 export type EditablePlaylist = {
-  id: string;
+  id: number;
   title: string;
   artist: string;
   trackCount: number;
@@ -33,7 +33,7 @@ function PlaylistRow({
   return (
     <li>
       <Track
-        videoId={playlist.id}
+        videoId={String(playlist.id)}
         title={playlist.title}
         artist={playlist.artist}
         Button={
@@ -76,7 +76,7 @@ export default function PlaylistEditModal({
     setSearchTerm(query.trim());
   };
 
-  const handleRemove = (id: string) => {
+  const handleRemove = (id: number) => {
     const target = added.find((item) => item.id === id);
 
     if (!target) return;
@@ -86,7 +86,7 @@ export default function PlaylistEditModal({
     setAvailable((prev) => [...prev, target]);
   };
 
-  const handleAdd = (id: string) => {
+  const handleAdd = (id: number) => {
     const target = available.find((item) => item.id === id);
 
     if (!target) return;
@@ -158,7 +158,7 @@ export default function PlaylistEditModal({
               {filteredAvailable.map((playlist) => (
                 <Track
                   key={playlist.id}
-                  videoId={playlist.id}
+                  videoId={String(playlist.id)}
                   title={playlist.title}
                   artist={playlist.artist}
                   Button={
