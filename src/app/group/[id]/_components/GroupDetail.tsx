@@ -30,13 +30,13 @@ const MOCK_GROUP_META = {
 
 const MOCK_ADDED_PLAYLISTS: EditablePlaylist[] = [
   {
-    id: '1',
+    id: 1,
     title: '비 오는 날 감성',
     artist: 'ㄹㅇ좋음',
     trackCount: 18,
   },
   {
-    id: '2',
+    id: 2,
     title: 'Midnight Rain',
     artist: 'Aria Chen',
     trackCount: 12,
@@ -44,9 +44,9 @@ const MOCK_ADDED_PLAYLISTS: EditablePlaylist[] = [
 ];
 
 const MOCK_AVAILABLE_PLAYLISTS: EditablePlaylist[] = [
-  { id: '3', title: 'jpop', artist: 'ㄹㅇ좋음', trackCount: 20 },
+  { id: 3, title: 'jpop', artist: 'ㄹㅇ좋음', trackCount: 20 },
   {
-    id: '4',
+    id: 4,
     title: '습할때 듣는노래',
     artist: 'Aria Chen',
     trackCount: 15,

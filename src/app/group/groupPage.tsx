@@ -20,6 +20,7 @@ type MyGroup = {
   memberCount: number;
   playlistCount: number;
   gradientClassName: string;
+  isLeader: boolean;
 };
 
 const MOCK_REQUESTS: GroupRequest[] = [
@@ -48,6 +49,7 @@ const MOCK_GROUPS: MyGroup[] = [
     memberCount: 32,
     playlistCount: 14,
     gradientClassName: 'from-[#6366f1] to-[#c084fc]',
+    isLeader: true,
   },
   {
     id: '2',
@@ -55,6 +57,7 @@ const MOCK_GROUPS: MyGroup[] = [
     memberCount: 12,
     playlistCount: 12,
     gradientClassName: 'from-[#38bdf8] to-[#4f46e5]',
+    isLeader: false,
   },
   {
     id: '3',
@@ -62,6 +65,7 @@ const MOCK_GROUPS: MyGroup[] = [
     memberCount: 12,
     playlistCount: 12,
     gradientClassName: 'from-[#34d399] to-[#a3e635]',
+    isLeader: false,
   },
   {
     id: '4',
@@ -69,6 +73,7 @@ const MOCK_GROUPS: MyGroup[] = [
     memberCount: 12,
     playlistCount: 12,
     gradientClassName: 'from-[#d946ef] to-[#6366f1]',
+    isLeader: false,
   },
 ];
 
@@ -166,7 +171,7 @@ export default function GroupPage() {
           {MOCK_GROUPS.map((group) => (
             <Link
               key={group.id}
-              href={`/group/${group.id}`}
+              href={`/group/${group.id}${group.isLeader ? '?role=leader' : ''}`}
               className="bg-bg-card hover:bg-input flex items-center gap-4 rounded-2xl p-3 transition-colors"
             >
               <div
