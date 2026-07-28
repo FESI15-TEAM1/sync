@@ -5,11 +5,17 @@ export default async function GroupDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ role?: string }>;
+  searchParams: Promise<{ role?: string; joined?: string }>;
 }) {
   const { id } = await params;
-  const { role } = await searchParams;
+  const { role, joined } = await searchParams;
 
-  // TODO: 임시 — 리더 UI 확인용. 끝나면 role === 'leader' 로 되돌리기  isJoined도 추가함
-  return <GroupDetail groupId={Number(id)} isLeader={role === 'leader'} />;
+  // TODO: 임시 — 리더/가입 UI 확인용. 끝나면 실제 값으로 되돌리기
+  return (
+    <GroupDetail
+      groupId={Number(id)}
+      isLeader={role === 'leader'}
+      isJoined={joined !== 'false'}
+    />
+  );
 }

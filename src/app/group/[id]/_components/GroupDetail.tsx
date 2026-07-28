@@ -14,6 +14,7 @@ import PlaylistEditModal, { type EditablePlaylist } from './PlaylistEditModal';
 type GroupDetailProps = {
   groupId: number;
   isLeader: boolean;
+  isJoined: boolean;
 };
 
 const MOCK_GROUP_INFO: EditableGroupInfo = {
@@ -53,7 +54,11 @@ const MOCK_AVAILABLE_PLAYLISTS: EditablePlaylist[] = [
   },
 ];
 
-export default function GroupDetail({ groupId, isLeader }: GroupDetailProps) {
+export default function GroupDetail({
+  groupId,
+  isLeader,
+  isJoined,
+}: GroupDetailProps) {
   const [isEditGroupInfoOpen, setIsEditGroupInfoOpen] = useState(false);
   const [isEditPlaylistsOpen, setIsEditPlaylistsOpen] = useState(false);
   const [isLeaveGroupOpen, setIsLeaveGroupOpen] = useState(false);
@@ -114,7 +119,7 @@ export default function GroupDetail({ groupId, isLeader }: GroupDetailProps) {
               </h1>
               {/* 케밥 메뉴 */}
               <KebabModal>
-                {isLeader ? (
+                {isLeader || !isJoined ? (
                   <>
                     <KebabModal.Item onClick={handleEditGroupInfo}>
                       그룹 정보 수정
