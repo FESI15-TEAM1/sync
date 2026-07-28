@@ -63,7 +63,7 @@ export default function EditPage({ groupId }: EditPageProps) {
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-5 py-6">
+    <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-5 py-6">
       <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
         <div className="flex items-center gap-3">
           <label
@@ -166,7 +166,6 @@ export default function EditPage({ groupId }: EditPageProps) {
                       onClick={() => togglePlaylist(playlist.id)}
                     >
                       <PlaylistCard
-                        id={playlist.id}
                         title={playlist.title}
                         trackCount={playlist.songCount}
                       />
@@ -181,6 +180,6 @@ export default function EditPage({ groupId }: EditPageProps) {
           </ul>
         </section>
       </form>
-    </main>
+    </div>
   );
 }
