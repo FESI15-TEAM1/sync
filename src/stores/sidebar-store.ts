@@ -7,6 +7,7 @@ export type SidebarState = {
 
 export type SidebarAction = {
   toggle: () => void;
+  close: () => void;
 };
 
 export type SidebarStore = SidebarState & SidebarAction;
@@ -21,5 +22,6 @@ export const createSideBarStore = (
   return createStore<SidebarStore>()((set) => ({
     ...initState,
     toggle: () => set((state) => ({ isOpen: !state.isOpen })),
+    close: () => set({ isOpen: false }),
   }));
 };

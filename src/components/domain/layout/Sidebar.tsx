@@ -10,7 +10,7 @@ import SearchBar from './SearchBar';
 export default function Sidebar() {
   const pathname = usePathname();
   const isOpen = useSidebarStore((state) => state.isOpen);
-  const toggle = useSidebarStore((state) => state.toggle);
+  const close = useSidebarStore((state) => state.isOpen);
 
   useEffect(() => {
     if (isOpen) {
@@ -35,41 +35,41 @@ export default function Sidebar() {
       <div
         className={`${
           isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
-        } fixed top-20 left-0 z-30 h-[calc(100vh-5rem)] w-full bg-black/30 backdrop-blur-sm transition-opacity duration-300 ease-in-out lg:hidden`}
+        } fixed top-20 left-0 z-30 h-[calc(100vh-5rem)] w-full shrink-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ease-in-out lg:hidden`}
       />
 
       <div
         className={`${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } item-center bg-bg-primary fixed top-20 z-40 float-start flex h-full w-full flex-col gap-4 px-7 py-3 shadow-xl transition-transform duration-300 ease-in-out lg:relative lg:top-0 lg:w-64 lg:translate-x-0 lg:px-1`}
+        } item-center bg-bg-primary fixed top-20 z-40 flex h-[calc(100vh-5rem)] w-full shrink-0 flex-col gap-4 px-7 py-3 shadow-xl transition-transform duration-300 ease-in-out lg:static lg:h-auto lg:w-64 lg:min-w-64 lg:translate-x-0`}
       >
         <SearchBar />
-        <div className="text-text-primary text- flex flex-col gap-9 p-4">
+        <div className="text-text-primary text- flex h-full flex-col gap-9 p-4">
           <Link
             href={'/'}
             className={`${checkSamePathname('/', pathname)}`}
-            onClick={toggle}
+            onClick={() => close}
           >
             홈
           </Link>
           <Link
             href={'/stage'}
             className={`${checkSamePathname('/stage', pathname)}`}
-            onClick={toggle}
+            onClick={() => close}
           >
             스테이지
           </Link>
           <Link
             href={'/group'}
             className={`${checkSamePathname('/group', pathname)}`}
-            onClick={toggle}
+            onClick={() => close}
           >
             내 그룹
           </Link>
           <Link
             href={'/playlist'}
             className={`${checkSamePathname('/playlist', pathname)}`}
-            onClick={toggle}
+            onClick={() => close}
           >
             내 플레이리스트
           </Link>
