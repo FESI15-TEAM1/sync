@@ -37,6 +37,26 @@ export default function AddForm() {
     { id: 3, title: '노래방에서 부를 노래들', trackCount: 33 },
     { id: 45, title: '불금 일렉트로닉;;', trackCount: 25 },
     { id: 55, title: '지인에게 추천받은 곡들', trackCount: 58 },
+    { id: 1, title: '아냐 포져가 만든 플레이리스트', trackCount: 1 },
+    { id: 21, title: '내 최애곡 플레이리스트', trackCount: 19 },
+    { id: 3, title: '노래방에서 부를 노래들', trackCount: 33 },
+    { id: 45, title: '불금 일렉트로닉;;', trackCount: 25 },
+    { id: 55, title: '지인에게 추천받은 곡들', trackCount: 58 },
+    { id: 1, title: '아냐 포져가 만든 플레이리스트', trackCount: 1 },
+    { id: 21, title: '내 최애곡 플레이리스트', trackCount: 19 },
+    { id: 3, title: '노래방에서 부를 노래들', trackCount: 33 },
+    { id: 45, title: '불금 일렉트로닉;;', trackCount: 25 },
+    { id: 55, title: '지인에게 추천받은 곡들', trackCount: 58 },
+    { id: 1, title: '아냐 포져가 만든 플레이리스트', trackCount: 1 },
+    { id: 21, title: '내 최애곡 플레이리스트', trackCount: 19 },
+    { id: 3, title: '노래방에서 부를 노래들', trackCount: 33 },
+    { id: 45, title: '불금 일렉트로닉;;', trackCount: 25 },
+    { id: 55, title: '지인에게 추천받은 곡들', trackCount: 58 },
+    { id: 1, title: '아냐 포져가 만든 플레이리스트', trackCount: 1 },
+    { id: 21, title: '내 최애곡 플레이리스트', trackCount: 19 },
+    { id: 3, title: '노래방에서 부를 노래들', trackCount: 33 },
+    { id: 45, title: '불금 일렉트로닉;;', trackCount: 25 },
+    { id: 55, title: '지인에게 추천받은 곡들', trackCount: 58 },
   ];
 
   return (
@@ -51,6 +71,38 @@ export default function AddForm() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* set playroom title */}
+        <Input
+          label="제목"
+          placeholder="예: 금귀인 내가 말아주는 플레이리스트!"
+          onChange={(e) => {
+            setTitle(e.target.value);
+          }}
+          value={title}
+        />
+        <Input
+          label="제목"
+          placeholder="예: 금귀인 내가 말아주는 플레이리스트!"
+          onChange={(e) => {
+            setTitle(e.target.value);
+          }}
+          value={title}
+        />
+        <Input
+          label="제목"
+          placeholder="예: 금귀인 내가 말아주는 플레이리스트!"
+          onChange={(e) => {
+            setTitle(e.target.value);
+          }}
+          value={title}
+        />
+        <Input
+          label="제목"
+          placeholder="예: 금귀인 내가 말아주는 플레이리스트!"
+          onChange={(e) => {
+            setTitle(e.target.value);
+          }}
+          value={title}
+        />
         <Input
           label="제목"
           placeholder="예: 금귀인 내가 말아주는 플레이리스트!"

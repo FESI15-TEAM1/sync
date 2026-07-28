@@ -11,16 +11,22 @@ export default function Track({
   videoId,
   artist,
   Button,
+  onClick,
 }: {
   img?: string;
   title: string;
   videoId: string;
   artist: string;
   Button?: ReactNode;
+  onClick?: () => void;
 }) {
   //videoId 로 해당 thumbnail 가져오는 기능 구현되어야됨
   return (
-    <div className="flex items-center justify-between gap-4 p-2" id={videoId}>
+    <div
+      className="flex items-center justify-between gap-4 p-2"
+      id={videoId}
+      onClick={onClick}
+    >
       <Image
         src={img ? img : defaultImage}
         alt={'thumbnail'}
