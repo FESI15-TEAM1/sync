@@ -91,7 +91,7 @@ export default function GroupPage() {
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-5 py-6">
+    <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-5 py-6">
       {MOCK_REQUESTS.length > 0 && (
         <section className="flex flex-col gap-3">
           {MOCK_REQUESTS.map((request) => (
@@ -186,6 +186,6 @@ export default function GroupPage() {
           ))}
         </div>
       </section>
-    </main>
+    </div>
   );
 }
