@@ -10,7 +10,7 @@ export default function Header() {
   const defaultImage = initImage;
 
   return (
-    <div className="bg-bg-card z-50 flex items-center justify-between px-4 py-4 text-center shadow-md">
+    <header className="bg-bg-card flex-[0 0 auto] z-50 flex items-center justify-between px-4 py-4 text-center shadow-md">
       <div className="flex items-center gap-3">
         <HamburgerButton />
         <div className="flex items-center">
@@ -28,6 +28,6 @@ export default function Header() {
           className="rounded-full"
         />
       </div>
-    </div>
+    </header>
   );
 }
