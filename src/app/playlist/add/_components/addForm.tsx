@@ -15,7 +15,7 @@ import {
   type YoutubeSearchResponse,
 } from '@/types/youtube';
 
-import TrackList from '../../_components/TrakList';
+import TrackList from '../../_components/TrackList';
 
 export default function AddForm() {
   const [preview, setPreview] = useState<string | null>(null);
