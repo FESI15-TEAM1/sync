@@ -149,7 +149,7 @@ export default function EditPage({ groupId }: EditPageProps) {
         >
           수정하기
         </Button>
-        <section>
+        <div>
           <h2 className="text-md ml-2 font-bold text-white">
             플레이리스트 추가
           </h2>
@@ -178,7 +178,7 @@ export default function EditPage({ groupId }: EditPageProps) {
               </div>
             </div>
           </ul>
-        </section>
+        </div>
       </form>
     </div>
   );

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import Button from '@/components/Button';
-import EditModal from '@/components/domain/EditModal';
+import KebabModal from '@/components/domain/KebabModal';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 
 import GroupLeaveModal from './GroupLeaveModal';
@@ -97,7 +97,7 @@ export default function GroupDetail({
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-5 py-6">
-      <section className="flex items-start gap-4">
+      <div className="flex items-start gap-4">
         <div className="bg-input size-20 shrink-0 rounded-2xl" aria-hidden />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
@@ -105,7 +105,7 @@ export default function GroupDetail({
               {MOCK_GROUP.name}
             </h1>
             {(isLeader || isJoined) && (
-              <EditModal
+              <KebabModal
                 isLeader={isLeader}
                 onEditGroupInfo={handleEditGroupInfo}
                 onEditPlaylists={handleEditPlaylists}
@@ -120,7 +120,7 @@ export default function GroupDetail({
             초대코드 {MOCK_GROUP.inviteCode}
           </p>
         </div>
-      </section>
+      </div>
 
       {!isLeader && !isJoined ? (
         <Button
@@ -133,7 +133,7 @@ export default function GroupDetail({
         </Button>
       ) : null}
 
-      <section>
+      <div>
         <div className="grid grid-cols-2 items-center justify-items-center gap-1">
           {playlists.map((playlist) => (
             <PlaylistCard
@@ -143,7 +143,7 @@ export default function GroupDetail({
             />
           ))}
         </div>
-      </section>
+      </div>
 
       <PlaylistEditModal
         isOpen={isPlaylistModalOpen}

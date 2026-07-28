@@ -93,7 +93,7 @@ export default function GroupPage() {
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-5 py-6">
       {MOCK_REQUESTS.length > 0 && (
-        <section className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
           {MOCK_REQUESTS.map((request) => (
             <div
               key={request.id}
@@ -138,10 +138,10 @@ export default function GroupPage() {
               </div>
             </div>
           ))}
-        </section>
+        </div>
       )}
 
-      <section className="flex gap-3">
+      <div className="flex gap-3">
         <Button
           variant="outline"
           size="md"
@@ -158,9 +158,9 @@ export default function GroupPage() {
         >
           그룹 만들기
         </Button>
-      </section>
+      </div>
 
-      <section className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <h2 className="text-text-primary text-xl font-bold">내 그룹</h2>
         <div className="flex flex-col gap-3">
           {MOCK_GROUPS.map((group) => (
@@ -185,7 +185,7 @@ export default function GroupPage() {
             </Link>
           ))}
         </div>
-      </section>
+      </div>
     </div>
   );
 }

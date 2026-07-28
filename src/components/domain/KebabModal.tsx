@@ -12,7 +12,7 @@ type EditModalProps = {
   onLeaveGroup: () => void;
 };
 
-export default function EditModal({
+export default function KebabModal({
   isLeader,
   onEditGroupInfo,
   onEditPlaylists,
@@ -54,7 +54,7 @@ export default function EditModal({
         <MoreIcon className="text-white" />
       </IconButton>
       {isMenuOpen && (
-        <div className="absolute top-8 right-0 w-max min-w-40 rounded-lg bg-zinc-800 p-2">
+        <div className="absolute top-8 right-0 z-10 w-max min-w-40 rounded-lg bg-zinc-800 p-2">
           {isLeader ? (
             <>
               <div

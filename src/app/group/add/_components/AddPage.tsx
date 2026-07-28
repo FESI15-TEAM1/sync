@@ -145,7 +145,7 @@ export default function AddPage() {
         >
           그룹 생성하기
         </Button>
-        <section>
+        <div>
           <h2 className="text-md ml-2 font-bold text-white">
             플레이리스트 추가
           </h2>
@@ -174,7 +174,7 @@ export default function AddPage() {
               </div>
             </div>
           </ul>
-        </section>
+        </div>
       </form>
     </div>
   );

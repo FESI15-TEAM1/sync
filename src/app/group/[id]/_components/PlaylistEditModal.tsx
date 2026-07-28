@@ -132,7 +132,7 @@ export default function PlaylistEditModal({
         {/* 플레이리스트 목록 */}
         <div className="space-y-5">
           {/* 추가된 플레이리스트 */}
-          <section>
+          <div>
             <h3 className="text-text-secondary mb-2 text-sm">
               추가된 플레이리스트({added.length})
             </h3>
@@ -146,10 +146,10 @@ export default function PlaylistEditModal({
                 />
               ))}
             </ul>
-          </section>
+          </div>
 
           {/* 추가 가능한 플레이리스트 */}
-          <section>
+          <div>
             <h3 className="text-text-secondary mb-2 text-sm">
               플레이리스트({filteredAvailable.length})
             </h3>
@@ -175,7 +175,7 @@ export default function PlaylistEditModal({
                 />
               ))}
             </ul>
-          </section>
+          </div>
         </div>
       </Modal.Body>
 
