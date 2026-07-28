@@ -1,12 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
-import MoreIcon from '@/assets/icons/more.svg';
 import Button from '@/components/Button';
+import EditModal from '@/components/domain/EditModal';
 import PlaylistCard from '@/components/domain/PlaylistCard';
-import IconButton from '@/components/IconButton';
 
 import GroupLeaveModal from './GroupLeaveModal';
 import PlaylistEditModal, { type EditablePlaylist } from './PlaylistEditModal';
@@ -28,23 +27,23 @@ const MOCK_ADDED_PLAYLISTS: EditablePlaylist[] = [
   {
     id: '1',
     title: '비 오는 날 감성',
-    subtitle: 'ㄹㅇ좋음',
+    artist: 'ㄹㅇ좋음',
     trackCount: 18,
   },
   {
     id: '2',
     title: 'Midnight Rain',
-    subtitle: 'Aria Chen',
+    artist: 'Aria Chen',
     trackCount: 12,
   },
 ];
 
 const MOCK_AVAILABLE_PLAYLISTS: EditablePlaylist[] = [
-  { id: '3', title: 'jpop', subtitle: 'ㄹㅇ좋음', trackCount: 20 },
+  { id: '3', title: 'jpop', artist: 'ㄹㅇ좋음', trackCount: 20 },
   {
     id: '4',
     title: '습할때 듣는노래',
-    subtitle: 'Aria Chen',
+    artist: 'Aria Chen',
     trackCount: 15,
   },
 ];
@@ -55,7 +54,6 @@ export default function GroupDetail({
   isJoined = false,
 }: GroupDetailProps) {
   const router = useRouter();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [playlists, setPlaylists] =
@@ -63,36 +61,20 @@ export default function GroupDetail({
   const [availablePlaylists, setAvailablePlaylists] = useState<
     EditablePlaylist[]
   >(MOCK_AVAILABLE_PLAYLISTS);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isMenuOpen) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMenuOpen]);
 
   const handleJoin = () => {
     console.log('Join group', groupId);
   };
 
   const handleEditGroupInfo = () => {
-    setIsMenuOpen(false);
     router.push(`/group/${groupId}/edit`);
   };
 
   const handleEditPlaylists = () => {
-    setIsMenuOpen(false);
     setIsPlaylistModalOpen(true);
   };
 
   const handleLeaveGroup = () => {
-    setIsMenuOpen(false);
     setIsLeaveModalOpen(true);
   };
 
@@ -122,45 +104,14 @@ export default function GroupDetail({
             <h1 className="text-text-primary text-xl font-bold">
               {MOCK_GROUP.name}
             </h1>
-            <div className="relative shrink-0" ref={menuRef}>
-              {(isLeader || isJoined) && (
-                <>
-                  <IconButton
-                    size="sm"
-                    onClick={() => setIsMenuOpen((prev) => !prev)}
-                  >
-                    <MoreIcon className="text-white" />
-                  </IconButton>
-                  {isMenuOpen && (
-                    <div className="absolute top-8 right-0 w-max min-w-40 rounded-lg bg-zinc-800 p-2">
-                      {isLeader ? (
-                        <>
-                          <div
-                            className="cursor-pointer px-4 py-3 whitespace-nowrap text-white hover:bg-zinc-700"
-                            onClick={handleEditGroupInfo}
-                          >
-                            그룹 정보 수정
-                          </div>
-                          <div
-                            className="cursor-pointer px-4 py-3 whitespace-nowrap text-white hover:bg-zinc-700"
-                            onClick={handleEditPlaylists}
-                          >
-                            플레이리스트 편집
-                          </div>
-                        </>
-                      ) : (
-                        <div
-                          className="cursor-pointer px-4 py-3 whitespace-nowrap text-red-500 hover:bg-zinc-700"
-                          onClick={handleLeaveGroup}
-                        >
-                          그룹 탈퇴하기
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+            {(isLeader || isJoined) && (
+              <EditModal
+                isLeader={isLeader}
+                onEditGroupInfo={handleEditGroupInfo}
+                onEditPlaylists={handleEditPlaylists}
+                onLeaveGroup={handleLeaveGroup}
+              />
+            )}
           </div>
           <p className="text-text-secondary mt-1 text-sm">
             멤버 {MOCK_GROUP.memberCount}명 · 플레이리스트 {playlists.length}개
@@ -187,7 +138,6 @@ export default function GroupDetail({
           {playlists.map((playlist) => (
             <PlaylistCard
               key={playlist.id}
-              id={playlist.id}
               title={playlist.title}
               trackCount={playlist.trackCount}
             />
