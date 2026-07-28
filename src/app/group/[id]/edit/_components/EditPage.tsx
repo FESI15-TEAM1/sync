@@ -8,7 +8,6 @@ import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import Input from '@/components/Input';
-import { getRandomGradientClassName } from '@/lib/gradient';
 
 type Playlist = {
   id: string;
@@ -22,24 +21,26 @@ const MOCK_PLAYLISTS: Playlist[] = [
   { id: '3', title: '새벽 드라이브', songCount: 30 },
 ];
 
-export default function AddPage() {
+type EditPageProps = {
+  groupId: string;
+};
+
+export default function EditPage({ groupId }: EditPageProps) {
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
-  const [groupName, setGroupName] = useState('');
-  const [groupDescription, setGroupDescription] = useState('');
+  const [groupName, setGroupName] = useState('인디밴드 러버스');
+  const [groupDescription, setGroupDescription] = useState(
+    '인디 음악을 좋아하는 사람들의 모임',
+  );
   const [isPublic, setIsPublic] = useState(false);
-  const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>([]);
+  const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>(['1']);
 
   const handleCoverChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 사용자가 선택한 파일(file)을 브라우저에서 미리 볼 수 있는 임시 URL 생성
     const url = URL.createObjectURL(file);
-    // 기존에 저장되어 있던 미리보기 URL을 확인하면서 상태 업데이트
     setCoverPreview((prev) => {
-      // 이전 미리보기 URL이 있다면 더 이상 사용하지 않으므로 메모리에서 해제
       if (prev) URL.revokeObjectURL(prev);
-      // 새로 만든 이미지 미리보기 URL을 상태에 저장
       return url;
     });
   };
@@ -53,11 +54,12 @@ export default function AddPage() {
   const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log({
+      groupId,
       groupName,
+      groupDescription,
       isPublic,
       selectedPlaylists,
       coverPreview: coverPreview ?? defaultCover.src,
-      gradientClassName: getRandomGradientClassName(),
     });
   };
 
@@ -92,12 +94,14 @@ export default function AddPage() {
           value={groupName}
           placeholder="그룹 이름을 입력해주세요."
           onChange={(e) => setGroupName(e.target.value)}
+          width="100%"
         />
         <Input
           label="그룹 소개"
           value={groupDescription}
-          placeholder="그룹 이름을 입력해주세요."
+          placeholder="그룹 소개를 입력해주세요."
           onChange={(e) => setGroupDescription(e.target.value)}
+          width="100%"
         />
         <fieldset className="flex flex-col gap-2">
           <legend className="text-md ml-2 font-bold text-white">
@@ -145,7 +149,7 @@ export default function AddPage() {
             !groupName || !groupDescription || selectedPlaylists.length === 0
           }
         >
-          그룹 생성하기
+          수정하기
         </Button>
         <div>
           <h2 className="text-md ml-2 font-bold text-white">
