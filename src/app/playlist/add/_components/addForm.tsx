@@ -9,10 +9,7 @@ import IconButton from '@/components/IconButton';
 import Input from '@/components/Input';
 import Textarea from '@/components/Textarea';
 import Toggle from '@/components/Toggle';
-import type {
-  CreatePlaylistRequest,
-  CreatePlaylistTrack,
-} from '@/types/playlist';
+import type { CreatePlaylistRequest, PlaylistTrack } from '@/types/playlist';
 import {
   isYoutubeVideoItem,
   type YoutubeSearchResponse,
@@ -30,7 +27,7 @@ export default function AddForm() {
     tracks: [],
   });
   const [searchValue, setSearchValue] = useState('');
-  const [searchList, setSearchList] = useState<CreatePlaylistTrack[]>([]);
+  const [searchList, setSearchList] = useState<PlaylistTrack[]>([]);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -49,13 +46,13 @@ export default function AddForm() {
     console.log(videos);
     setSearchList(videos);
   };
-  const handleAddTrack = (track: CreatePlaylistTrack) => {
+  const handleAddTrack = (track: PlaylistTrack) => {
     setForm((prev) => ({ ...prev, tracks: [...prev.tracks, track] }));
     setSearchList((prev) =>
       prev.filter((item) => item.videoId !== track.videoId),
     );
   };
-  const handleDeleteTrack = (track: CreatePlaylistTrack) => {
+  const handleDeleteTrack = (track: PlaylistTrack) => {
     setForm((prev) => ({
       ...prev,
       tracks: prev.tracks.filter((item) => item.videoId !== track.videoId),
