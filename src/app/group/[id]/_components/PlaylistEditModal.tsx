@@ -9,7 +9,7 @@ import Input from '@/components/Input';
 import Modal from '@/components/Modal';
 
 export type EditablePlaylist = {
-  id: string;
+  id: number;
   title: string;
   artist: string;
   trackCount: number;
@@ -33,7 +33,7 @@ function PlaylistRow({
   return (
     <li>
       <Track
-        videoId={playlist.id}
+        videoId={String(playlist.id)}
         title={playlist.title}
         artist={playlist.artist}
         Button={
@@ -55,11 +55,18 @@ function PlaylistRow({
 
 export default function PlaylistEditModal({
   isOpen,
+  ...props
+}: PlaylistEditModalProps) {
+  if (!isOpen) return null;
+  return <PlaylistEditModalContent {...props} />;
+}
+
+function PlaylistEditModalContent({
   addedPlaylists,
   availablePlaylists,
   onClose,
   onSave,
-}: PlaylistEditModalProps) {
+}: Omit<PlaylistEditModalProps, 'isOpen'>) {
   const [query, setQuery] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -76,7 +83,7 @@ export default function PlaylistEditModal({
     setSearchTerm(query.trim());
   };
 
-  const handleRemove = (id: string) => {
+  const handleRemove = (id: number) => {
     const target = added.find((item) => item.id === id);
 
     if (!target) return;
@@ -86,7 +93,7 @@ export default function PlaylistEditModal({
     setAvailable((prev) => [...prev, target]);
   };
 
-  const handleAdd = (id: string) => {
+  const handleAdd = (id: number) => {
     const target = available.find((item) => item.id === id);
 
     if (!target) return;
@@ -97,7 +104,7 @@ export default function PlaylistEditModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen onClose={onClose}>
       {/* Header */}
       <Modal.Header>플레이리스트 목록</Modal.Header>
 
@@ -158,7 +165,7 @@ export default function PlaylistEditModal({
               {filteredAvailable.map((playlist) => (
                 <Track
                   key={playlist.id}
-                  videoId={playlist.id}
+                  videoId={String(playlist.id)}
                   title={playlist.title}
                   artist={playlist.artist}
                   Button={
