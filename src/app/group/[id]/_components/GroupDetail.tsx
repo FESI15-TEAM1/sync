@@ -96,7 +96,7 @@ export default function GroupDetail({
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-5 py-6">
+    <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-5 py-6">
       <section className="flex items-start gap-4">
         <div className="bg-input size-20 shrink-0 rounded-2xl" aria-hidden />
         <div className="min-w-0 flex-1">
@@ -159,6 +159,6 @@ export default function GroupDetail({
         onClose={() => setIsLeaveModalOpen(false)}
         onConfirm={handleConfirmLeave}
       />
-    </main>
+    </div>
   );
 }
