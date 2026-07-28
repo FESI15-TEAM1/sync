@@ -171,7 +171,8 @@ export default function GroupPage() {
           {MOCK_GROUPS.map((group) => (
             <Link
               key={group.id}
-              href={`/group/${group.id}${group.isLeader ? '?role=leader' : ''}`}
+              href={`/group/${group.id}`}
+              // href={`/group/${group.id}${group.isLeader? '?role=leader' : ''}`}
               className="bg-bg-card hover:bg-input flex items-center gap-4 rounded-2xl p-3 transition-colors"
             >
               <div
