@@ -1,4 +1,4 @@
-import TrackList from '../_components/TrakList';
+import TrackList from '../_components/TrackList';
 
 const data = {
   tracks: [

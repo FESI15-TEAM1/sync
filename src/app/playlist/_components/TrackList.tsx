@@ -1,43 +1,30 @@
 'use client';
 
-import { useParams } from 'next/navigation';
 import type { ReactNode } from 'react';
 
-interface Track {
-  id: number;
-  videoId: string;
-  title: string;
-  artist: string;
-  thumbnail: string;
-}
-
-import defaultImg from '@/assets/images/default.png';
 import Track from '@/components/domain/Track';
+import type { PlaylistTrack } from '@/types/playlist';
+
 export default function TrackList({
   trackList,
+  onTrackClick,
   Button,
 }: {
-  trackList: Track[];
+  trackList: PlaylistTrack[];
+  onTrackClick?: (track: PlaylistTrack) => void;
   Button?: ReactNode;
 }) {
-  const router = useParams();
-  console.log(router.id);
-  const img = defaultImg;
-  console.log(img);
-
-  // id값으로 데이터 가져와서 패치
-  // endpoint playlists/{playlistid}
-
   return (
     <div className="p-2">
       {trackList.map((item) => {
         return (
           <Track
             videoId={item.videoId}
-            key={item.id}
+            key={item.videoId}
             img={item.thumbnail}
             title={item.title}
             artist={item.artist}
+            onClick={() => onTrackClick?.(item)}
             Button={Button}
           />
         );
