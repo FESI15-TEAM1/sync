@@ -162,7 +162,7 @@ function GroupInfoEditModalContent({
           type="button"
           size="md"
           variant="primary"
-          isDisabled={!name || !description}
+          isDisabled={!name.trim() || !description}
           onClick={handleSave}
           className="flex h-9 w-28 shrink-0 items-center justify-center rounded-full px-0 font-bold"
         >
