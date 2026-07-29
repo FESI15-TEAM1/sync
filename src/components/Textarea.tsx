@@ -1,4 +1,5 @@
 import { type TextareaHTMLAttributes } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 import { fieldStyle } from '@/components/Input';
 
@@ -17,7 +18,10 @@ export default function Textarea({
       {label ? (
         <label className="ml-2 text-base font-bold text-white">{label}</label>
       ) : null}
-      <textarea className={`${fieldStyle} resize-none`} {...props} />
+      <textarea
+        className={twMerge(`${fieldStyle} resize-none`, props.className)}
+        {...props}
+      />
       {errorMessage ? (
         <p className="text-sm text-red-500">{errorMessage}</p>
       ) : null}
