@@ -1,4 +1,4 @@
-export interface CreatePlaylistTrack {
+export interface PlaylistTrack {
   videoId: string;
   title: string;
   artist: string;
@@ -10,5 +10,5 @@ export interface CreatePlaylistRequest {
   description: string;
   image: string;
   isPublic: boolean;
-  tracks: CreatePlaylistTrack[];
+  tracks: PlaylistTrack[];
 }
