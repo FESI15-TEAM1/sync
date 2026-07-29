@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { type ChangeEvent, useEffect, useState } from 'react';
 
+import TrackList from '@/app/playlist/_components/TrackList';
 import Minus from '@/assets/icons/minus.svg';
 import Button from '@/components/Button';
 import IconButton from '@/components/IconButton';
@@ -14,8 +15,6 @@ import {
   isYoutubeVideoItem,
   type YoutubeSearchResponse,
 } from '@/types/youtube';
-
-import TrackList from '../../_components/TrakList';
 
 export default function AddForm() {
   const [preview, setPreview] = useState<string | null>(null);
