@@ -18,6 +18,7 @@ export default function AddButton() {
         size="lg"
         className="fixed right-5 bottom-5 z-10"
         onClick={handleDrirectToCreate}
+        aria-label="플레이룸 생성 버튼"
       >
         <span className="text-3xl text-white">+</span>
       </IconButton>

@@ -1,5 +1,5 @@
-import AddButton from './_components/AddButton';
-import PlayroomList from './_components/PlayroomList';
+import AddButton from '@/app/stage/_components/AddButton';
+import PlayroomList from '@/app/stage/_components/PlayroomList';
 
 export default function Stage() {
   return (
