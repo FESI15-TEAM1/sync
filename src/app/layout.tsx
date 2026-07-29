@@ -40,7 +40,6 @@ export default function RootLayout({
       <body className={`bg-bg-primary flex h-screen w-screen flex-col`}>
         <PlayerStoreProvider>
           <SidebarStoreProvider>
-            <Header />
             <div className="sticky top-0 z-50">
               <Header />
               <Sidebar />
