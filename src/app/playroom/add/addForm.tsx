@@ -107,6 +107,7 @@ export default function AddForm() {
           </div>
 
           <button
+            type="button"
             onClick={() => router.back()}
             className="text-text-secondary hover:text-text-primary cursor-pointer font-bold"
           >
