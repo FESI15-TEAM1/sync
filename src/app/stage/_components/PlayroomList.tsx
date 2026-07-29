@@ -1,11 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
-import IconButton from '@/components/IconButton';
-
-import ListItem from './_components/ListItem';
+import ListItem from './ListItem';
 
 export default function PlayroomList() {
   const dummyData = [
@@ -74,12 +71,6 @@ export default function PlayroomList() {
     },
   ];
 
-  const router = useRouter();
-
-  const handleDrirectToCreate = () => {
-    router.push('/playroom/add');
-  };
-
   return (
     <>
       <ul className="flex flex-col gap-2">
@@ -95,15 +86,6 @@ export default function PlayroomList() {
           </Link>
         ))}
       </ul>
-
-      <IconButton
-        variants="primary"
-        size="lg"
-        className="fixed right-5 bottom-5 z-10"
-        onClick={handleDrirectToCreate}
-      >
-        <span className="text-3xl text-white">+</span>
-      </IconButton>
     </>
   );
 }
