@@ -36,14 +36,14 @@ export default function RootLayout({
       lang="ko"
       className={`h-full antialiased ${pretendard.variable} ${noto.variable}`}
     >
-      <body className={`bg-bg-primary flex h-screen w-screen flex-col`}>
+      <body className={`bg-bg-primary`}>
         <SidebarStoreProvider>
-          <Header />
-          <div className="flex-[1 1 auto] flex overflow-hidden">
+          <div className="sticky top-0 z-50">
+            <Header />
             <Sidebar />
-            <main className="h-full min-h-0 w-full scrollbar-none overflow-y-auto">
-              {children}
-            </main>
+          </div>
+          <div className="max-w-full lg:ml-64">
+            <main className="p-4">{children}</main>
           </div>
         </SidebarStoreProvider>
       </body>
