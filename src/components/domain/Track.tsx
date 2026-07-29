@@ -23,7 +23,7 @@ export default function Track({
   //videoId 로 해당 thumbnail 가져오는 기능 구현되어야됨
   return (
     <div
-      className="flex items-center justify-between gap-4 p-2"
+      className="group flex items-center justify-between gap-4 p-2"
       id={videoId}
       onClick={onClick}
     >
