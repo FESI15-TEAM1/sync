@@ -1,13 +1,12 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import KebabModal from '@/components/domain/KebabModal';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 
-import GroupInfoEditModal, {
-  type EditableGroupInfo,
-} from './GroupInfoEditModal';
+import { type EditableGroupInfo } from './GroupInfoEditModal';
 import GroupLeaveModal from './GroupLeaveModal';
 import PlaylistEditModal, { type EditablePlaylist } from './PlaylistEditModal';
 
@@ -59,12 +58,12 @@ export default function GroupDetail({
   isLeader,
   isJoined,
 }: GroupDetailProps) {
-  const [isEditGroupInfoOpen, setIsEditGroupInfoOpen] = useState(false);
+  const router = useRouter();
+
   const [isEditPlaylistsOpen, setIsEditPlaylistsOpen] = useState(false);
   const [isLeaveGroupOpen, setIsLeaveGroupOpen] = useState(false);
 
-  const [groupInfo, setGroupInfo] =
-    useState<EditableGroupInfo>(MOCK_GROUP_INFO);
+  const [groupInfo] = useState<EditableGroupInfo>(MOCK_GROUP_INFO);
   const [playlists, setPlaylists] =
     useState<EditablePlaylist[]>(MOCK_ADDED_PLAYLISTS);
   const [availablePlaylists, setAvailablePlaylists] = useState<
@@ -73,7 +72,7 @@ export default function GroupDetail({
 
   //그룹 정보 수정
   const handleEditGroupInfo = () => {
-    setIsEditGroupInfoOpen(true);
+    router.push(`/group/${groupId}/edit`);
   };
   //플레이리스트 편집
   const handleEditPlaylists = () => {
@@ -83,11 +82,6 @@ export default function GroupDetail({
   //그룹 탈퇴
   const handleLeaveGroup = () => {
     setIsLeaveGroupOpen(true);
-  };
-
-  const handleSaveGroupInfo = (nextGroupInfo: EditableGroupInfo) => {
-    setGroupInfo(nextGroupInfo);
-    setIsEditGroupInfoOpen(false);
   };
 
   const handleSavePlaylists = (nextPlaylists: EditablePlaylist[]) => {
@@ -144,16 +138,6 @@ export default function GroupDetail({
             </p>
           </div>
         </div>
-
-        {/* 그룹 정보 수정 모달 */}
-        {isEditGroupInfoOpen && (
-          <GroupInfoEditModal
-            isOpen={isEditGroupInfoOpen}
-            groupInfo={groupInfo}
-            onClose={() => setIsEditGroupInfoOpen(false)}
-            onSave={handleSaveGroupInfo}
-          />
-        )}
 
         {/* 플레이리스트 편집 모달 */}
         {isEditPlaylistsOpen && (
