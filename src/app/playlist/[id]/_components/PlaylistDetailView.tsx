@@ -2,13 +2,12 @@
 
 import { useRef } from 'react';
 
+import TrackList from '@/app/playlist/_components/TrackList';
+import PlaylistPlayer from '@/app/playlist/[id]/_components/PlaylistPlayer';
+import { type PlaylistPlayerHandle } from '@/app/playlist/[id]/_components/PlaylistPlayer';
+import TrackHoverController from '@/app/playlist/[id]/_components/TrackHoverController';
 import { usePlayerStore } from '@/providers/player-store-provider';
-import type { PlaylistTrack } from '@/types/playlist';
-
-import TrackList from '../../_components/TrackList';
-import type { PlaylistPlayerHandle } from './PlaylistPlayer';
-import PlaylistPlayer from './PlaylistPlayer';
-import TrackHoverController from './TrackHoverController';
+import { type PlaylistTrack } from '@/types/playlist';
 
 export default function PlaylistDetailView({
   tracks,

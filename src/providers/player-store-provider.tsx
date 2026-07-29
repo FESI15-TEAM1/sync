@@ -3,7 +3,7 @@
 import { createContext, type ReactNode, useContext, useState } from 'react';
 import { useStore } from 'zustand';
 
-import type { PlayerStore } from '@/stores/player-store';
+import { type PlayerStore } from '@/stores/player-store';
 import { createPlayerStore } from '@/stores/player-store';
 
 export type PlayerStoreApi = ReturnType<typeof createPlayerStore>; //

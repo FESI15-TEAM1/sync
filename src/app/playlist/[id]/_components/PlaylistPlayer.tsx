@@ -1,8 +1,8 @@
 'use client';
 
 import { type Ref, useImperativeHandle, useRef } from 'react';
-import type { YouTubeEvent, YouTubeProps } from 'react-youtube';
 import YouTube from 'react-youtube';
+import { type YouTubeEvent, type YouTubeProps } from 'react-youtube';
 
 import { usePlayerStore } from '@/providers/player-store-provider';
 
