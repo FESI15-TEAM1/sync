@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { useLayoutEffect, useRef } from 'react';
 
 import Bell from '@/assets/icons/bell.svg';
 import SyncLogo from '@/assets/icons/syncLogo.svg';
@@ -7,10 +10,34 @@ import initImage from '@/assets/images/mook.jpg';
 import HamburgerButton from './HamburgerButton';
 
 export default function Header() {
+  const headerRef = useRef<HTMLElement>(null);
+
+  useLayoutEffect(() => {
+    // 페이지 렌더링 직전에 header의 높이값을 가져오기 위해 useEffect 대신 useLayoutEffect를 사용합니다
+    const headerElement = headerRef.current;
+    if (!headerElement) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      const height = entry.target.clientHeight;
+      document.documentElement.style.setProperty(
+        '--global-header-height',
+        `${height}px`,
+      );
+    });
+
+    observer.observe(headerElement);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   const defaultImage = initImage;
 
   return (
-    <header className="bg-bg-card flex-[0 0 auto] z-50 flex items-center justify-between px-4 py-4 text-center shadow-md">
+    <header
+      className="bg-bg-card flex-[0 0 auto] flex items-center justify-between px-4 py-4 text-center shadow-md"
+      ref={headerRef}
+    >
       <div className="flex items-center gap-3">
         <HamburgerButton />
         <div className="flex items-center">
