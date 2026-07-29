@@ -67,7 +67,19 @@ export default function Profile({
       <div className="flex flex-col gap-5">
         <div className="flex justify-end">
           <div className="relative" ref={menuRef}></div>
-          {/* <KebabModal /> */}
+          <KebabModal>프로필 수정</KebabModal>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="bg-input size-24 shrink-0 rounded-full" aria-hidden>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-text-primary text-2xl font-bold">
+                {MOCK_PROFILE.nickname}
+              </h1>
+              <p className="text-text-primary mt-1 text-sm">
+                {MOCK_PROFILE.email}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
