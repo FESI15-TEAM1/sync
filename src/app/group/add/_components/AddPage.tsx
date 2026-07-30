@@ -7,7 +7,7 @@ import defaultCover from '@/assets/images/default.png';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import PlaylistCard from '@/components/domain/PlaylistCard';
-import Input from '@/components/Input';
+import InputField from '@/components/InputField';
 import { getRandomGradientClassName } from '@/lib/gradient';
 
 type Playlist = {
@@ -87,13 +87,13 @@ export default function AddPage() {
             className="hidden"
           />
         </div>
-        <Input
+        <InputField
           label="그룹 이름"
           value={groupName}
           placeholder="그룹 이름을 입력해주세요."
           onChange={(e) => setGroupName(e.target.value)}
         />
-        <Input
+        <InputField
           label="그룹 소개"
           value={groupDescription}
           placeholder="그룹 이름을 입력해주세요."

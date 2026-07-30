@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { type SubmitEvent } from 'react';
 
 import Button from '@/components/Button';
-import Input from '@/components/Input';
+import InputField from '@/components/InputField';
 import { getEmailError, getPasswordError } from '@/lib/auth-validation';
 
 export default function Login() {
@@ -28,7 +28,7 @@ export default function Login() {
       </div>
 
       <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-        <Input
+        <InputField
           value={email}
           onChange={(e) => {
             const value = e.target.value;
@@ -39,7 +39,7 @@ export default function Login() {
           label="이메일"
           errorMessage={emailError}
         />
-        <Input
+        <InputField
           value={password}
           onChange={(e) => {
             const value = e.target.value;
@@ -52,8 +52,7 @@ export default function Login() {
           errorMessage={passwordError}
         />
         <Button
-          size="md"
-          variant="primary"
+          type="submit"
           isDisabled={!email || !password || !!emailError || !!passwordError}
         >
           로그인

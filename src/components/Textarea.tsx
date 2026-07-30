@@ -1,7 +1,7 @@
 import { type TextareaHTMLAttributes } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-import { fieldStyle } from '@/components/Input';
+import { fieldStyle } from '@/components/InputField';
 
 type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   label?: string;

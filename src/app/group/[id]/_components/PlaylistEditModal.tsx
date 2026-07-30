@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Button from '@/components/Button';
 import Track from '@/components/domain/Track';
 import IconButton from '@/components/IconButton';
-import Input from '@/components/Input';
+import InputField from '@/components/InputField';
 import Modal from '@/components/Modal';
 
 export type EditablePlaylist = {
@@ -113,7 +113,7 @@ function PlaylistEditModalContent({
         {/* 검색 */}
         <div className="mb-5 flex items-center gap-2">
           <div className="min-w-0 flex-1">
-            <Input
+            <InputField
               placeholder="내 플레이리스트 검색"
               value={query}
               onChange={(e) => setQuery(e.target.value)}

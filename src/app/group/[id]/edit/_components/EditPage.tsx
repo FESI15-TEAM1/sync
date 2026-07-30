@@ -7,7 +7,7 @@ import defaultCover from '@/assets/images/default.png';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import PlaylistCard from '@/components/domain/PlaylistCard';
-import Input from '@/components/Input';
+import InputField from '@/components/InputField';
 
 type Playlist = {
   id: string;
@@ -89,14 +89,14 @@ export default function EditPage({ groupId }: EditPageProps) {
             className="hidden"
           />
         </div>
-        <Input
+        <InputField
           label="그룹 이름"
           value={groupName}
           placeholder="그룹 이름을 입력해주세요."
           onChange={(e) => setGroupName(e.target.value)}
           width="100%"
         />
-        <Input
+        <InputField
           label="그룹 소개"
           value={groupDescription}
           placeholder="그룹 소개를 입력해주세요."

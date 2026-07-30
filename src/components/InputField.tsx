@@ -1,15 +1,20 @@
 'use client';
 
 import { clsx } from 'clsx';
-import { type InputHTMLAttributes, type Ref, useState } from 'react';
+import { type InputHTMLAttributes, type ReactNode, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import EyeIcon from '@/assets/icons/eye.svg';
 import EyeOffIcon from '@/assets/icons/eye-off.svg';
 
+import Button from './Button';
+
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
   errorMessage?: string;
+  buttonLabel?: ReactNode;
+  onButtonClick?: () => void;
+  isButtonDisabled?: boolean;
 };
 
 // 인풋 스타일 공유 사용!
@@ -19,10 +24,13 @@ export const fieldStyle = twMerge(
   ),
 );
 
-export default function Input({
+export default function InputField({
   label,
   type = 'text',
   errorMessage,
+  buttonLabel,
+  onButtonClick,
+  isButtonDisabled,
   ...props
 }: InputProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -48,6 +56,7 @@ export default function Input({
           className={twMerge(
             fieldStyle,
             isPassword && 'pr-11',
+            buttonLabel && 'pr-20',
             props.className,
           )}
         />
@@ -65,6 +74,18 @@ export default function Input({
               <EyeIcon width={20} height={20} aria-hidden />
             )}
           </button>
+        )}
+        {buttonLabel && (
+          <div className="absolute top-1/2 right-2 -translate-y-1/2">
+            <Button
+              onClick={onButtonClick}
+              isDisabled={isButtonDisabled}
+              size="sm"
+              variant="primary"
+            >
+              {buttonLabel}
+            </Button>
+          </div>
         )}
       </div>
 

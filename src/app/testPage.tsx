@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import Button from '@/components/Button';
 import PlaylistCard from '@/components/domain/PlaylistCard';
-import Input from '@/components/Input';
+import InputField from '@/components/InputField';
 
 export default function TestPage() {
   const [inputValue, setInputValue] = useState('');
@@ -19,7 +19,7 @@ export default function TestPage() {
 
       <PlaylistCard title={'아냐 포져가 만든 플레이리스트'} trackCount={1} />
 
-      <Input
+      <InputField
         onChange={(e) => {
           setInputValue(e.target.value);
         }}

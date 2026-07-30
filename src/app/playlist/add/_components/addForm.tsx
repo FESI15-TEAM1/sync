@@ -7,7 +7,7 @@ import TrackList from '@/app/playlist/_components/TrackList';
 import Minus from '@/assets/icons/minus.svg';
 import Button from '@/components/Button';
 import IconButton from '@/components/IconButton';
-import Input from '@/components/Input';
+import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
 import Toggle from '@/components/Toggle';
 import type { CreatePlaylistRequest, PlaylistTrack } from '@/types/playlist';
@@ -95,7 +95,7 @@ export default function AddForm() {
       </div>
 
       {/* 플레이리스트 이름 색션 */}
-      <Input
+      <InputField
         label="플레이리스트이름"
         value={form.title}
         onChange={(e) =>
@@ -121,7 +121,7 @@ export default function AddForm() {
       </div>
       {/* 검색 색션 */}
       <div className="flex w-full items-center justify-center gap-3">
-        <Input
+        <InputField
           width={'100%'}
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}

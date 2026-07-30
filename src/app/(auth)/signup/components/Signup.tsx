@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { type SubmitEvent } from 'react';
 
 import Button from '@/components/Button';
-import Input from '@/components/Input';
+import InputField from '@/components/InputField';
 import { getEmailError, getPasswordError } from '@/lib/auth-validation';
 
 export default function Signup() {
@@ -21,19 +21,32 @@ export default function Signup() {
   const [isEmailValid, setIsEmailValid] = useState(false);
 
   const handleCheckNickname = () => {
-    if (!nickname.trim) {
-      setNickname('닉네임을 입력해주세요.');
+    if (!nickname.trim()) {
+      setNicknameError('닉네임을 입력해주세요.');
       setIsNicknameValid(false);
       return;
     }
+
+    setNicknameError('');
+    setIsNicknameValid(true);
   };
 
   const handleCheckEmail = () => {
-    if (!email.trim) {
+    if (!email.trim()) {
       setEmailError('이메일을 입력해주세요.');
       setIsEmailValid(false);
       return;
     }
+
+    const error = getEmailError(email);
+    if (error) {
+      setEmailError(error);
+      setIsEmailValid(false);
+      return;
+    }
+
+    setEmailError('');
+    setIsEmailValid(true);
   };
 
   const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
@@ -69,7 +82,7 @@ export default function Signup() {
         </div>
         <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
           <div className="flex items-end gap-3">
-            <Input
+            <InputField
               label="닉네임"
               errorMessage={nicknameError}
               value={nickname}
@@ -87,7 +100,7 @@ export default function Signup() {
             </div>
           </div>
           <div className="flex items-end gap-3">
-            <Input
+            <InputField
               label="이메일"
               errorMessage={emailError}
               value={email}
@@ -114,7 +127,7 @@ export default function Signup() {
                     <Button size="md" variant="primary" isDisabled={!verificationCode} onClick={handleVerifyCode}>인증코드 받기</Button>
                 </div>
             </div>) : null} */}
-          <Input
+          <InputField
             label="비밀번호"
             errorMessage={passwordError}
             value={password}
@@ -124,7 +137,7 @@ export default function Signup() {
               setPasswordError(getPasswordError(value));
             }}
           />
-          <Input
+          <InputField
             label="비밀번호 확인"
             errorMessage={passwordConfirmError}
             value={confirmPassword}
