@@ -22,8 +22,12 @@ export default function Login() {
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 py-10">
       <div className="mb-8">
         <h1 className="text-primary text-5xl font-bold">Sync</h1>
-        <p className="mt-2 text-base leading-relaxed text-white">
-          그룹과 함께 플레이리스트를 나누고 ,<br /> 라이브로 같이 들어보세요.
+        <p className="text-text-secondary mt-6 text-base leading-relaxed">
+          그룹과 함께 플레이리스트를 나누고,
+        </p>
+
+        <p className="text-text-secondary mt-2 text-base leading-relaxed">
+          라이브로 같이 들어보세요.
         </p>
       </div>
 
