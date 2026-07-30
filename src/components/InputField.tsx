@@ -1,6 +1,7 @@
 'use client';
 
 import { type InputHTMLAttributes, type ReactNode, useState } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 import EyeIcon from '@/assets/icons/eye.svg';
 import EyeOffIcon from '@/assets/icons/eye-off.svg';
@@ -16,7 +17,16 @@ type InputFieldProps = {
 
 // 전체 InputField
 function InputField({ children, className }: InputFieldProps) {
-  return <div className={className}>{children}</div>;
+  return (
+    <div
+      className={twMerge(
+        'flex flex-wrap items-center gap-x-2 gap-y-1',
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
 // Password
@@ -58,13 +68,20 @@ function InputFieldButton({
   children,
   onClick,
   disabled,
+  className,
 }: {
   children: ReactNode;
   onClick?: () => void;
   disabled?: boolean;
+  className?: string;
 }) {
   return (
-    <Button type="button" onClick={onClick} isDisabled={disabled}>
+    <Button
+      type="button"
+      onClick={onClick}
+      isDisabled={disabled}
+      className={twMerge('shrink-0', className)}
+    >
       {children}
     </Button>
   );
@@ -72,7 +89,7 @@ function InputFieldButton({
 
 // Error
 function Error({ children }: { children?: ReactNode }) {
-  return <p className="min-h-5 text-sm text-red-500">{children}</p>;
+  return <p className="min-h-5 w-full text-sm text-red-500">{children}</p>;
 }
 
 // Compound Component 연결

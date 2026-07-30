@@ -101,61 +101,80 @@ export default function Signup() {
             지금 바로 그룹을 만들어보세요.
           </p>
         </div>
-        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-          <InputField
-            onButtonClick={handleCheckNickname}
-            isButtonDisabled={!nickname}
-            buttonLabel="중복확인"
-            label="닉네임"
-            errorMessage={nicknameError}
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-          />
-          <InputField
-            onButtonClick={handleCheckEmail}
-            isButtonDisabled={!email}
-            buttonLabel="이메일 인증"
-            label="이메일"
-            errorMessage={emailError}
-            value={email}
-            onChange={(e) => {
-              const value = e.target.value;
-              setEmail(value);
-              setEmailError(getEmailError(value));
-            }}
-          />
-          {isVerificationSent ? (
-            <InputField
-              onButtonClick={handleVerifyCode}
-              isButtonDisabled={!verificationCode}
-              buttonLabel="인증코드 확인"
-              label="인증코드"
-              placeholder="인증코드 6자리"
-              errorMessage={verificationCodeError}
-              value={verificationCode}
-              onChange={(e) => setVerificationCode(e.target.value)}
+        <form className="flex flex-col gap-1" onSubmit={handleSubmit}>
+          <InputField>
+            <InputField.Label>닉네임</InputField.Label>
+            <InputField.Input
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
             />
+            <InputField.Button
+              onClick={handleCheckNickname}
+              disabled={!nickname}
+            >
+              중복확인
+            </InputField.Button>
+            <InputField.Error>{nicknameError}</InputField.Error>
+          </InputField>
+
+          <InputField>
+            <InputField.Label>이메일</InputField.Label>
+            <InputField.Input
+              type="text"
+              value={email}
+              onChange={(e) => {
+                const value = e.target.value;
+                setEmail(value);
+                setEmailError(getEmailError(value));
+              }}
+            />
+            <InputField.Button onClick={handleCheckEmail} disabled={!email}>
+              이메일 인증
+            </InputField.Button>
+            <InputField.Error>{emailError}</InputField.Error>
+          </InputField>
+
+          {isVerificationSent ? (
+            <InputField>
+              <InputField.Label>인증코드</InputField.Label>
+              <InputField.Input
+                placeholder="인증코드 6자리"
+                type="text"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+              />
+              <InputField.Button>인증코드 확인</InputField.Button>
+              <InputField.Error>{verificationCodeError}</InputField.Error>
+            </InputField>
           ) : null}
-          <InputField
-            label="비밀번호"
-            errorMessage={passwordError}
-            value={password}
-            onChange={(e) => {
-              const value = e.target.value;
-              setPassword(value);
-              setPasswordError(getPasswordError(value));
-            }}
-          />
-          <InputField
-            label="비밀번호 확인"
-            errorMessage={passwordConfirmError}
-            value={confirmPassword}
-            onChange={(e) => {
-              const value = e.target.value;
-              setConfirmPassword(value);
-              setPasswordConfirmError(getPasswordError(value));
-            }}
-          />
+
+          <InputField>
+            <InputField.Label>비밀번호</InputField.Label>
+            <InputField.Input
+              value={password}
+              onChange={(e) => {
+                const value = e.target.value;
+                setPassword(value);
+                setPasswordError(getPasswordError(value));
+              }}
+            />
+            <InputField.Error>{passwordError}</InputField.Error>
+          </InputField>
+
+          <InputField>
+            <InputField.Label>비밀번호 확인</InputField.Label>
+            <InputField.Input
+              value={confirmPassword}
+              onChange={(e) => {
+                const value = e.target.value;
+                setConfirmPassword(value);
+                setPasswordConfirmError(getPasswordError(value));
+              }}
+            />
+            <InputField.Error>{passwordConfirmError}</InputField.Error>
+          </InputField>
+
           <div className="w-full">
             <Button
               type="submit"
