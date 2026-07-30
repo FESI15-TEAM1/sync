@@ -1,7 +1,7 @@
 'use client';
 
 import { clsx } from 'clsx';
-import { type InputHTMLAttributes, useState } from 'react';
+import { type InputHTMLAttributes, type Ref, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import EyeIcon from '@/assets/icons/eye.svg';
@@ -45,7 +45,11 @@ export default function Input({
         <input
           {...props}
           type={inputType}
-          className={twMerge(fieldStyle, isPassword && 'pr-11')}
+          className={twMerge(
+            fieldStyle,
+            isPassword && 'pr-11',
+            props.className,
+          )}
         />
 
         {isPassword && (
