@@ -34,5 +34,7 @@ export default async function GroupDetailPage({
     devOverride,
   );
 
-  return <GroupDetail groupId={groupId} isLeader={isLeader} />;
+  return (
+    <GroupDetail groupId={groupId} isLeader={isLeader} isJoined={isJoined} />
+  );
 }
