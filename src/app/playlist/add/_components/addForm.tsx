@@ -97,7 +97,6 @@ export default function AddForm() {
       {/* 플레이리스트 이름 색션 */}
       <Input
         label="플레이리스트이름"
-        width={'100%'}
         value={form.title}
         onChange={(e) =>
           setForm((prev) => ({ ...prev, title: e.target.value }))
@@ -107,7 +106,6 @@ export default function AddForm() {
 
       <Textarea
         label="플레이리스트 설명"
-        width={'100%'}
         value={form.description}
         onChange={(e) =>
           setForm((prev) => ({ ...prev, description: e.target.value }))
