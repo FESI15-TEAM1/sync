@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { type ChangeEvent, type SubmitEvent, useRef, useState } from 'react';
 
+import PencilIcon from '@/assets/icons/pencil.svg';
 import Button from '@/components/Button';
 import IconButton from '@/components/IconButton';
 import Input from '@/components/Input';
@@ -74,7 +75,7 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
               className="text-text-primary hover: absolute right-1 bottom-1 flex size-9 items-center justify-center rounded-full text-lg opacity-90 shadow-md transition-opacity"
               aria-label="프로필 사진 변경"
             >
-              +
+              <PencilIcon />
             </IconButton>
 
             <Input
@@ -99,8 +100,6 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
             placeholder="자기소개를 입력하세요"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            width="100%"
-            height={112}
           />
         </div>
 
