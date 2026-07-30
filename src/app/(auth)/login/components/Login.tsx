@@ -19,7 +19,7 @@ export default function Login() {
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 py-10">
+    <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 py-10">
       <div className="mb-8">
         <h1 className="text-primary text-5xl font-bold">Sync</h1>
         <p className="mt-2 text-base leading-relaxed text-white">
@@ -75,6 +75,6 @@ export default function Login() {
           회원가입
         </Link>
       </p>
-    </main>
+    </div>
   );
 }

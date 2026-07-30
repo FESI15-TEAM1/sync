@@ -89,7 +89,7 @@ export default function Signup() {
   };
 
   return (
-    <main className="bg-bg-primary flex min-h-screen w-full flex-1 justify-center px-5 py-10">
+    <div className="bg-bg-primary flex min-h-screen w-full flex-1 justify-center px-5 py-10">
       <div className="flex w-full max-w-md flex-col">
         <div className="mb-8">
           <h1 className="text-primary text-5xl font-bold">Sync</h1>
@@ -175,29 +175,31 @@ export default function Signup() {
             <InputField.Error>{passwordConfirmError}</InputField.Error>
           </InputField>
 
-          <div className="w-full">
-            <Button
-              type="submit"
-              size="md"
-              variant="primary"
-              isDisabled={
-                !isNicknameValid ||
-                !isEmailValid ||
-                !isCodeValid ||
-                password !== confirmPassword
-              }
-            >
-              회원가입
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            size="md"
+            variant="primary"
+            className="w-full"
+            isDisabled={
+              !isNicknameValid ||
+              !isEmailValid ||
+              !isCodeValid ||
+              password !== confirmPassword
+            }
+          >
+            회원가입
+          </Button>
         </form>
         <p className="mt-8 text-center text-sm text-white">
           이미 계정이 있으신가요?
         </p>
-        <Link href="/login" className="text-primary mt-4 text-center text-sm">
+        <Link
+          href="/login"
+          className="text-primary mt-4 inline-block self-center text-sm font-bold"
+        >
           로그인
         </Link>
       </div>
-    </main>
+    </div>
   );
 }
