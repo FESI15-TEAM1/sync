@@ -1,100 +1,85 @@
 'use client';
 
-import { clsx } from 'clsx';
 import { type InputHTMLAttributes, type ReactNode, useState } from 'react';
-import { twMerge } from 'tailwind-merge';
 
 import EyeIcon from '@/assets/icons/eye.svg';
 import EyeOffIcon from '@/assets/icons/eye-off.svg';
 
 import Button from './Button';
+import Input from './Input';
+import InputLabel from './InputLabel';
 
-type InputProps = InputHTMLAttributes<HTMLInputElement> & {
-  label?: string;
-  errorMessage?: string;
-  buttonLabel?: ReactNode;
-  onButtonClick?: () => void;
-  isButtonDisabled?: boolean;
+type InputFieldProps = {
+  children: ReactNode;
+  className?: string;
 };
 
-// 인풋 스타일 공유 사용!
-export const fieldStyle = twMerge(
-  clsx(
-    'border-border bg-bg-card placeholder:text-text-secondary w-full rounded-md border px-3 py-2 text-base text-white focus:outline-none',
-  ),
-);
+// 전체 InputField
+function InputField({ children, className }: InputFieldProps) {
+  return <div className={className}>{children}</div>;
+}
 
-export default function InputField({
-  label,
+// Password
+function Password({
   type = 'text',
-  errorMessage,
-  buttonLabel,
-  onButtonClick,
-  isButtonDisabled,
+  className,
   ...props
-}: InputProps) {
+}: InputHTMLAttributes<HTMLInputElement>) {
+  // 비밀번호 보이기/숨기기 상태
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
-  const isPassword = type === 'password';
-
-  const inputType = isPassword
-    ? isPasswordVisible
-      ? 'text'
-      : 'password'
-    : type;
+  const inputType = type === 'password' && isPasswordVisible ? 'text' : type;
 
   return (
-    <div className="flex w-full flex-col">
-      {label && (
-        <label className="mb-2 ml-2 text-base font-bold text-white">
-          {label}
-        </label>
-      )}
-      <div className="flex items-end gap-3">
-        <div className={twMerge('relative flex-1')}>
-          <input
-            {...props}
-            type={inputType}
-            className={twMerge(
-              fieldStyle,
-              isPassword && 'pr-11',
-              props.className,
-            )}
-          />
-
-          {isPassword && (
-            <button
-              type="button"
-              aria-label={
-                isPasswordVisible ? '비밀번호 숨기기' : '비밀번호 보기'
-              }
-              onClick={() => setIsPasswordVisible((prev) => !prev)}
-              className="text-text-secondary hover:text-text-primary absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"
-            >
-              {isPasswordVisible ? (
-                <EyeOffIcon width={20} height={20} aria-hidden />
-              ) : (
-                <EyeIcon width={20} height={20} aria-hidden />
-              )}
-            </button>
+    <div className="relative">
+      <Input
+        {...props}
+        type={isPasswordVisible ? 'text' : 'password'}
+        className={className}
+      />
+      {type === 'password' && (
+        <button
+          type="button"
+          onClick={() => setIsPasswordVisible((prev) => !prev)}
+        >
+          {isPasswordVisible ? (
+            <EyeOffIcon width={20} height={20} aria-hidden />
+          ) : (
+            <EyeIcon width={20} height={20} aria-hidden />
           )}
-        </div>
-
-        {buttonLabel && (
-          <div className="w-30 shrink-0">
-            <Button
-              type="button"
-              onClick={onButtonClick}
-              isDisabled={isButtonDisabled}
-              size="md"
-              variant="primary"
-            >
-              {buttonLabel}
-            </Button>
-          </div>
-        )}
-      </div>
-      <p className="min-h-5 text-sm text-red-500">{errorMessage}</p>
+        </button>
+      )}
     </div>
   );
 }
+
+// Button
+function InputFieldButton({
+  children,
+  onClick,
+  disabled,
+}: {
+  children: ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <Button type="button" onClick={onClick} isDisabled={disabled}>
+      {children}
+    </Button>
+  );
+}
+
+// Error
+function Error({ children }: { children?: ReactNode }) {
+  return <p className="min-h-5 text-sm text-red-500">{children}</p>;
+}
+
+// Compound Component 연결
+InputField.Label = InputLabel;
+InputField.Input = Input;
+InputField.Password = Password;
+InputField.Button = InputFieldButton;
+InputField.Error = Error;
+
+export default InputField;
