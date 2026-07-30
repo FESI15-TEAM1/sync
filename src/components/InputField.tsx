@@ -44,43 +44,49 @@ export default function InputField({
     : type;
 
   return (
-    <div className="flex w-full flex-col gap-1">
+    <div className="flex w-full flex-col">
       {label && (
-        <label className="ml-2 text-base font-bold text-white">{label}</label>
+        <label className="mb-2 ml-2 text-base font-bold text-white">
+          {label}
+        </label>
       )}
-
-      <div className={twMerge('relative')}>
-        <input
-          {...props}
-          type={inputType}
-          className={twMerge(
-            fieldStyle,
-            isPassword && 'pr-11',
-            buttonLabel && 'pr-20',
-            props.className,
-          )}
-        />
-
-        {isPassword && (
-          <button
-            type="button"
-            aria-label={isPasswordVisible ? '비밀번호 숨기기' : '비밀번호 보기'}
-            onClick={() => setIsPasswordVisible((prev) => !prev)}
-            className="text-text-secondary hover:text-text-primary absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"
-          >
-            {isPasswordVisible ? (
-              <EyeOffIcon width={20} height={20} aria-hidden />
-            ) : (
-              <EyeIcon width={20} height={20} aria-hidden />
+      <div className="flex items-end gap-3">
+        <div className={twMerge('relative flex-1')}>
+          <input
+            {...props}
+            type={inputType}
+            className={twMerge(
+              fieldStyle,
+              isPassword && 'pr-11',
+              props.className,
             )}
-          </button>
-        )}
+          />
+
+          {isPassword && (
+            <button
+              type="button"
+              aria-label={
+                isPasswordVisible ? '비밀번호 숨기기' : '비밀번호 보기'
+              }
+              onClick={() => setIsPasswordVisible((prev) => !prev)}
+              className="text-text-secondary hover:text-text-primary absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer"
+            >
+              {isPasswordVisible ? (
+                <EyeOffIcon width={20} height={20} aria-hidden />
+              ) : (
+                <EyeIcon width={20} height={20} aria-hidden />
+              )}
+            </button>
+          )}
+        </div>
+
         {buttonLabel && (
-          <div className="absolute top-1/2 right-2 -translate-y-1/2">
+          <div className="w-30 shrink-0">
             <Button
+              type="button"
               onClick={onButtonClick}
               isDisabled={isButtonDisabled}
-              size="sm"
+              size="md"
               variant="primary"
             >
               {buttonLabel}
@@ -88,7 +94,6 @@ export default function InputField({
           </div>
         )}
       </div>
-
       <p className="min-h-5 text-sm text-red-500">{errorMessage}</p>
     </div>
   );

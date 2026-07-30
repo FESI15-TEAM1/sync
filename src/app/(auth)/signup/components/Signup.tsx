@@ -19,6 +19,10 @@ export default function Signup() {
   const [emailError, setEmailError] = useState('');
   const [isNicknameValid, setIsNicknameValid] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationCodeError, setVerificationCodeError] = useState('');
+  const [isVerificationSent, setIsVerificationSent] = useState(false);
+  const [isCodeValid, setIsCodeValid] = useState(false);
 
   const handleCheckNickname = () => {
     if (!nickname.trim()) {
@@ -47,6 +51,18 @@ export default function Signup() {
 
     setEmailError('');
     setIsEmailValid(true);
+    setIsVerificationSent(true);
+  };
+
+  const handleVerifyCode = () => {
+    if (!verificationCode.trim()) {
+      setVerificationCodeError('인증코드를 입력해주세요.');
+      setIsCodeValid(false);
+      return;
+    }
+
+    setVerificationCodeError('');
+    setIsCodeValid(true);
   };
 
   const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
@@ -58,6 +74,11 @@ export default function Signup() {
 
     if (!isEmailValid) {
       setEmailError('이메일 형식을 확인해주세요');
+      return;
+    }
+
+    if (!isCodeValid) {
+      setVerificationCodeError('이메일 인증을 완료해주세요');
       return;
     }
 
@@ -81,52 +102,40 @@ export default function Signup() {
           </p>
         </div>
         <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-          <div className="flex items-end gap-3">
+          <InputField
+            onButtonClick={handleCheckNickname}
+            isButtonDisabled={!nickname}
+            buttonLabel="중복확인"
+            label="닉네임"
+            errorMessage={nicknameError}
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+          />
+          <InputField
+            onButtonClick={handleCheckEmail}
+            isButtonDisabled={!email}
+            buttonLabel="이메일 인증"
+            label="이메일"
+            errorMessage={emailError}
+            value={email}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEmail(value);
+              setEmailError(getEmailError(value));
+            }}
+          />
+          {isVerificationSent ? (
             <InputField
-              label="닉네임"
-              errorMessage={nicknameError}
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
+              onButtonClick={handleVerifyCode}
+              isButtonDisabled={!verificationCode}
+              buttonLabel="인증코드 확인"
+              label="인증코드"
+              placeholder="인증코드 6자리"
+              errorMessage={verificationCodeError}
+              value={verificationCode}
+              onChange={(e) => setVerificationCode(e.target.value)}
             />
-            <div className="w-30 shrink-0">
-              <Button
-                onClick={handleCheckNickname}
-                isDisabled={!nickname}
-                size="md"
-                variant="primary"
-              >
-                중복확인
-              </Button>
-            </div>
-          </div>
-          <div className="flex items-end gap-3">
-            <InputField
-              label="이메일"
-              errorMessage={emailError}
-              value={email}
-              onChange={(e) => {
-                const value = e.target.value;
-                setEmail(value);
-                setEmailError(getEmailError(value));
-              }}
-            />
-            <div className="w-30 shrink-0">
-              <Button
-                onClick={handleCheckEmail}
-                isDisabled={!email}
-                size="md"
-                variant="primary"
-              >
-                이메일 인증
-              </Button>
-            </div>
-          </div>
-          {/* {isVerificationSent? (<div className="flex items-end gap-3">
-                <Input label="인증코드" placeholder="인증코드 6자리" value={verificationCode} onChange={(e) => setVerificationCode(e.target.value)} />
-                <div className="w-30">
-                    <Button size="md" variant="primary" isDisabled={!verificationCode} onClick={handleVerifyCode}>인증코드 받기</Button>
-                </div>
-            </div>) : null} */}
+          ) : null}
           <InputField
             label="비밀번호"
             errorMessage={passwordError}
@@ -149,11 +158,13 @@ export default function Signup() {
           />
           <div className="w-full">
             <Button
+              type="submit"
               size="md"
               variant="primary"
               isDisabled={
                 !isNicknameValid ||
                 !isEmailValid ||
+                !isCodeValid ||
                 password !== confirmPassword
               }
             >
