@@ -19,7 +19,7 @@ jobs:
       - name: Node.js 설치하기
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: '24'
           cache: 'npm'
 
       - name: 의존성(라이브러리) 설치
