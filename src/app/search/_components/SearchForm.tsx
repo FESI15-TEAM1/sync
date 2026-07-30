@@ -3,7 +3,7 @@
 import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 
-import PlayroomList from '@/app/stage/playroomList';
+import PlayroomList from '@/app/stage/_components/PlayroomList';
 import SearchBar from '@/components/domain/layout/SearchBar';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 
