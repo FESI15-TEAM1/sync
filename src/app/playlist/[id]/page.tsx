@@ -1,4 +1,5 @@
-import PlaylistDetailView from './_components/PlaylistDetailView';
+import type { ComentItemsType } from '@/app/playlist/[id]/_components/ComentItemList';
+import PlaylistDetailView from '@/app/playlist/[id]/_components/PlaylistDetailView';
 
 const data = {
   tracks: [
@@ -37,7 +38,38 @@ const data = {
     },
   ],
 };
+const item: ComentItemsType = {
+  items: [
+    {
+      id: 1,
+      author: {
+        userId: 2,
+        nickname: '아냐포져',
+        image:
+          'https://i.ytimg.com/vi/Cb0JZhdmjtg/hqdefault.jpg?sqp=-oaymwEpCKgBEF5IWvKriqkDHAgBFQAAiEIYAdgBAeIBCggYEAIYBjgBQAG4Ahmi85f_Aw4I4uPlxQYY4OoEIOCoAQ==&rs=AOn4CLBenVZwj1G1dI2vceu0B-00jHHxRQ&usqp=CBk',
+      },
+      content: 'jpop의 신 아냐포져..',
+      createdAt: '2026-07-20T11:32:00Z',
+    },
+    {
+      id: 2,
+      author: {
+        userId: 5,
+        nickname: '명한',
+        image:
+          'https://i.ytimg.com/vi/Cb0JZhdmjtg/hqdefault.jpg?sqp=-oaymwEpCKgBEF5IWvKriqkDHAgBFQAAiEIYAdgBAeIBCggYEAIYBjgBQAG4Ahmi85f_Aw4I4uPlxQYY4OoEIOCoAQ==&rs=AOn4CLBenVZwj1G1dI2vceu0B-00jHHxRQ&usqp=CBk',
+      },
+      content: 'jpop의 신 아냐포져.. 받듭니다..',
+      createdAt: '2026-07-20T11:32:00Z',
+    },
+  ],
+  nextCursor: 'MjA',
+};
 
 export default function PlaylistDeatilPage() {
-  return <PlaylistDetailView tracks={data.tracks} />;
+  return (
+    <div className="flex justify-center p-6">
+      <PlaylistDetailView tracks={data.tracks} coments={item} />
+    </div>
+  );
 }
