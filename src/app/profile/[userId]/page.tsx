@@ -3,8 +3,20 @@ import Profile from './_components/Profile';
 export default async function ProfilePage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ userId: string }>;
 }) {
-  const { id } = await params;
-  return <Profile profileId={id} />;
+  const { userId } = await params;
+
+  const props = {
+    profileId: Number(userId),
+    nickname: 'JPOP 의 신',
+    email: 'test@test.com',
+    bio: '자기소개 입니다 웋히히',
+    groupCount: 2,
+    playlistCount: 14,
+    followerCount: 10,
+    followingCount: 50,
+  };
+
+  return <Profile {...props} />;
 }
