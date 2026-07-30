@@ -8,6 +8,16 @@ body {
   font-family: var(--font-noto-sans), var(--font-pretendard);
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ffffff;
+  -webkit-box-shadow: 0 0 0px 1000px #2a2a2a inset;
+  box-shadow: 0 0 0px 1000px #2a2a2a inset;
+  caret-color: #ffffff;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 @theme {
   /* Accents (포인트 컬러) */
   --color-primary: #6155f5; /* 기존 accents-indigo — 메인 액션 (버튼, 링크) */

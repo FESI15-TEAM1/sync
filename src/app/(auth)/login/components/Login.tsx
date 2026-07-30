@@ -27,30 +27,35 @@ export default function Login() {
         </p>
       </div>
 
-      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-        <InputField
-          value={email}
-          onChange={(e) => {
-            const value = e.target.value;
-            setEmail(value);
-            setEmailError(getEmailError(value));
-          }}
-          placeholder="이메일을 입력해주세요."
-          label="이메일"
-          errorMessage={emailError}
-        />
-        <InputField
-          value={password}
-          onChange={(e) => {
-            const value = e.target.value;
-            setPassword(value);
-            setPasswordError(getPasswordError(value));
-          }}
-          placeholder="비밀번호를 입력해주세요."
-          label="비밀번호"
-          type="password"
-          errorMessage={passwordError}
-        />
+      <form className="flex flex-col gap-1" onSubmit={handleSubmit}>
+        <InputField>
+          <InputField.Label>이메일</InputField.Label>
+          <InputField.Input
+            type="text"
+            value={email}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEmail(value);
+              setEmailError(getEmailError(value));
+            }}
+          />
+          <InputField.Error>{emailError}</InputField.Error>
+        </InputField>
+
+        <InputField>
+          <InputField.Label>비밀번호</InputField.Label>
+          <InputField.Input
+            type="password"
+            value={password}
+            onChange={(e) => {
+              const value = e.target.value;
+              setPassword(value);
+              setPasswordError(getPasswordError(value));
+            }}
+          />
+          <InputField.Error>{passwordError}</InputField.Error>
+        </InputField>
+
         <Button
           type="submit"
           isDisabled={!email || !password || !!emailError || !!passwordError}
