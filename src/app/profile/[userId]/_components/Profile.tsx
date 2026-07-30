@@ -108,9 +108,21 @@ export default function Profile({ profileId }: ProfileProps) {
           {MOCK_NOTIFICATIONS.map((notification) => (
             <li
               key={notification.id}
-              className="bg-bg-card flex items-start gap-3 rounded-xl px-4 py-3"
+              className="bg-bg-card relative flex items-start gap-3 overflow-hidden rounded-xl px-4 py-3"
             >
-              <div className="bg-input size-10 shrink-0 rounded-full" aria-hidden />
+              <span
+                aria-hidden
+                className="bg-bg-primary absolute top-1/2 -left-1.5 size-3 -translate-y-1/2 rotate-45 rounded-xs"
+              />
+              <span
+                aria-hidden
+                className="bg-bg-primary absolute top-1/2 -right-1.5 size-3 -translate-y-1/2 rotate-45 rounded-xs"
+              />
+
+              <div
+                className="bg-input size-10 shrink-0 rounded-full"
+                aria-hidden
+              />
 
               <div className="min-w-0 flex-1">
                 <p className="text-text-primary text-sm leading-snug font-bold">

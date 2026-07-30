@@ -1,3 +1,5 @@
+import { notFound } from 'next/navigation';
+
 import ProfileEditPage from './_components/ProfileEdit';
 
 export default async function ProfileEdit({
@@ -6,5 +8,11 @@ export default async function ProfileEdit({
   params: Promise<{ userId: string }>;
 }) {
   const { userId } = await params;
-  return <ProfileEditPage profileId={Number(userId)} />;
+
+  const profileId = Number(userId);
+  if (!Number.isInteger(profileId)) {
+    notFound();
+  }
+
+  return <ProfileEditPage profileId={profileId} />;
 }

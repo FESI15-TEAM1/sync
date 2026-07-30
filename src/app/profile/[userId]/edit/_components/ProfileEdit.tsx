@@ -72,13 +72,13 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
               variants="primary"
               size="lg"
               onClick={() => avatarInputRef.current?.click()}
-              className="text-text-primary hover: absolute right-1 bottom-1 flex size-9 items-center justify-center rounded-full text-lg opacity-90 shadow-md transition-opacity"
+              className="text-text-primary absolute right-1 bottom-1 flex size-9 items-center justify-center rounded-full text-lg opacity-90 shadow-md transition-opacity"
               aria-label="프로필 사진 변경"
             >
               <PencilIcon />
             </IconButton>
 
-            <Input
+            <input
               ref={avatarInputRef}
               type="file"
               accept="image/*"
