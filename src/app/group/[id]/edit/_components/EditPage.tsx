@@ -144,13 +144,7 @@ export default function EditPage({ groupId }: EditPageProps) {
             </label>
           </div>
         </fieldset>
-        <Button
-          isDisabled={
-            !groupName || !groupDescription || selectedPlaylists.length === 0
-          }
-        >
-          수정하기
-        </Button>
+
         <div>
           <h2 className="text-md ml-2 font-bold text-white">
             플레이리스트 추가
@@ -180,6 +174,14 @@ export default function EditPage({ groupId }: EditPageProps) {
               </div>
             </div>
           </ul>
+          <Button
+            className="mt-4 w-full"
+            isDisabled={
+              !groupName || !groupDescription || selectedPlaylists.length === 0
+            }
+          >
+            수정하기
+          </Button>
         </div>
       </form>
     </div>

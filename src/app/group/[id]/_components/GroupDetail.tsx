@@ -6,7 +6,6 @@ import { useState } from 'react';
 import KebabModal from '@/components/domain/KebabModal';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 
-import { type EditableGroupInfo } from './GroupInfoEditModal';
 import GroupLeaveModal from './GroupLeaveModal';
 import PlaylistEditModal, { type EditablePlaylist } from './PlaylistEditModal';
 
@@ -14,6 +13,13 @@ type GroupDetailProps = {
   groupId: number;
   isLeader: boolean;
   isJoined: boolean;
+};
+
+export type EditableGroupInfo = {
+  name: string;
+  description: string;
+  isPublic: boolean;
+  coverImage: string | null;
 };
 
 const MOCK_GROUP_INFO: EditableGroupInfo = {
