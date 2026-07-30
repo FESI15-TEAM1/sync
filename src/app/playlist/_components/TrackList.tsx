@@ -12,20 +12,20 @@ export default function TrackList({
 }: {
   trackList: PlaylistTrack[];
   onTrackClick?: (track: PlaylistTrack) => void;
-  Button?: ReactNode;
+  Button?: ReactNode | ((track: PlaylistTrack) => ReactNode);
 }) {
   return (
     <div className="p-2">
-      {trackList.map((item) => {
+      {trackList.map((track) => {
         return (
           <Track
-            videoId={item.videoId}
-            key={item.videoId}
-            img={item.thumbnail}
-            title={item.title}
-            artist={item.artist}
-            onClick={() => onTrackClick?.(item)}
-            Button={Button}
+            videoId={track.videoId}
+            key={track.videoId}
+            img={track.thumbnail}
+            title={track.title}
+            artist={track.artist}
+            onClick={() => onTrackClick?.(track)}
+            Button={typeof Button === 'function' ? Button(track) : Button} // 호출 시점에 값을 전달받아 캡쳐되어있는 값과 비교하는 클로져 형태로 받아 같은 ui를 반환하지 않도록 구현
           />
         );
       })}

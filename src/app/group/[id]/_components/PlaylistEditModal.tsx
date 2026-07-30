@@ -139,26 +139,11 @@ function PlaylistEditModalContent({
         {/* 플레이리스트 목록 */}
         <div className="space-y-5">
           {/* 추가된 플레이리스트 */}
-          <div>
-            <h3 className="text-text-secondary mb-2 text-sm">
-              추가된 플레이리스트({added.length})
-            </h3>
-
-            <ul>
-              {added.map((playlist) => (
-                <PlaylistRow
-                  key={playlist.id}
-                  playlist={playlist}
-                  onRemove={() => handleRemove(playlist.id)}
-                />
-              ))}
-            </ul>
-          </div>
 
           {/* 추가 가능한 플레이리스트 */}
           <div>
             <h3 className="text-text-secondary mb-2 text-sm">
-              플레이리스트({filteredAvailable.length})
+              검색된 플레이리스트({filteredAvailable.length})
             </h3>
 
             <ul>
@@ -179,6 +164,21 @@ function PlaylistEditModalContent({
                       +
                     </IconButton>
                   }
+                />
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-text-secondary mb-2 text-sm">
+              추가된 플레이리스트({added.length})
+            </h3>
+
+            <ul>
+              {added.map((playlist) => (
+                <PlaylistRow
+                  key={playlist.id}
+                  playlist={playlist}
+                  onRemove={() => handleRemove(playlist.id)}
                 />
               ))}
             </ul>

@@ -1,49 +1,43 @@
-import TrackList from '../_components/TrackList';
+import PlaylistDetailView from './_components/PlaylistDetailView';
 
 const data = {
   tracks: [
     {
       id: 10,
       videoId: 'oZpYEEcvu5I',
-      title: 'Rainy Days',
-      artist: 'Someone',
-      thumbnail: '',
+      title: 'tuki.『만찬가』Official Music Video',
+      artist: 'tuki.(17)',
+      thumbnail:
+        'https://i.ytimg.com/vi/oZpYEEcvu5I/hq720.jpg?sqp=-oaymwEqCNAFEJQDSFryq4qpAxwIARUAAIhCGAHYAQHiAQoIGBACGAY4AUABuAIZovOX_wMOCKfinqwGGODqBCDgqAE=&rs=AOn4CLBkr1n5P4qrGeenHafIq1xQQ9pNfQ&usqp=CBk',
     },
     {
       id: 11,
-      videoId: 'dQw4w9WgXcQ',
-      title: 'Midnight Drive',
-      artist: 'Luna Wave',
-      thumbnail: '',
+      videoId: 'OaPBaP-yyNk',
+      title: '【Ado】逆光（ウタ from ONE PIECE FILM RED）',
+      artist: 'Ado',
+      thumbnail:
+        'https://i.ytimg.com/vi/gt-v_YCkaMY/hqdefault.jpg?sqp=-oaymwEpCKgBEF5IWvKriqkDHAgBFQAAiEIYAdgBAeIBCggYEAIYBjgBQAG4Ahmi85f_Aw4ImvvInwYY4OoEIOCoAQ==&rs=AOn4CLAI4I1QR6Fo8wMhU_Cx3KTIDZzG2g&usqp=CBk',
     },
     {
       id: 12,
-      videoId: 'kXYiU_JCYtU',
-      title: 'Coffee & Vinyl',
-      artist: 'The Mellow Room',
-      thumbnail: '',
+      videoId: 'sk1Z-Hqwwog',
+      title: '【Ado】私は最強 (ウタ from ONE PIECE FILM RED)',
+      artist: 'Ado',
+      thumbnail:
+        'https://i.ytimg.com/vi/sk1Z-Hqwwog/hqdefault.jpg?sqp=-oaymwEpCKgBEF5IWvKriqkDHAgBFQAAiEIYAdgBAeIBCggYEAIYBjgBQAG4Ahmi85f_Aw4I0fvInwYY4OoEIOCoAQ==&rs=AOn4CLBc6BqJzNIe-EN2Y3GjpfsAlC6uOA&usqp=CBk',
     },
     {
       id: 13,
-      videoId: 'hT_nvWreIhg',
-      title: 'Slow Fade',
-      artist: 'Nova Kim',
-      thumbnail: '',
-    },
-    {
-      id: 14,
-      videoId: '2Vv-BfVoq4g',
-      title: 'Window Seat',
-      artist: 'Haze Collective',
-      thumbnail: '',
+      videoId: 'n6WaTObHRJM',
+      title:
+        '2019 신 애국가 1~4절 영상ㅣ2019 New version National Anthem of Koreaㅣlmlxiabeize',
+      artist: '에레멜lmlxiabeize',
+      thumbnail:
+        'https://i.ytimg.com/vi/n6WaTObHRJM/hq720.jpg?sqp=-oaymwEqCNAFEJQDSFryq4qpAxwIARUAAIhCGAHYAQHiAQoIGBACGAY4AUABuAIZovOX_wMOCJWwr-EFGODqBCDgqAE=&rs=AOn4CLCTExm3zUnMqcm10jvDxPqff0RAMw&usqp=CBk',
     },
   ],
 };
 
 export default function PlaylistDeatilPage() {
-  return (
-    <div className="p-2">
-      <TrackList trackList={data.tracks} />
-    </div>
-  );
+  return <PlaylistDetailView tracks={data.tracks} />;
 }
