@@ -43,7 +43,7 @@ function KebabModal({ children }: KebabModalProps) {
 
       {isMenuOpen && (
         <div
-          className="absolute top-8 right-0 z-10 w-max min-w-40 rounded-lg bg-zinc-800 p-2"
+          className="absolute top-8 right-0 z-10 flex w-max min-w-40 flex-col rounded-lg bg-zinc-800 p-2"
           onClick={() => setIsMenuOpen(false)}
         >
           {children}
