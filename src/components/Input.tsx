@@ -68,7 +68,7 @@ export default function Input({
         )}
       </div>
 
-      {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}
+      <p className="min-h-5 text-sm text-red-500">{errorMessage}</p>
     </div>
   );
 }
