@@ -104,7 +104,7 @@ export default function EditPage({ groupId }: EditPageProps) {
           width="100%"
         />
         <fieldset className="flex flex-col gap-2">
-          <legend className="text-md ml-2 font-bold text-white">
+          <legend className="text-md mb-1 ml-2 font-bold text-white">
             공개 여부
           </legend>
           <div className="border-border bg-bg-card flex overflow-hidden rounded-md border">
