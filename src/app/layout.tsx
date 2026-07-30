@@ -13,6 +13,7 @@ import { type ReactNode } from 'react';
 
 import Header from '@/components/domain/layout/Header';
 import Sidebar from '@/components/domain/layout/Sidebar';
+import { PlayerStoreProvider } from '@/providers/player-store-provider';
 import { SidebarStoreProvider } from '@/providers/sidebar-store-provider';
 
 const noto = Noto_Sans({
@@ -36,16 +37,18 @@ export default function RootLayout({
       lang="ko"
       className={`h-full antialiased ${pretendard.variable} ${noto.variable}`}
     >
-      <body className={`bg-bg-primary`}>
-        <SidebarStoreProvider>
-          <div className="sticky top-0 z-50">
-            <Header />
-            <Sidebar />
-          </div>
-          <div className="max-w-full lg:ml-64">
-            <main className="p-4">{children}</main>
-          </div>
-        </SidebarStoreProvider>
+      <body className={`bg-bg-primary flex h-screen w-screen flex-col`}>
+        <PlayerStoreProvider>
+          <SidebarStoreProvider>
+            <div className="sticky top-0 z-50">
+              <Header />
+              <Sidebar />
+            </div>
+            <div className="max-w-full lg:ml-64">
+              <main className="p-4">{children}</main>
+            </div>
+          </SidebarStoreProvider>
+        </PlayerStoreProvider>
       </body>
     </html>
   );
