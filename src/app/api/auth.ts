@@ -1,0 +1,58 @@
+const API_URL = process.env.NEXT_PUBLIC_BE_API_URL;
+
+type SignupRequest = {
+  email: string;
+  password: string;
+  nickname: string;
+};
+
+type LoginRequest = {
+  email: string;
+  password: string;
+};
+
+export async function signup(data: SignupRequest) {
+  const response = await fetch(`${API_URL}/auth/signup`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error('회원가입에 실패했습니다.');
+  }
+  return response.json();
+}
+
+export async function requestEmailVerification(email: string) {
+  const response = await fetch(`${API_URL}/auth/email-verify-request`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || '인증코드 발송에 실패했습니다.');
+  }
+  return response.json();
+}
+
+export async function login(data: LoginRequest) {
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error('로그인에 실패했습니다.');
+  }
+  return response.json();
+}
