@@ -52,9 +52,14 @@ function Password({
         aria-label={isPasswordVisible ? '비밀번호 숨기기' : '비밀번호 보기'}
       >
         {isPasswordVisible ? (
-          <EyeOffIcon width={20} height={20} aria-hidden />
+          <EyeOffIcon
+            className="text-white"
+            width={20}
+            height={20}
+            aria-hidden
+          />
         ) : (
-          <EyeIcon width={20} height={20} aria-hidden />
+          <EyeIcon className="text-white" width={20} height={20} aria-hidden />
         )}
       </button>
     </div>
