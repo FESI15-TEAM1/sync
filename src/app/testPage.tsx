@@ -19,12 +19,14 @@ export default function TestPage() {
 
       <PlaylistCard title={'아냐 포져가 만든 플레이리스트'} trackCount={1} />
 
-      <InputField
-        onChange={(e) => {
-          setInputValue(e.target.value);
-        }}
-        value={inputValue}
-      />
+      <InputField>
+        <InputField.Input
+          onChange={(e) => {
+            setInputValue(e.target.value);
+          }}
+          value={inputValue}
+        />
+      </InputField>
     </>
   );
 }
