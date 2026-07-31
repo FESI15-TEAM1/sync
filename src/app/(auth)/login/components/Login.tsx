@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { type SubmitEvent } from 'react';
 
 import Button from '@/components/Button';
-import Input from '@/components/Input';
+import InputField from '@/components/InputField';
 import { getEmailError, getPasswordError } from '@/lib/auth-validation';
 
 export default function Login() {
@@ -19,41 +19,47 @@ export default function Login() {
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 py-10">
+    <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 py-10">
       <div className="mb-8">
         <h1 className="text-primary text-5xl font-bold">Sync</h1>
-        <p className="mt-2 text-base leading-relaxed text-white">
-          그룹과 함께 플레이리스트를 나누고 ,<br /> 라이브로 같이 들어보세요.
+        <p className="text-text-secondary mt-6 text-base leading-relaxed">
+          그룹과 함께 플레이리스트를 나누고,
+        </p>
+
+        <p className="text-text-secondary mt-2 text-base leading-relaxed">
+          라이브로 같이 들어보세요.
         </p>
       </div>
 
-      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-        <Input
-          value={email}
-          onChange={(e) => {
-            const value = e.target.value;
-            setEmail(value);
-            setEmailError(getEmailError(value));
-          }}
-          placeholder="이메일을 입력해주세요."
-          label="이메일"
-          errorMessage={emailError}
-        />
-        <Input
-          value={password}
-          onChange={(e) => {
-            const value = e.target.value;
-            setPassword(value);
-            setPasswordError(getPasswordError(value));
-          }}
-          placeholder="비밀번호를 입력해주세요."
-          label="비밀번호"
-          type="password"
-          errorMessage={passwordError}
-        />
+      <form className="flex flex-col gap-1" onSubmit={handleSubmit}>
+        <InputField>
+          <InputField.Label>이메일</InputField.Label>
+          <InputField.Input
+            value={email}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEmail(value);
+              setEmailError(getEmailError(value));
+            }}
+          />
+          <InputField.Error>{emailError}</InputField.Error>
+        </InputField>
+
+        <InputField>
+          <InputField.Label>비밀번호</InputField.Label>
+          <InputField.Password
+            value={password}
+            onChange={(e) => {
+              const value = e.target.value;
+              setPassword(value);
+              setPasswordError(getPasswordError(value));
+            }}
+          />
+          <InputField.Error>{passwordError}</InputField.Error>
+        </InputField>
+
         <Button
-          size="md"
-          variant="primary"
+          type="submit"
           isDisabled={!email || !password || !!emailError || !!passwordError}
         >
           로그인
@@ -71,6 +77,6 @@ export default function Login() {
           회원가입
         </Link>
       </p>
-    </main>
+    </div>
   );
 }

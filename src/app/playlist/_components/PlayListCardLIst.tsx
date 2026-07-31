@@ -8,7 +8,7 @@ export default function PlaylistCardList({ data }: { data: PlaylistItem[] }) {
     <div className="grid grid-cols-2 items-center justify-items-center gap-1 md:grid-cols-4 lg:flex">
       {data.map((item) => {
         return (
-          <Link href={`playlist/${item.id}`} key={item.id}>
+          <Link href={`playlist/detail/${item.id}`} key={item.id}>
             <PlaylistCard title={item.title} trackCount={item.trackCount} />
           </Link>
         );

@@ -7,7 +7,8 @@ import defaultCover from '@/assets/images/default.png';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import PlaylistCard from '@/components/domain/PlaylistCard';
-import Input from '@/components/Input';
+import InputField from '@/components/InputField';
+import Textarea from '@/components/Textarea';
 
 type Playlist = {
   id: string;
@@ -89,20 +90,22 @@ export default function EditPage({ groupId }: EditPageProps) {
             className="hidden"
           />
         </div>
-        <Input
-          label="그룹 이름"
-          value={groupName}
-          placeholder="그룹 이름을 입력해주세요."
-          onChange={(e) => setGroupName(e.target.value)}
-          width="100%"
-        />
-        <Input
+        <InputField>
+          <InputField.Label>그룹 이름</InputField.Label>
+          <InputField.Input
+            placeholder="그룹 이름을 입력해주세요."
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+          />
+        </InputField>
+
+        <Textarea
           label="그룹 소개"
           value={groupDescription}
           placeholder="그룹 소개를 입력해주세요."
           onChange={(e) => setGroupDescription(e.target.value)}
-          width="100%"
         />
+
         <fieldset className="flex flex-col gap-2">
           <legend className="text-md mb-1 ml-2 font-bold text-white">
             공개 여부

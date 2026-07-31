@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { type SubmitEvent } from 'react';
 
 import Button from '@/components/Button';
-import Input from '@/components/Input';
+import InputField from '@/components/InputField';
 import { getEmailError, getPasswordError } from '@/lib/auth-validation';
 
 export default function Signup() {
@@ -19,21 +19,50 @@ export default function Signup() {
   const [emailError, setEmailError] = useState('');
   const [isNicknameValid, setIsNicknameValid] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationCodeError, setVerificationCodeError] = useState('');
+  const [isVerificationSent, setIsVerificationSent] = useState(false);
+  const [isCodeValid, setIsCodeValid] = useState(false);
 
   const handleCheckNickname = () => {
-    if (!nickname.trim) {
-      setNickname('닉네임을 입력해주세요.');
+    if (!nickname.trim()) {
+      setNicknameError('닉네임을 입력해주세요.');
       setIsNicknameValid(false);
       return;
     }
+
+    setNicknameError('');
+    setIsNicknameValid(true);
   };
 
   const handleCheckEmail = () => {
-    if (!email.trim) {
+    if (!email.trim()) {
       setEmailError('이메일을 입력해주세요.');
       setIsEmailValid(false);
       return;
     }
+
+    const error = getEmailError(email);
+    if (error) {
+      setEmailError(error);
+      setIsEmailValid(false);
+      return;
+    }
+
+    setEmailError('');
+    setIsEmailValid(true);
+    setIsVerificationSent(true);
+  };
+
+  const handleVerifyCode = () => {
+    if (!verificationCode.trim()) {
+      setVerificationCodeError('인증코드를 입력해주세요.');
+      setIsCodeValid(false);
+      return;
+    }
+
+    setVerificationCodeError('');
+    setIsCodeValid(true);
   };
 
   const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
@@ -48,6 +77,11 @@ export default function Signup() {
       return;
     }
 
+    if (!isCodeValid) {
+      setVerificationCodeError('이메일 인증을 완료해주세요');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setPasswordError('비밀번호가 일치하지 않습니다');
       return;
@@ -55,7 +89,7 @@ export default function Signup() {
   };
 
   return (
-    <main className="bg-bg-primary flex min-h-screen w-full flex-1 justify-center px-5 py-10">
+    <div className="bg-bg-primary flex min-h-screen w-full flex-1 justify-center px-5 py-10">
       <div className="flex w-full max-w-md flex-col">
         <div className="mb-8">
           <h1 className="text-primary text-5xl font-bold">Sync</h1>
@@ -67,29 +101,27 @@ export default function Signup() {
             지금 바로 그룹을 만들어보세요.
           </p>
         </div>
-        <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
-          <div className="flex items-end gap-3">
-            <Input
-              label="닉네임"
-              errorMessage={nicknameError}
+        <form className="flex flex-col gap-1" onSubmit={handleSubmit}>
+          <InputField>
+            <InputField.Label>닉네임</InputField.Label>
+            <InputField.Input
+              type="text"
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
             />
-            <div className="w-30 shrink-0">
-              <Button
-                onClick={handleCheckNickname}
-                isDisabled={!nickname}
-                size="md"
-                variant="primary"
-              >
-                중복확인
-              </Button>
-            </div>
-          </div>
-          <div className="flex items-end gap-3">
-            <Input
-              label="이메일"
-              errorMessage={emailError}
+            <InputField.Button
+              onClick={handleCheckNickname}
+              disabled={!nickname}
+            >
+              중복확인
+            </InputField.Button>
+            <InputField.Error>{nicknameError}</InputField.Error>
+          </InputField>
+
+          <InputField>
+            <InputField.Label>이메일</InputField.Label>
+            <InputField.Input
+              type="text"
               value={email}
               onChange={(e) => {
                 const value = e.target.value;
@@ -97,64 +129,77 @@ export default function Signup() {
                 setEmailError(getEmailError(value));
               }}
             />
-            <div className="w-30 shrink-0">
-              <Button
-                onClick={handleCheckEmail}
-                isDisabled={!email}
-                size="md"
-                variant="primary"
-              >
-                이메일 인증
-              </Button>
-            </div>
-          </div>
-          {/* {isVerificationSent? (<div className="flex items-end gap-3">
-                <Input label="인증코드" placeholder="인증코드 6자리" value={verificationCode} onChange={(e) => setVerificationCode(e.target.value)} />
-                <div className="w-30">
-                    <Button size="md" variant="primary" isDisabled={!verificationCode} onClick={handleVerifyCode}>인증코드 받기</Button>
-                </div>
-            </div>) : null} */}
-          <Input
-            label="비밀번호"
-            errorMessage={passwordError}
-            value={password}
-            onChange={(e) => {
-              const value = e.target.value;
-              setPassword(value);
-              setPasswordError(getPasswordError(value));
-            }}
-          />
-          <Input
-            label="비밀번호 확인"
-            errorMessage={passwordConfirmError}
-            value={confirmPassword}
-            onChange={(e) => {
-              const value = e.target.value;
-              setConfirmPassword(value);
-              setPasswordConfirmError(getPasswordError(value));
-            }}
-          />
-          <div className="w-full">
-            <Button
-              size="md"
-              variant="primary"
-              isDisabled={
-                !isNicknameValid ||
-                !isEmailValid ||
-                password !== confirmPassword
-              }
-            >
-              회원가입
-            </Button>
-          </div>
+            <InputField.Button onClick={handleCheckEmail} disabled={!email}>
+              이메일 인증
+            </InputField.Button>
+            <InputField.Error>{emailError}</InputField.Error>
+          </InputField>
+
+          {isVerificationSent ? (
+            <InputField>
+              <InputField.Label>인증코드</InputField.Label>
+              <InputField.Input
+                placeholder="인증코드 6자리"
+                type="text"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+              />
+              <InputField.Button>인증코드 확인</InputField.Button>
+              <InputField.Error>{verificationCodeError}</InputField.Error>
+            </InputField>
+          ) : null}
+
+          <InputField>
+            <InputField.Label>비밀번호</InputField.Label>
+            <InputField.Password
+              value={password}
+              onChange={(e) => {
+                const value = e.target.value;
+                setPassword(value);
+                setPasswordError(getPasswordError(value));
+              }}
+            />
+            <InputField.Error>{passwordError}</InputField.Error>
+          </InputField>
+
+          <InputField>
+            <InputField.Label>비밀번호 확인</InputField.Label>
+            <InputField.Password
+              value={confirmPassword}
+              onChange={(e) => {
+                const value = e.target.value;
+                setConfirmPassword(value);
+                setPasswordConfirmError(getPasswordError(value));
+              }}
+            />
+            <InputField.Error>{passwordConfirmError}</InputField.Error>
+          </InputField>
+
+          <Button
+            type="submit"
+            size="md"
+            variant="primary"
+            className="w-full"
+            isDisabled={
+              !isNicknameValid ||
+              !isEmailValid ||
+              !isCodeValid ||
+              password !== confirmPassword
+            }
+          >
+            회원가입
+          </Button>
         </form>
         <p className="mt-8 text-center text-sm text-white">
           이미 계정이 있으신가요?
         </p>
-        <Link href="/login" className="text-primary mt-4 text-center text-sm">
+        <Link
+          href="/login"
+          className="text-primary mt-4 inline-block self-center text-sm font-bold"
+        >
           로그인
         </Link>
       </div>
-    </main>
+    </div>
   );
 }
