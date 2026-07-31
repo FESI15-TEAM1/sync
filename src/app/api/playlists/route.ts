@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 
-import { APIError } from '@/lib/api/erorr';
+import { APIError } from '@/lib/api/error';
 import { request } from '@/server/api/client';
 import type { CreatePlaylistRequest } from '@/types/playlist';
 
