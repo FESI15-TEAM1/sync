@@ -1,17 +1,10 @@
-import type { NextRequest } from 'next/server';
-
 import { APIError } from '@/lib/http/error';
 import { request } from '@/lib/http/server-fetch';
 import type { MeResponse } from '@/services/user/user.types';
 
-export async function POST(req: NextRequest) {
-  const body = await req.json();
-
+export async function GET() {
   try {
-    const data = await request<MeResponse>('/auth/login', {
-      method: 'POST',
-      body,
-    });
+    const data = await request<MeResponse>('/users/me', { method: 'GET' });
 
     return Response.json(data);
   } catch (error) {
