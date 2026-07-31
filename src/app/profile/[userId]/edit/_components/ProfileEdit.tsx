@@ -89,12 +89,15 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
         </div>
 
         <div className="flex flex-col gap-5">
-          <InputField
-            label="닉네임"
-            placeholder="닉네임을 입력하세요"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-          />
+          <InputField>
+            <InputField.Label>닉네임</InputField.Label>
+            <InputField.Input
+              placeholder="닉네임을 입력하세요"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+            />
+          </InputField>
+
           <Textarea
             label="자기소개"
             placeholder="자기소개를 입력하세요"
