@@ -145,13 +145,7 @@ export default function AddPage() {
             </label>
           </div>
         </fieldset>
-        <Button
-          isDisabled={
-            !groupName || !groupDescription || selectedPlaylists.length === 0
-          }
-        >
-          그룹 생성하기
-        </Button>
+
         <div>
           <h2 className="text-md ml-2 font-bold text-white">
             플레이리스트 추가
@@ -182,6 +176,13 @@ export default function AddPage() {
             </div>
           </ul>
         </div>
+        <Button
+          isDisabled={
+            !groupName || !groupDescription || selectedPlaylists.length === 0
+          }
+        >
+          그룹 생성하기
+        </Button>
       </form>
     </div>
   );
