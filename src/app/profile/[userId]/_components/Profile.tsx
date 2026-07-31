@@ -104,21 +104,12 @@ export default function Profile({ profileId }: ProfileProps) {
       <div className="border-border flex flex-col gap-3 border-t pt-6">
         <h2 className="text-text-primary font-bold">알림</h2>
 
-        <ul className="flex flex-col gap-3">
+        <ul className="bg-bg-card divide-border flex flex-col divide-y overflow-hidden rounded-xl">
           {MOCK_NOTIFICATIONS.map((notification) => (
             <li
               key={notification.id}
-              className="bg-bg-card relative flex items-start gap-3 overflow-hidden rounded-xl px-4 py-3"
+              className="flex items-start gap-3 px-4 py-3"
             >
-              <span
-                aria-hidden
-                className="bg-bg-primary absolute top-1/2 -left-1.5 size-3 -translate-y-1/2 rotate-45 rounded-xs"
-              />
-              <span
-                aria-hidden
-                className="bg-bg-primary absolute top-1/2 -right-1.5 size-3 -translate-y-1/2 rotate-45 rounded-xs"
-              />
-
               <div
                 className="bg-input size-10 shrink-0 rounded-full"
                 aria-hidden

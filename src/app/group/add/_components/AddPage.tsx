@@ -7,7 +7,8 @@ import defaultCover from '@/assets/images/default.png';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import PlaylistCard from '@/components/domain/PlaylistCard';
-import Input from '@/components/Input';
+import InputField from '@/components/InputField';
+import Textarea from '@/components/Textarea';
 import { getRandomGradientClassName } from '@/lib/gradient';
 
 type Playlist = {
@@ -87,18 +88,22 @@ export default function AddPage() {
             className="hidden"
           />
         </div>
-        <Input
-          label="그룹 이름"
-          value={groupName}
-          placeholder="그룹 이름을 입력해주세요."
-          onChange={(e) => setGroupName(e.target.value)}
-        />
-        <Input
+        <InputField>
+          <InputField.Label>그룹 이름</InputField.Label>
+          <InputField.Input
+            value={groupName}
+            placeholder="그룹 이름을 입력해주세요."
+            onChange={(e) => setGroupName(e.target.value)}
+          />
+        </InputField>
+
+        <Textarea
           label="그룹 소개"
           value={groupDescription}
-          placeholder="그룹 이름을 입력해주세요."
+          placeholder="그룹 소개를 입력해주세요."
           onChange={(e) => setGroupDescription(e.target.value)}
         />
+
         <fieldset className="flex flex-col gap-2">
           <legend className="text-md ml-2 font-bold text-white">
             공개 여부
@@ -140,13 +145,7 @@ export default function AddPage() {
             </label>
           </div>
         </fieldset>
-        <Button
-          isDisabled={
-            !groupName || !groupDescription || selectedPlaylists.length === 0
-          }
-        >
-          그룹 생성하기
-        </Button>
+
         <div>
           <h2 className="text-md ml-2 font-bold text-white">
             플레이리스트 추가
@@ -177,6 +176,13 @@ export default function AddPage() {
             </div>
           </ul>
         </div>
+        <Button
+          isDisabled={
+            !groupName || !groupDescription || selectedPlaylists.length === 0
+          }
+        >
+          그룹 생성하기
+        </Button>
       </form>
     </div>
   );

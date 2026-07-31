@@ -7,7 +7,7 @@ import TrackList from '@/app/playlist/_components/TrackList';
 import Minus from '@/assets/icons/minus.svg';
 import Button from '@/components/Button';
 import IconButton from '@/components/IconButton';
-import Input from '@/components/Input';
+import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
 import Toggle from '@/components/Toggle';
 import type { CreatePlaylistRequest, PlaylistTrack } from '@/types/playlist';
@@ -62,7 +62,7 @@ export default function AddForm() {
   }, [searchList]);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-6">
+    <div className="flex flex-col items-center gap-6">
       {/* 이미지 색션 */}
       <div className="relative h-40 w-40">
         <label
@@ -95,14 +95,17 @@ export default function AddForm() {
       </div>
 
       {/* 플레이리스트 이름 색션 */}
-      <Input
-        label="플레이리스트이름"
-        value={form.title}
-        onChange={(e) =>
-          setForm((prev) => ({ ...prev, title: e.target.value }))
-        }
-        placeholder="플레이리스트 이름을 입력하세요"
-      />
+      <InputField className="w-full">
+        <InputField.Label>플레이리스트 이름 </InputField.Label>
+        <InputField.Input
+          value={form.title}
+          onChange={(e) =>
+            setForm((prev) => ({ ...prev, title: e.target.value }))
+          }
+          placeholder="플레이리스트 이름을 입력하세요"
+        ></InputField.Input>
+        <InputField.Button>검색</InputField.Button>
+      </InputField>
 
       <Textarea
         label="플레이리스트 설명"
@@ -121,15 +124,16 @@ export default function AddForm() {
       </div>
       {/* 검색 색션 */}
       <div className="flex w-full items-center justify-center gap-3">
-        <Input
-          width={'100%'}
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          placeholder="곡 제목이나 아티스트 검색(YouTube)"
-        />
-        <Button size="md" isDisabled={false} onClick={fetchSearchData}>
-          검색
-        </Button>
+        <InputField className="w-full">
+          <InputField.Input
+            value={form.title}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, title: e.target.value }))
+            }
+            placeholder="플레이리스트 이름을 입력하세요"
+          ></InputField.Input>
+          <InputField.Button>검색</InputField.Button>
+        </InputField>
       </div>
       {searchList.length > 0 ? (
         <>

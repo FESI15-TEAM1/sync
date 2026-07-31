@@ -6,7 +6,7 @@ import { type SubmitEvent } from 'react';
 
 import Button from '@/components/Button';
 import PlaylistCard from '@/components/domain/PlaylistCard';
-import Input from '@/components/Input';
+import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
 
 type playlist = {
@@ -51,14 +51,16 @@ export default function AddForm() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* set playroom title */}
-        <Input
-          label="제목"
-          placeholder="예: 금귀인 내가 말아주는 플레이리스트!"
-          onChange={(e) => {
-            setTitle(e.target.value);
-          }}
-          value={title}
-        />
+        <InputField>
+          <InputField.Label>제목</InputField.Label>
+          <InputField.Input
+            placeholder="예: 금귀인 내가 말아주는 플레이리스트!"
+            onChange={(e) => {
+              setTitle(e.target.value);
+            }}
+            value={title}
+          />
+        </InputField>
 
         {/* set playroom description */}
         <Textarea
