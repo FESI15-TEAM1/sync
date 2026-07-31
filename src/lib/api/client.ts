@@ -5,6 +5,21 @@ interface RequestOptions {
   body?: unknown;
 }
 
+// 응답 바디가 비어있거나 JSON이 아닐 경우 안전하게 파싱
+async function parseJson(response: Response) {
+  const text = await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
 export async function apiClient<T>(
   endpoint: string,
   { method, body }: RequestOptions = {},
