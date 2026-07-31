@@ -30,6 +30,18 @@ function sendRequest(
   });
 }
 
+async function parseJson(response: Response) {
+  const text = await response.text();
+
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
 async function refreshAccessToken(
   refreshToken: string,
 ): Promise<string | null> {
@@ -69,13 +81,13 @@ export async function request<T>(
     }
   }
 
-  const data = await response.json();
+  const data = await parseJson(response);
 
   if (!response.ok) {
     throw new APIError(
       response.status,
-      data.error?.code ?? 'INTERNAL_SERVER_ERROR',
-      data.error?.message ?? '서버 오류가 발생했습니다.',
+      data?.error?.code ?? 'INTERNAL_SERVER_ERROR',
+      data?.error?.message ?? `서버 오류가 발생했습니다. (${response.status})`,
     );
   }
   return data as T;
