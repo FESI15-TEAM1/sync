@@ -113,27 +113,26 @@ function PlaylistEditModalContent({
         {/* 검색 */}
         <div className="mb-5 flex items-center gap-2">
           <div className="min-w-0 flex-1">
-            <InputField
-              placeholder="내 플레이리스트 검색"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearch();
-                }
-              }}
-            />
+            <InputField>
+              <InputField.Input
+                placeholder="내 플레이리스트 검색"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch();
+                  }
+                }}
+              />
+              <InputField.Button
+                disabled={false}
+                onClick={handleSearch}
+                className="h-11 w-auto shrink-0 rounded-full px-5"
+              >
+                검색
+              </InputField.Button>
+            </InputField>
           </div>
-
-          <Button
-            type="button"
-            size="md"
-            isDisabled={false}
-            onClick={handleSearch}
-            className="h-11 w-auto shrink-0 rounded-full px-5"
-          >
-            검색
-          </Button>
         </div>
 
         {/* 플레이리스트 목록 */}

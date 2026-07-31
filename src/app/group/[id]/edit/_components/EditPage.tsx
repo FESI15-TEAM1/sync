@@ -89,20 +89,24 @@ export default function EditPage({ groupId }: EditPageProps) {
             className="hidden"
           />
         </div>
-        <InputField
-          label="그룹 이름"
-          value={groupName}
-          placeholder="그룹 이름을 입력해주세요."
-          onChange={(e) => setGroupName(e.target.value)}
-          width="100%"
-        />
-        <InputField
-          label="그룹 소개"
-          value={groupDescription}
-          placeholder="그룹 소개를 입력해주세요."
-          onChange={(e) => setGroupDescription(e.target.value)}
-          width="100%"
-        />
+        <InputField>
+          <InputField.Label>그룹 이름</InputField.Label>
+          <InputField.Input
+            placeholder="그룹 이름을 입력해주세요."
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+          />
+        </InputField>
+
+        <InputField>
+          <InputField.Label>그룹 소개</InputField.Label>
+          <InputField.Input
+            value={groupDescription}
+            placeholder="그룹 소개를 입력해주세요."
+            onChange={(e) => setGroupDescription(e.target.value)}
+          />
+        </InputField>
+
         <fieldset className="flex flex-col gap-2">
           <legend className="text-md mb-1 ml-2 font-bold text-white">
             공개 여부

@@ -87,18 +87,23 @@ export default function AddPage() {
             className="hidden"
           />
         </div>
-        <InputField
-          label="그룹 이름"
-          value={groupName}
-          placeholder="그룹 이름을 입력해주세요."
-          onChange={(e) => setGroupName(e.target.value)}
-        />
-        <InputField
-          label="그룹 소개"
-          value={groupDescription}
-          placeholder="그룹 이름을 입력해주세요."
-          onChange={(e) => setGroupDescription(e.target.value)}
-        />
+        <InputField>
+          <InputField.Label>그룹 이름</InputField.Label>
+          <InputField.Input
+            value={groupName}
+            placeholder="그룹 이름을 입력해주세요."
+            onChange={(e) => setGroupName(e.target.value)}
+          />
+        </InputField>
+
+        <InputField>
+          <InputField.Input
+            value={groupDescription}
+            placeholder="그룹 이름을 입력해주세요."
+            onChange={(e) => setGroupDescription(e.target.value)}
+          />
+        </InputField>
+
         <fieldset className="flex flex-col gap-2">
           <legend className="text-md ml-2 font-bold text-white">
             공개 여부
