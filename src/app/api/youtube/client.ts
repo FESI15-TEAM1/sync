@@ -14,21 +14,6 @@ export class YoutubeApiError extends Error {
   }
 }
 
-// 응답 바디가 비어있거나 JSON이 아닐 수 있으므로 안전하게 파싱
-async function parseJson(response: Response) {
-  const text = await response.text();
-
-  if (!text) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    return null;
-  }
-}
-
 export async function request<T>(
   endpoint: string,
   { method, params = {} }: RequestOptions,
