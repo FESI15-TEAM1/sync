@@ -34,5 +34,5 @@ export async function apiClient<T>(
     throw new Error(`API Error : ${response.status}`);
   }
 
-  return response.json();
+  return parseJson(response);
 }

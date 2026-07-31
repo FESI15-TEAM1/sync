@@ -1,8 +1,8 @@
 import type { NextRequest } from 'next/server';
 
-import { APIError } from '@/lib/api/error';
-import { request } from '@/server/api/client';
-import type { CreatePlaylistRequest } from '@/types/playlist';
+import { APIError } from '@/lib/api/http/error';
+import { request } from '@/lib/api/http/server-fetch';
+import type { CreatePlaylistRequest } from '@/services/playlist/playlist';
 
 export async function POST(req: NextRequest) {
   const body: CreatePlaylistRequest = await req.json();

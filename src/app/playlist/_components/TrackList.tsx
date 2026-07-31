@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 
 import Track from '@/components/domain/Track';
-import type { PlaylistTrack } from '@/types/playlist';
+import type { PlaylistTrack } from '@/services/playlist/playlist';
 
 export default function TrackList({
   trackList,

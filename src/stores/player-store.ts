@@ -1,6 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 
-import { type PlaylistTrack } from '@/types/playlist';
+import { type PlaylistTrack } from '@/services/playlist/playlist';
 
 export interface CurrentTrack extends PlaylistTrack {
   id?: number;

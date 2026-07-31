@@ -3,6 +3,10 @@
 import Image from 'next/image';
 import { type ChangeEvent, useState } from 'react';
 
+import {
+  isYoutubeVideoItem,
+  type YoutubeSearchResponse,
+} from '@/app/api/youtube/youtube.types';
 import TrackList from '@/app/playlist/_components/TrackList';
 import Minus from '@/assets/icons/minus.svg';
 import Button from '@/components/Button';
@@ -10,12 +14,11 @@ import IconButton from '@/components/IconButton';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
 import Toggle from '@/components/Toggle';
-import { postPlaylist } from '@/lib/api/playlist/playlist';
-import type { CreatePlaylistRequest, PlaylistTrack } from '@/types/playlist';
-import {
-  isYoutubeVideoItem,
-  type YoutubeSearchResponse,
-} from '@/types/youtube';
+import type {
+  CreatePlaylistRequest,
+  PlaylistTrack,
+} from '@/services/playlist/playlist';
+import { postPlaylist } from '@/services/playlist/playlist.api';
 
 export default function AddForm() {
   const [preview, setPreview] = useState<string | null>(null);
