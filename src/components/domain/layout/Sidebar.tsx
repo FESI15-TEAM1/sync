@@ -11,7 +11,7 @@ import SearchBar from './SearchBar';
 export default function Sidebar() {
   const pathname = usePathname();
   const isOpen = useSidebarStore((state) => state.isOpen);
-  const close = useSidebarStore((state) => state.isOpen);
+  const close = useSidebarStore((state) => state.close);
 
   useEffect(() => {
     if (isOpen) {
@@ -49,28 +49,28 @@ export default function Sidebar() {
           <Link
             href={'/'}
             className={`${checkSamePathname('/', pathname)}`}
-            onClick={() => close}
+            onClick={() => close()}
           >
             홈
           </Link>
           <Link
             href={'/stage'}
             className={`${checkSamePathname('/stage', pathname)}`}
-            onClick={() => close}
+            onClick={() => close()}
           >
             스테이지
           </Link>
           <Link
             href={'/group'}
             className={`${checkSamePathname('/group', pathname)}`}
-            onClick={() => close}
+            onClick={() => close()}
           >
             내 그룹
           </Link>
           <Link
             href={'/playlist'}
             className={`${checkSamePathname('/playlist', pathname)}`}
-            onClick={() => close}
+            onClick={() => close()}
           >
             내 플레이리스트
           </Link>
