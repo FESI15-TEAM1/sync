@@ -1,4 +1,4 @@
-import CommentItem from './CommentItem';
+import CommentItem from '@/app/playlist/detail/[id]/_components/CommentItem';
 
 export interface CommentItemsType {
   items: CommentItemType[];

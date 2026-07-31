@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-import type { CommentItemType } from './CommentItemList';
+import type { CommentItemType } from '@/app/playlist/detail/[id]/_components/CommentItemList';
 
 export default function CommentItem({ comment }: { comment: CommentItemType }) {
   function formatTimeAgo(dateString: string) {

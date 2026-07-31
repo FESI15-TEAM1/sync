@@ -5,11 +5,11 @@ import { useParams, useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 
 import TrackList from '@/app/playlist/_components/TrackList';
-import type { CommentItemsType } from '@/app/playlist/[id]/_components/CommentItemList';
-import ComentItemList from '@/app/playlist/[id]/_components/CommentItemList';
-import PlaylistPlayer from '@/app/playlist/[id]/_components/PlaylistPlayer';
-import { type PlaylistPlayerHandle } from '@/app/playlist/[id]/_components/PlaylistPlayer';
-import TrackHoverController from '@/app/playlist/[id]/_components/TrackHoverController';
+import type { CommentItemsType } from '@/app/playlist/detail/[id]/_components/CommentItemList';
+import ComentItemList from '@/app/playlist/detail/[id]/_components/CommentItemList';
+import PlaylistPlayer from '@/app/playlist/detail/[id]/_components/PlaylistPlayer';
+import { type PlaylistPlayerHandle } from '@/app/playlist/detail/[id]/_components/PlaylistPlayer';
+import TrackHoverController from '@/app/playlist/detail/[id]/_components/TrackHoverController';
 import Heart from '@/assets/icons/heart.svg';
 import defaultImg from '@/assets/images/mook.jpg';
 import Button from '@/components/Button';
