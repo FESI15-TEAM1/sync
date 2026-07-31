@@ -11,6 +11,17 @@ type LoginRequest = {
   password: string;
 };
 
+// 응답 바디가 비어있거나 JSON이 아닐 수 있으므로 안전하게 파싱
+async function parseJson(response: Response) {
+  const text = await response.text();
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
 //회원가입
 export async function signup(data: SignupRequest) {
   const response = await fetch(`${API_URL}/auth/signup`, {
@@ -21,11 +32,11 @@ export async function signup(data: SignupRequest) {
     body: JSON.stringify(data),
   });
 
+  const result = await parseJson(response);
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || '회원가입에 실패했습니다.');
+    throw new Error(result?.message || '회원가입에 실패했습니다.');
   }
-  return response.json();
+  return result;
 }
 //이메일 인증 코드 발송
 export async function requestEmailVerification(email: string) {
@@ -37,11 +48,16 @@ export async function requestEmailVerification(email: string) {
     body: JSON.stringify({ email }),
   });
 
+  const result = await parseJson(response);
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || '인증코드 발송에 실패했습니다.');
+    if (response.status === 429) {
+      throw new Error(
+        '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
+      );
+    }
+    throw new Error(result?.message || '인증코드 발송에 실패했습니다.');
   }
-  return response.json();
+  return result;
 }
 
 //이메일 인증코드 확인
@@ -57,12 +73,12 @@ export async function confirmEmailVerification(email: string, code: string) {
     }),
   });
 
+  const result = await parseJson(response);
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || '인증에 실패했습니다.');
+    throw new Error(result?.message || '인증에 실패했습니다.');
   }
 
-  return response.json();
+  return result;
 }
 
 //로그인
@@ -75,9 +91,9 @@ export async function login(data: LoginRequest) {
     body: JSON.stringify(data),
   });
 
+  const result = await parseJson(response);
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || '로그인에 실패했습니다.');
+    throw new Error(result?.message || '로그인에 실패했습니다.');
   }
-  return response.json();
+  return result;
 }

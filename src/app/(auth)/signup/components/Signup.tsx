@@ -1,14 +1,21 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { type SubmitEvent } from 'react';
 
+import {
+  confirmEmailVerification,
+  requestEmailVerification,
+  signup,
+} from '@/app/api/auth';
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import { getEmailError, getPasswordError } from '@/lib/auth-validation';
 
 export default function Signup() {
+  const router = useRouter();
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,12 +24,17 @@ export default function Signup() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordConfirmError, setPasswordConfirmError] = useState('');
   const [emailError, setEmailError] = useState('');
+
   const [isNicknameValid, setIsNicknameValid] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [verificationCodeError, setVerificationCodeError] = useState('');
-  const [isVerificationSent, setIsVerificationSent] = useState(false);
+
+  const [isCodeSent, setIsCodeSent] = useState(false);
   const [isCodeValid, setIsCodeValid] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCheckNickname = () => {
     if (!nickname.trim()) {
@@ -33,9 +45,12 @@ export default function Signup() {
 
     setNicknameError('');
     setIsNicknameValid(true);
+    alert('중복확인 되었습니다.');
   };
 
-  const handleCheckEmail = () => {
+  const handleCheckEmail = async () => {
+    if (isSendingCode) return;
+
     if (!email.trim()) {
       setEmailError('이메일을 입력해주세요.');
       setIsEmailValid(false);
@@ -51,21 +66,40 @@ export default function Signup() {
 
     setEmailError('');
     setIsEmailValid(true);
-    setIsVerificationSent(true);
-  };
 
-  const handleVerifyCode = () => {
-    if (!verificationCode.trim()) {
-      setVerificationCodeError('인증코드를 입력해주세요.');
-      setIsCodeValid(false);
-      return;
+    //인증코드 발송
+    setIsSendingCode(true);
+    try {
+      await requestEmailVerification(email);
+
+      setIsCodeSent(true);
+
+      alert('인증 코드를 발송했습니다.');
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message);
+      }
+    } finally {
+      setIsSendingCode(false);
     }
-
-    setVerificationCodeError('');
-    setIsCodeValid(true);
   };
 
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+  const handleVerifyCode = async () => {
+    try {
+      await confirmEmailVerification(email, verificationCode);
+
+      setIsCodeValid(true);
+      setIsEmailVerified(true);
+
+      alert('이메일 인증이 완료되었습니다.');
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message);
+      }
+    }
+  };
+
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!isNicknameValid) {
       setNicknameError('닉네임 중복확인을 해주세요');
@@ -85,6 +119,18 @@ export default function Signup() {
     if (password !== confirmPassword) {
       setPasswordError('비밀번호가 일치하지 않습니다');
       return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await signup({ nickname, email, password });
+      router.push('/login');
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -129,13 +175,16 @@ export default function Signup() {
                 setEmailError(getEmailError(value));
               }}
             />
-            <InputField.Button onClick={handleCheckEmail} disabled={!email}>
+            <InputField.Button
+              onClick={handleCheckEmail}
+              disabled={!email || isSendingCode}
+            >
               이메일 인증
             </InputField.Button>
             <InputField.Error>{emailError}</InputField.Error>
           </InputField>
 
-          {isVerificationSent ? (
+          {isCodeSent && !isEmailVerified ? (
             <InputField>
               <InputField.Label>인증코드</InputField.Label>
               <InputField.Input
@@ -144,7 +193,12 @@ export default function Signup() {
                 value={verificationCode}
                 onChange={(e) => setVerificationCode(e.target.value)}
               />
-              <InputField.Button>인증코드 확인</InputField.Button>
+              <InputField.Button
+                onClick={handleVerifyCode}
+                disabled={!verificationCode}
+              >
+                인증코드 확인
+              </InputField.Button>
               <InputField.Error>{verificationCodeError}</InputField.Error>
             </InputField>
           ) : null}
@@ -184,7 +238,8 @@ export default function Signup() {
               !isNicknameValid ||
               !isEmailValid ||
               !isCodeValid ||
-              password !== confirmPassword
+              password !== confirmPassword ||
+              isSubmitting
             }
           >
             회원가입
