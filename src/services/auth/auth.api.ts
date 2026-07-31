@@ -1,15 +1,6 @@
-import { apiClient } from '@/lib/api/client';
+import { apiClient } from '@/lib/http/client-fetch';
 
-type SignupRequest = {
-  email: string;
-  password: string;
-  nickname: string;
-};
-
-type LoginRequest = {
-  email: string;
-  password: string;
-};
+import type { LoginRequest, SignupRequest } from './auth.types';
 
 // 회원가입
 export function signup(data: SignupRequest) {

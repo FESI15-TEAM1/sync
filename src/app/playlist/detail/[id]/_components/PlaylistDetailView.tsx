@@ -16,7 +16,7 @@ import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import KebabModal from '@/components/domain/KebabModal';
 import { usePlayerStore } from '@/providers/player-store-provider';
-import { type PlaylistTrack } from '@/types/playlist';
+import { type PlaylistTrack } from '@/services/playlist/playlist';
 
 export default function PlaylistDetailView({
   tracks,

@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { type SubmitEvent } from 'react';
 
+import Button from '@/components/Button';
+import InputField from '@/components/InputField';
+import { getEmailError, getPasswordError } from '@/lib/auth-validation';
 import {
   confirmEmailVerification,
   requestEmailVerification,
   signup,
-} from '@/app/api/auth/auth';
-import Button from '@/components/Button';
-import InputField from '@/components/InputField';
-import { getEmailError, getPasswordError } from '@/lib/auth-validation';
+} from '@/services/auth/auth.api';
 
 export default function Signup() {
   const router = useRouter();
