@@ -51,14 +51,16 @@ export default function AddForm() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* set playroom title */}
-        <InputField
-          label="제목"
-          placeholder="예: 금귀인 내가 말아주는 플레이리스트!"
-          onChange={(e) => {
-            setTitle(e.target.value);
-          }}
-          value={title}
-        />
+        <InputField>
+          <InputField.Label>제목</InputField.Label>
+          <InputField.Input
+            placeholder="예: 금귀인 내가 말아주는 플레이리스트!"
+            onChange={(e) => {
+              setTitle(e.target.value);
+            }}
+            value={title}
+          />
+        </InputField>
 
         {/* set playroom description */}
         <Textarea
