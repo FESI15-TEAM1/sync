@@ -42,6 +42,37 @@ async function parseJson(response: Response) {
   }
 }
 
+// 백엔드는 로그인/리프레시 시 토큰을 body가 아니라 응답의 Set-Cookie
+// (access_token / refresh_token, snake_case)로 내려준다. 우리 서버가 백엔드와
+// 직접 통신하므로 이 쿠키는 브라우저로 자동 전달되지 않아, 값을 직접 꺼내
+// 우리 도메인의 accessToken/refreshToken 쿠키로 다시 심어줘야 한다.
+function extractSetCookieValue(response: Response, name: string) {
+  const setCookieHeaders = response.headers.getSetCookie();
+
+  for (const header of setCookieHeaders) {
+    const [pair] = header.split(';');
+    const separatorIndex = pair.indexOf('=');
+    if (separatorIndex === -1) continue;
+
+    if (pair.slice(0, separatorIndex).trim() === name) {
+      return decodeURIComponent(pair.slice(separatorIndex + 1).trim());
+    }
+  }
+
+  return undefined;
+}
+
+function syncTokenCookies(
+  response: Response,
+  cookieStore: Awaited<ReturnType<typeof cookies>>,
+) {
+  const newAccessToken = extractSetCookieValue(response, 'access_token');
+  const newRefreshToken = extractSetCookieValue(response, 'refresh_token');
+
+  if (newAccessToken) cookieStore.set('accessToken', newAccessToken);
+  if (newRefreshToken) cookieStore.set('refreshToken', newRefreshToken);
+}
+
 async function refreshAccessToken(
   refreshToken: string,
 ): Promise<string | null> {
@@ -53,8 +84,7 @@ async function refreshAccessToken(
 
   if (!response.ok) return null;
 
-  const data = await response.json();
-  return data.accessToken as string;
+  return extractSetCookieValue(response, 'access_token') ?? null;
 }
 
 export async function request<T>(
@@ -66,7 +96,7 @@ export async function request<T>(
 
   let response = await sendRequest(endpoint, options, accessToken);
 
-  if (response.status === 401) {
+  if (response.status === 401 && accessToken) {
     const refreshToken = cookieStore.get('refreshToken')?.value;
     const newAccessToken = refreshToken
       ? await refreshAccessToken(refreshToken)
@@ -80,6 +110,8 @@ export async function request<T>(
       cookieStore.delete('refreshToken');
     }
   }
+
+  syncTokenCookies(response, cookieStore);
 
   const data = await parseJson(response);
 
