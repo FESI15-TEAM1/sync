@@ -151,7 +151,7 @@ export default function Signup() {
 
           <InputField>
             <InputField.Label>비밀번호</InputField.Label>
-            <InputField.Input
+            <InputField.Password
               value={password}
               onChange={(e) => {
                 const value = e.target.value;
@@ -164,7 +164,7 @@ export default function Signup() {
 
           <InputField>
             <InputField.Label>비밀번호 확인</InputField.Label>
-            <InputField.Input
+            <InputField.Password
               value={confirmPassword}
               onChange={(e) => {
                 const value = e.target.value;

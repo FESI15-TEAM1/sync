@@ -31,34 +31,32 @@ function InputField({ children, className }: InputFieldProps) {
 
 // Password
 function Password({
-  type = 'text',
   className,
   ...props
-}: InputHTMLAttributes<HTMLInputElement>) {
+}: Omit<InputHTMLAttributes<HTMLInputElement>, 'type'>) {
   // 비밀번호 보이기/숨기기 상태
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
-  const inputType = type === 'password' && isPasswordVisible ? 'text' : type;
-
   return (
-    <div className="relative">
+    <div className="relative min-w-0 flex-1">
       <Input
         {...props}
         type={isPasswordVisible ? 'text' : 'password'}
-        className={className}
+        className={twMerge('pr-10', className)}
       />
-      {type === 'password' && (
-        <button
-          type="button"
-          onClick={() => setIsPasswordVisible((prev) => !prev)}
-        >
-          {isPasswordVisible ? (
-            <EyeOffIcon width={20} height={20} aria-hidden />
-          ) : (
-            <EyeIcon width={20} height={20} aria-hidden />
-          )}
-        </button>
-      )}
+
+      <button
+        type="button"
+        onClick={() => setIsPasswordVisible((prev) => !prev)}
+        className="absolute top-1/2 right-3 -translate-y-1/2"
+        aria-label={isPasswordVisible ? '비밀번호 숨기기' : '비밀번호 보기'}
+      >
+        {isPasswordVisible ? (
+          <EyeOffIcon width={20} height={20} aria-hidden />
+        ) : (
+          <EyeIcon width={20} height={20} aria-hidden />
+        )}
+      </button>
     </div>
   );
 }

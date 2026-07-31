@@ -22,7 +22,7 @@ export default function Input({
 }: InputProps) {
   return (
     <div className="relative min-w-0 flex-1">
-      <input {...props} className={twMerge(fieldStyle, className)} />
+      <input {...props} type={type} className={twMerge(fieldStyle, className)} />
     </div>
   );
 }

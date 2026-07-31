@@ -35,7 +35,6 @@ export default function Login() {
         <InputField>
           <InputField.Label>이메일</InputField.Label>
           <InputField.Input
-            type="text"
             value={email}
             onChange={(e) => {
               const value = e.target.value;
@@ -48,8 +47,7 @@ export default function Login() {
 
         <InputField>
           <InputField.Label>비밀번호</InputField.Label>
-          <InputField.Input
-            type="password"
+          <InputField.Password
             value={password}
             onChange={(e) => {
               const value = e.target.value;
