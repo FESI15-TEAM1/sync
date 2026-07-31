@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/api/http/client-fetch';
+import { apiClient } from '@/lib/http/client-fetch';
 
 import type { LoginRequest, SignupRequest } from './auth.types';
 

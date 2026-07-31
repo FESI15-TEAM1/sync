@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 
-import { APIError } from '@/lib/api/http/error';
+import { APIError } from '@/lib/http/error';
 
 const BASE_URL = 'https://sync-back.store';
 

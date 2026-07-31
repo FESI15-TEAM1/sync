@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
 
-import { APIError } from '@/lib/api/http/error';
-import { request } from '@/lib/api/http/server-fetch';
+import { APIError } from '@/lib/http/error';
+import { request } from '@/lib/http/server-fetch';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
