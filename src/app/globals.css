@@ -8,6 +8,7 @@ body {
   font-family: var(--font-noto-sans), var(--font-pretendard);
 }
 
+/* 자동 완성시 배경 바뀌는 거 방지용 */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
