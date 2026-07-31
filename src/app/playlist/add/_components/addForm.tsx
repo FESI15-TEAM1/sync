@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { type ChangeEvent, useEffect, useState } from 'react';
+import { type ChangeEvent, useState } from 'react';
 
 import TrackList from '@/app/playlist/_components/TrackList';
 import Minus from '@/assets/icons/minus.svg';
@@ -10,6 +10,7 @@ import IconButton from '@/components/IconButton';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
 import Toggle from '@/components/Toggle';
+import { postPlaylist } from '@/lib/api/playlist/playlist';
 import type { CreatePlaylistRequest, PlaylistTrack } from '@/types/playlist';
 import {
   isYoutubeVideoItem,
@@ -57,9 +58,10 @@ export default function AddForm() {
       tracks: prev.tracks.filter((item) => item.videoId !== track.videoId),
     }));
   };
-  useEffect(() => {
-    console.log(searchList);
-  }, [searchList]);
+  const handleSubmit = () => {
+    postPlaylist(form);
+    console.log(form);
+  };
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -173,7 +175,7 @@ export default function AddForm() {
           }
         />
       </div>
-      <Button className="w-full" onClick={() => console.log(form)}>
+      <Button className="w-full" onClick={handleSubmit}>
         저장하기
       </Button>
     </div>
