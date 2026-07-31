@@ -8,6 +8,7 @@ import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import InputField from '@/components/InputField';
+import Textarea from '@/components/Textarea';
 import { getRandomGradientClassName } from '@/lib/gradient';
 
 type Playlist = {
@@ -96,13 +97,12 @@ export default function AddPage() {
           />
         </InputField>
 
-        <InputField>
-          <InputField.Input
-            value={groupDescription}
-            placeholder="그룹 이름을 입력해주세요."
-            onChange={(e) => setGroupDescription(e.target.value)}
-          />
-        </InputField>
+        <Textarea
+          label="그룹 소개"
+          value={groupDescription}
+          placeholder="그룹 소개를 입력해주세요."
+          onChange={(e) => setGroupDescription(e.target.value)}
+        />
 
         <fieldset className="flex flex-col gap-2">
           <legend className="text-md ml-2 font-bold text-white">

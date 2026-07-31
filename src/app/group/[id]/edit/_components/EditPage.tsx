@@ -8,6 +8,7 @@ import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import InputField from '@/components/InputField';
+import Textarea from '@/components/Textarea';
 
 type Playlist = {
   id: string;
@@ -98,14 +99,12 @@ export default function EditPage({ groupId }: EditPageProps) {
           />
         </InputField>
 
-        <InputField>
-          <InputField.Label>그룹 소개</InputField.Label>
-          <InputField.Input
-            value={groupDescription}
-            placeholder="그룹 소개를 입력해주세요."
-            onChange={(e) => setGroupDescription(e.target.value)}
-          />
-        </InputField>
+        <Textarea
+          label="그룹 소개"
+          value={groupDescription}
+          placeholder="그룹 소개를 입력해주세요."
+          onChange={(e) => setGroupDescription(e.target.value)}
+        />
 
         <fieldset className="flex flex-col gap-2">
           <legend className="text-md mb-1 ml-2 font-bold text-white">
