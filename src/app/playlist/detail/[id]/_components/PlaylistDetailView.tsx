@@ -77,7 +77,7 @@ export default function PlaylistDetailView({
             <KebabModal.Item onClick={handleShare}>공유하기</KebabModal.Item>
             <KebabModal.Item
               onClick={() => {
-                router.push(`/playlist/${id}/edit`);
+                router.push(`/playlist/detail/${id}/edit`);
               }}
             >
               수정하기
