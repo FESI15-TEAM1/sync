@@ -1,8 +1,8 @@
 import Image from 'next/image';
 
-import type { ComentItemType } from './ComentItemList';
+import type { CommentItemType } from './CommentItemList';
 
-export default function ComentItem({ coment }: { coment: ComentItemType }) {
+export default function CommentItem({ comment }: { comment: CommentItemType }) {
   function formatTimeAgo(dateString: string) {
     const date = new Date(dateString);
     const now = new Date();
@@ -22,9 +22,9 @@ export default function ComentItem({ coment }: { coment: ComentItemType }) {
   }
   return (
     <div className="text-text-primary flex items-center gap-3">
-      <div className='rounded-full" relative size-8 shrink-0 overflow-hidden'>
+      <div className="relative size-8 shrink-0 overflow-hidden rounded-full">
         <Image
-          src={coment.author.image}
+          src={comment.author.image}
           alt="프로필"
           fill
           className="rounded-full object-cover"
@@ -32,12 +32,12 @@ export default function ComentItem({ coment }: { coment: ComentItemType }) {
       </div>
       <div>
         <div className="flex gap-5 text-start">
-          <span className="text-sm">{coment.author.nickname}</span>
+          <span className="text-sm">{comment.author.nickname}</span>
           <span className="text-text-secondary text-sm">
-            {formatTimeAgo(coment.createdAt)}
+            {formatTimeAgo(comment.createdAt)}
           </span>
         </div>
-        <span className="text-sm">{coment.content}</span>
+        <span className="text-sm">{comment.content}</span>
       </div>
     </div>
   );

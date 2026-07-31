@@ -5,13 +5,12 @@ import { useParams, useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 
 import TrackList from '@/app/playlist/_components/TrackList';
-import type { ComentItemsType } from '@/app/playlist/[id]/_components/ComentItemList';
-import ComentItemList from '@/app/playlist/[id]/_components/ComentItemList';
+import type { CommentItemsType } from '@/app/playlist/[id]/_components/CommentItemList';
+import ComentItemList from '@/app/playlist/[id]/_components/CommentItemList';
 import PlaylistPlayer from '@/app/playlist/[id]/_components/PlaylistPlayer';
 import { type PlaylistPlayerHandle } from '@/app/playlist/[id]/_components/PlaylistPlayer';
 import TrackHoverController from '@/app/playlist/[id]/_components/TrackHoverController';
 import Heart from '@/assets/icons/heart.svg';
-import HeartOutline from '@/assets/icons/HeartOutline.svg';
 import defaultImg from '@/assets/images/mook.jpg';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
@@ -21,10 +20,10 @@ import { type PlaylistTrack } from '@/types/playlist';
 
 export default function PlaylistDetailView({
   tracks,
-  coments,
+  comments,
 }: {
   tracks: PlaylistTrack[];
-  coments: ComentItemsType;
+  comments: CommentItemsType;
 }) {
   const currentTrack = usePlayerStore((state) => state.currentTrack);
   const isPlaying = usePlayerStore((state) => state.isPlaying);
@@ -64,7 +63,7 @@ export default function PlaylistDetailView({
   };
 
   return (
-    <div className="items-centerm- flex max-w-7xl flex-col gap-10 p-2">
+    <div className="flex max-w-7xl flex-col gap-10 p-2">
       <div
         className={`bg-bg-card fixed top-25 left-1/2 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white transition-all duration-300 ${showToast ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0'} `}
       >
@@ -130,7 +129,7 @@ export default function PlaylistDetailView({
       )}
       <div>
         <h4 className="text-text-primary mb-2 text-xl font-bold">댓글</h4>
-        <ComentItemList coments={coments} />
+        <ComentItemList comments={comments} />
       </div>
     </div>
   );

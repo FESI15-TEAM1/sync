@@ -1,4 +1,4 @@
-import type { ComentItemsType } from '@/app/playlist/[id]/_components/ComentItemList';
+import type { CommentItemsType } from '@/app/playlist/[id]/_components/CommentItemList';
 import PlaylistDetailView from '@/app/playlist/[id]/_components/PlaylistDetailView';
 
 const data = {
@@ -38,7 +38,7 @@ const data = {
     },
   ],
 };
-const item: ComentItemsType = {
+const item: CommentItemsType = {
   items: [
     {
       id: 1,
@@ -69,7 +69,7 @@ const item: ComentItemsType = {
 export default function PlaylistDeatilPage() {
   return (
     <div className="flex justify-center p-6">
-      <PlaylistDetailView tracks={data.tracks} coments={item} />
+      <PlaylistDetailView tracks={data.tracks} comments={item} />
     </div>
   );
 }
