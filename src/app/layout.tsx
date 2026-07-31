@@ -37,7 +37,7 @@ export default function RootLayout({
       lang="ko"
       className={`h-full antialiased ${pretendard.variable} ${noto.variable}`}
     >
-      <body className={`bg-bg-primary flex h-screen w-screen flex-col`}>
+      <body className={`bg-bg-primary`}>
         <PlayerStoreProvider>
           <SidebarStoreProvider>
             <div className="sticky top-0 z-50">
