@@ -20,7 +20,7 @@ function InputField({ children, className }: InputFieldProps) {
   return (
     <div
       className={twMerge(
-        'flex flex-wrap items-center gap-x-2 gap-y-1',
+        'flex flex-wrap items-center gap-x-4 gap-y-1',
         className,
       )}
     >
@@ -83,7 +83,7 @@ function InputFieldButton({
       type="button"
       onClick={onClick}
       isDisabled={disabled}
-      className={twMerge('shrink-0', className)}
+      className={twMerge('shrink-0', className, 'w-25 px-2')}
     >
       {children}
     </Button>
