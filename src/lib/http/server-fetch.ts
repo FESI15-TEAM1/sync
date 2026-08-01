@@ -44,7 +44,12 @@ async function parseJson(response: Response) {
 
 // 로컬 개발(http)에서는 Secure 쿠키가 저장되지 않고 즉시 사라지므로,
 // 배포 환경(https)에서만 Secure를 붙이도록 명시적으로 분기한다.
-const COOKIE_OPTIONS = { secure: process.env.NODE_ENV === 'production' };
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  path: '/',
+};
 
 // 백엔드는 로그인/리프레시 시 토큰을 body가 아니라 응답의 Set-Cookie
 // (access_token / refresh_token, snake_case)로 내려준다. 우리 서버가 백엔드와
