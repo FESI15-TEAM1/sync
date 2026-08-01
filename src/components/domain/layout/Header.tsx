@@ -18,6 +18,7 @@ export default function Header() {
   const headerRef = useRef<HTMLElement>(null);
   const router = useRouter();
   const user = useUserStore((state) => state.user);
+  const isLoading = useUserStore((state) => state.isLoading);
   const setUser = useUserStore((state) => state.setUser);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -70,25 +71,40 @@ export default function Header() {
       </div>
       <div className="flex items-center gap-3">
         <Bell width={30} height={30} color={'white'} />
-        {user ? (
-          <Button
-            type="button"
-            onClick={handleLogout}
-            isDisabled={isLoggingOut}
-            className="text-text-secondary hover:text-text-primary text-sm disabled:opacity-50"
+        {isLoading ? (
+          // 인증 상태 확인 중
+          <div className="h-[45px] w-[45px] animate-pulse rounded-full bg-gray-300" />
+        ) : user ? (
+          // 로그인 상태
+          <>
+            <Button
+              type="button"
+              onClick={handleLogout}
+              isDisabled={isLoggingOut}
+              className="text-text-secondary hover:text-text-primary text-sm disabled:opacity-50"
+            >
+              로그아웃
+            </Button>
+
+            <Link href={`/profile/${user.id}`}>
+              <Image
+                src={defaultImage}
+                alt="프로필"
+                width={45}
+                height={45}
+                className="rounded-full"
+              />
+            </Link>
+          </>
+        ) : (
+          // 로그아웃 상태
+          <Link
+            href="/login"
+            className="text-text-secondary hover:text-text-primary text-sm"
           >
-            로그아웃
-          </Button>
-        ) : null}
-        <Link href={user ? `/profile/${user.id}` : '/login'}>
-          <Image
-            src={defaultImage}
-            alt="기본이미지"
-            width={45}
-            height={45}
-            className="rounded-full"
-          />
-        </Link>
+            <Button>로그인</Button>
+          </Link>
+        )}
       </div>
     </header>
   );

@@ -4,6 +4,7 @@ import type { SessionUser } from '@/services/user/user.types';
 
 export type UserState = {
   user: SessionUser | null;
+  isLoading: boolean;
 };
 
 export type UserAction = {
@@ -14,6 +15,7 @@ export type UserStore = UserState & UserAction;
 
 export const defaultUserState: UserState = {
   user: null,
+  isLoading: false,
 };
 
 export const createUserStore = (initState: UserState = defaultUserState) => {
