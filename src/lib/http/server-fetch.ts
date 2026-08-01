@@ -88,7 +88,7 @@ function syncTokenCookies(
 
 async function refreshAccessToken(
   refreshToken: string,
-): Promise<string | null> {
+): Promise<Response | null> {
   const response = await fetch(`${BASE_URL}/auth/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -97,7 +97,7 @@ async function refreshAccessToken(
 
   if (!response.ok) return null;
 
-  return extractSetCookieValue(response, 'access_token') ?? null;
+  return response;
 }
 
 export async function request<T>(
@@ -105,29 +105,57 @@ export async function request<T>(
   options: RequestOptions,
 ): Promise<T> {
   const cookieStore = await cookies();
+
+  // 현재 저장된 access token
   const accessToken = cookieStore.get('accessToken')?.value;
 
+  // 최초 API 요청
   let response = await sendRequest(endpoint, options, accessToken);
 
+  // access token 만료
   if (response.status === 401 && accessToken) {
+    // refresh token 가져오기
     const refreshToken = cookieStore.get('refreshToken')?.value;
-    const newAccessToken = refreshToken
+
+    // refresh token으로 access token 재발급
+    const refreshResponse = refreshToken
       ? await refreshAccessToken(refreshToken)
       : null;
 
-    if (newAccessToken) {
-      cookieStore.set('accessToken', newAccessToken, COOKIE_OPTIONS);
-      response = await sendRequest(endpoint, options, newAccessToken);
+    if (refreshResponse) {
+      // 백엔드가 내려준
+      // access_token / refresh_token을 모두 저장
+      syncTokenCookies(refreshResponse, cookieStore);
+
+      // 새 access token 추출
+      const newAccessToken = extractSetCookieValue(
+        refreshResponse,
+        'access_token',
+      );
+
+      if (newAccessToken) {
+        // 새 access token으로 원래 요청 재시도
+        response = await sendRequest(endpoint, options, newAccessToken);
+      } else {
+        // refresh 응답에 access token이 없는 경우
+        cookieStore.delete('accessToken');
+        cookieStore.delete('refreshToken');
+      }
     } else {
+      // refresh 요청 실패
       cookieStore.delete('accessToken');
       cookieStore.delete('refreshToken');
     }
   }
 
+  // 일반 API 응답 또는 로그인 응답에서
+  // Set-Cookie가 있다면 쿠키 동기화
   syncTokenCookies(response, cookieStore);
 
+  // 응답 JSON 파싱
   const data = await parseJson(response);
 
+  // API 에러 처리
   if (!response.ok) {
     throw new APIError(
       response.status,
@@ -135,5 +163,6 @@ export async function request<T>(
       data?.error?.message ?? `서버 오류가 발생했습니다. (${response.status})`,
     );
   }
+
   return data as T;
 }
