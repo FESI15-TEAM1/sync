@@ -1,8 +1,15 @@
 'use client';
 
-import { createContext, type ReactNode, useContext, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { useStore } from 'zustand';
 
+import { getMe } from '@/services/user/user.api';
 import type { UserStore } from '@/stores/user-store';
 import { createUserStore } from '@/stores/user-store';
 
@@ -18,6 +25,17 @@ export interface UserStoreProviderProps {
 
 export const UserStoreProvider = ({ children }: UserStoreProviderProps) => {
   const [store] = useState(() => createUserStore());
+
+  useEffect(() => {
+    getMe()
+      .then((user) => store.setState({ user }))
+      .catch(() => {
+        // 로그인이 먼저 끝나 유저가 채워졌다면 이 조회의 실패로 덮어쓰지 않는다.
+        if (store.getState().user !== null) return;
+        store.setState({ user: null });
+      });
+  }, [store]);
+
   return (
     <UserStoreContext.Provider value={store}>
       {children}
@@ -28,7 +46,7 @@ export const UserStoreProvider = ({ children }: UserStoreProviderProps) => {
 export const useUserStore = <T,>(selector: (store: UserStore) => T): T => {
   const context = useContext(UserStoreContext);
   if (!context) {
-    throw new Error('useUserStore must be used within UserStoreProvider');
+    throw new Error('useUserStore는 UserStoreProvider 안에 있어야 합니다.');
   }
 
   return useStore(context, selector);

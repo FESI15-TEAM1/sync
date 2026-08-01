@@ -6,7 +6,6 @@ import { type SubmitEvent, useState } from 'react';
 
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
-import { commitUser } from '@/hooks/useCurrentUser';
 import { getEmailError, getPasswordError } from '@/lib/auth-validation';
 import { useUserStore } from '@/providers/user-store-provider';
 import { login } from '@/services/auth/auth.api';
@@ -26,7 +25,7 @@ export default function Login() {
     setIsSubmitting(true);
     try {
       const user = await login({ email, password });
-      commitUser(setUser, user);
+      setUser(user);
       router.push('/');
     } catch (error) {
       if (error instanceof Error) {
