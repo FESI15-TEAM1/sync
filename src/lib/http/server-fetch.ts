@@ -170,6 +170,7 @@ export async function request<T>(
           accessToken: newAccessToken,
           refreshToken: newRefreshToken ?? refreshToken,
         });
+        syncTokenCookies(response, cookieStore);
       } else {
         clearTokenCookies(cookieStore);
       }
@@ -177,6 +178,7 @@ export async function request<T>(
       clearTokenCookies(cookieStore);
     }
   }
+  syncTokenCookies(response, cookieStore);
 
   // 일반 API 응답 또는 로그인 응답에서
   // Set-Cookie가 있다면 쿠키 동기화
