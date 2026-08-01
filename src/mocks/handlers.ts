@@ -1,10 +1,56 @@
 import { http, HttpResponse } from 'msw';
 
-import { EXISTING_USER_EMAIL, TEST_VERIFICATION_CODE, User } from './fixtures';
+import {
+  EXISTING_USER_EMAIL,
+  myProfile,
+  TEST_VERIFICATION_CODE,
+  User,
+} from './fixtures';
 
 const baseUrl = 'https://sync-back.store';
 
+// 로그인 목업이 심어준 access_token 쿠키가 있어야 인증된 요청으로 취급한다.
+function isAuthenticated(request: Request) {
+  return (request.headers.get('cookie') ?? '').includes(
+    'access_token=msw-access-token',
+  );
+}
+
+const unauthorizedResponse = () =>
+  HttpResponse.json(
+    { error: { code: 'UNAUTHORIZED', message: '인증이 필요합니다.' } },
+    { status: 401 },
+  );
+
 export const handlers = [
+  http.get(`${baseUrl}/users/me`, ({ request }) => {
+    console.log('마이페이지 조회');
+
+    if (!isAuthenticated(request)) {
+      return unauthorizedResponse();
+    }
+
+    return HttpResponse.json(myProfile);
+  }),
+  http.patch(`${baseUrl}/users/me`, async ({ request }) => {
+    console.log('마이페이지 수정');
+
+    if (!isAuthenticated(request)) {
+      return unauthorizedResponse();
+    }
+
+    const body = (await request.json()) as {
+      nickname?: string;
+      image?: string;
+      description?: string;
+    };
+
+    if (body.nickname !== undefined) myProfile.nickname = body.nickname;
+    if (body.image !== undefined) myProfile.image = body.image;
+    if (body.description !== undefined) myProfile.description = body.description;
+
+    return HttpResponse.json(myProfile);
+  }),
   http.get(`${baseUrl}/auth/nickname-check`, ({ request }) => {
     console.log('닉네임 중복 확인');
 
