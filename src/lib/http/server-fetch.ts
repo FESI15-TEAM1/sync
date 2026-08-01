@@ -42,13 +42,25 @@ async function parseJson(response: Response) {
   }
 }
 
+type CookieStore = Awaited<ReturnType<typeof cookies>>;
+
 // 로컬 개발(http)에서는 Secure 쿠키가 저장되지 않고 즉시 사라지므로,
 // 배포 환경(https)에서만 Secure를 붙이도록 명시적으로 분기한다.
-const COOKIE_OPTIONS = {
+const COOKIE_BASE = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'lax' as const,
   path: '/',
+};
+
+const ACCESS_TOKEN_COOKIE = {
+  ...COOKIE_BASE,
+  maxAge: 60 * 30, // 30분
+};
+
+const REFRESH_TOKEN_COOKIE = {
+  ...COOKIE_BASE,
+  maxAge: 60 * 60 * 24 * 14, // 14일
 };
 
 // 백엔드는 로그인/리프레시 시 토큰을 body가 아니라 응답의 Set-Cookie
@@ -71,19 +83,21 @@ function extractSetCookieValue(response: Response, name: string) {
   return undefined;
 }
 
-function syncTokenCookies(
-  response: Response,
-  cookieStore: Awaited<ReturnType<typeof cookies>>,
-) {
+function syncTokenCookies(response: Response, cookieStore: CookieStore) {
   const newAccessToken = extractSetCookieValue(response, 'access_token');
   const newRefreshToken = extractSetCookieValue(response, 'refresh_token');
 
   if (newAccessToken) {
-    cookieStore.set('accessToken', newAccessToken, COOKIE_OPTIONS);
+    cookieStore.set('accessToken', newAccessToken, ACCESS_TOKEN_COOKIE);
   }
   if (newRefreshToken) {
-    cookieStore.set('refreshToken', newRefreshToken, COOKIE_OPTIONS);
+    cookieStore.set('refreshToken', newRefreshToken, REFRESH_TOKEN_COOKIE);
   }
+}
+
+export function clearTokenCookies(cookieStore: CookieStore) {
+  cookieStore.delete({ name: 'accessToken', path: '/' });
+  cookieStore.delete({ name: 'refreshToken', path: '/' });
 }
 
 async function refreshAccessToken(
@@ -138,13 +152,11 @@ export async function request<T>(
         response = await sendRequest(endpoint, options, newAccessToken);
       } else {
         // refresh 응답에 access token이 없는 경우
-        cookieStore.delete('accessToken');
-        cookieStore.delete('refreshToken');
+        clearTokenCookies(cookieStore);
       }
     } else {
       // refresh 요청 실패
-      cookieStore.delete('accessToken');
-      cookieStore.delete('refreshToken');
+      clearTokenCookies(cookieStore);
     }
   }
 

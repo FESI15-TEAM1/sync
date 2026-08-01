@@ -39,3 +39,10 @@ export function login(data: LoginRequest) {
     body: data,
   });
 }
+
+// 로그아웃
+export function logout() {
+  return apiClient('/auth/logout', {
+    method: 'POST',
+  });
+}
