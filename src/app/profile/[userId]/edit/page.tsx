@@ -39,5 +39,5 @@ export default async function ProfileEdit({
     redirect(`/profile/${me.id}/edit`);
   }
 
-  return <ProfileEditPage profileId={profileId} />;
+  return <ProfileEditPage profile={me} />;
 }

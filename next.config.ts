@@ -16,15 +16,6 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [{ protocol: 'https', hostname: 'i.ytimg.com' }],
   },
-  async redirects() {
-    return [
-      {
-        source: '/login/profile/:userId',
-        destination: '/profile/:userId',
-        permanent: false,
-      },
-    ];
-  },
 };
 
 export default nextConfig;

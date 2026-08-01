@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import {
   type ChangeEvent,
   type SubmitEvent,
-  useEffect,
   useRef,
   useState,
 } from 'react';
@@ -15,47 +14,25 @@ import IconButton from '@/components/IconButton';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
 import { useUserStore } from '@/providers/user-store-provider';
-import { getMe, updateMe } from '@/services/user/user.api';
+import { updateMe } from '@/services/user/user.api';
+import type { MyProfile } from '@/services/user/user.types';
 
 type ProfileEditPageProps = {
-  profileId: number;
+  profile: MyProfile;
 };
 
-export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
+export default function ProfileEditPage({ profile }: ProfileEditPageProps) {
   const router = useRouter();
   const setUser = useUserStore((state) => state.setUser);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(
+    profile.image,
+  );
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [nickname, setNickname] = useState('');
-  const [bio, setBio] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [nickname, setNickname] = useState(profile.nickname);
+  const [bio, setBio] = useState(profile.description ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    getMe()
-      .then((me) => {
-        if (cancelled) return;
-        if (me.id !== profileId) return;
-
-        setNickname(me.nickname);
-        setBio(me.description ?? '');
-        setAvatarPreview(me.image);
-      })
-      .catch(() => {
-        // 로드 실패 시 빈 폼 유지
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [profileId]);
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -104,16 +81,8 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
 
   //회원 탈퇴
   const handleWithDraw = () => {
-    console.log('회원탈퇴 계정', profileId);
+    console.log('회원탈퇴 계정', profile.id);
   };
-
-  if (isLoading) {
-    return (
-      <div className="text-text-secondary mx-auto flex w-full max-w-md flex-1 items-center justify-center px-5 py-8">
-        불러오는 중...
-      </div>
-    );
-  }
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 py-8">

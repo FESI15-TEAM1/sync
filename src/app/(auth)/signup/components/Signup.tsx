@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { type SubmitEvent } from 'react';
+import { type SubmitEvent, useState } from 'react';
 
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
@@ -27,16 +26,21 @@ export default function Signup() {
   const [emailError, setEmailError] = useState('');
 
   const [isNicknameValid, setIsNicknameValid] = useState(false);
-  const [isEmailValid, setIsEmailValid] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [verificationCodeError, setVerificationCodeError] = useState('');
 
   const [isCodeSent, setIsCodeSent] = useState(false);
-  const [isCodeValid, setIsCodeValid] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const resetEmailVerification = () => {
+    setIsCodeSent(false);
+    setIsEmailVerified(false);
+    setVerificationCode('');
+    setVerificationCodeError('');
+  };
 
   const handleCheckNickname = async () => {
     if (isCheckingNickname) return;
@@ -74,26 +78,24 @@ export default function Signup() {
 
     if (!email.trim()) {
       setEmailError('이메일을 입력해주세요.');
-      setIsEmailValid(false);
       return;
     }
 
     const error = getEmailError(email);
     if (error) {
       setEmailError(error);
-      setIsEmailValid(false);
       return;
     }
 
     setEmailError('');
-    setIsEmailValid(true);
-
-    //인증코드 발송
     setIsSendingCode(true);
     try {
       await requestEmailVerification(email);
 
       setIsCodeSent(true);
+      setIsEmailVerified(false);
+      setVerificationCode('');
+      setVerificationCodeError('');
 
       alert('인증 코드를 발송했습니다.');
     } catch (error) {
@@ -109,12 +111,14 @@ export default function Signup() {
     try {
       await confirmEmailVerification(email, verificationCode);
 
-      setIsCodeValid(true);
       setIsEmailVerified(true);
+      setVerificationCodeError('');
 
       alert('이메일 인증이 완료되었습니다.');
     } catch (error) {
+      setIsEmailVerified(false);
       if (error instanceof Error) {
+        setVerificationCodeError(error.message);
         alert(error.message);
       }
     }
@@ -127,18 +131,13 @@ export default function Signup() {
       return;
     }
 
-    if (!isEmailValid) {
-      setEmailError('이메일 형식을 확인해주세요');
-      return;
-    }
-
-    if (!isCodeValid) {
+    if (!isEmailVerified) {
       setVerificationCodeError('이메일 인증을 완료해주세요');
       return;
     }
 
     if (password !== confirmPassword) {
-      setPasswordError('비밀번호가 일치하지 않습니다');
+      setPasswordConfirmError('비밀번호가 일치하지 않습니다');
       return;
     }
 
@@ -198,6 +197,7 @@ export default function Signup() {
                 const value = e.target.value;
                 setEmail(value);
                 setEmailError(getEmailError(value));
+                resetEmailVerification();
               }}
             />
             <InputField.Button
@@ -236,6 +236,13 @@ export default function Signup() {
                 const value = e.target.value;
                 setPassword(value);
                 setPasswordError(getPasswordError(value));
+                if (confirmPassword) {
+                  setPasswordConfirmError(
+                    value !== confirmPassword
+                      ? '비밀번호가 일치하지 않습니다'
+                      : '',
+                  );
+                }
               }}
             />
             <InputField.Error>{passwordError}</InputField.Error>
@@ -248,7 +255,11 @@ export default function Signup() {
               onChange={(e) => {
                 const value = e.target.value;
                 setConfirmPassword(value);
-                setPasswordConfirmError(getPasswordError(value));
+                setPasswordConfirmError(
+                  value && value !== password
+                    ? '비밀번호가 일치하지 않습니다'
+                    : '',
+                );
               }}
             />
             <InputField.Error>{passwordConfirmError}</InputField.Error>
@@ -261,8 +272,9 @@ export default function Signup() {
             className="w-full"
             isDisabled={
               !isNicknameValid ||
-              !isEmailValid ||
-              !isCodeValid ||
+              !isEmailVerified ||
+              !password ||
+              !!passwordError ||
               password !== confirmPassword ||
               isSubmitting
             }
