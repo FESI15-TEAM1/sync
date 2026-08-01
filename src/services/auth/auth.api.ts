@@ -1,5 +1,5 @@
 import { apiClient } from '@/lib/http/client-fetch';
-import type { MeResponse } from '@/services/user/user.types';
+import type { SessionUser } from '@/services/user/user.types';
 
 import type {
   LoginRequest,
@@ -46,7 +46,7 @@ export function confirmEmailVerification(email: string, code: string) {
 
 // 로그인
 export function login(data: LoginRequest) {
-  return apiClient<MeResponse>('/auth/login', {
+  return apiClient<SessionUser>('/auth/login', {
     method: 'POST',
     body: data,
   });

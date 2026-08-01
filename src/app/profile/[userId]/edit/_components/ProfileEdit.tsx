@@ -1,13 +1,19 @@
 'use client';
 
-import Image from 'next/image';
-import { type ChangeEvent, type SubmitEvent, useRef, useState } from 'react';
+import {
+  type ChangeEvent,
+  type SubmitEvent,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import PencilIcon from '@/assets/icons/pencil.svg';
 import Button from '@/components/Button';
 import IconButton from '@/components/IconButton';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
+import { getMe } from '@/services/user/user.api';
 
 type ProfileEditPageProps = {
   profileId: number;
@@ -17,8 +23,33 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [nickname, setNickname] = useState('JPOP의 신');
-  const [bio, setBio] = useState('자기 소개입니다');
+  const [nickname, setNickname] = useState('');
+  const [bio, setBio] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getMe()
+      .then((me) => {
+        if (cancelled) return;
+        if (me.id !== profileId) return;
+
+        setNickname(me.nickname);
+        setBio(me.description ?? '');
+        setAvatarPreview(me.image);
+      })
+      .catch(() => {
+        // 로드 실패 시 빈 폼 유지
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [profileId]);
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -26,7 +57,7 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
 
     const url = URL.createObjectURL(file);
     setAvatarPreview((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
+      if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
       return url;
     });
   };
@@ -46,6 +77,14 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
     console.log('회원탈퇴 계정', profileId);
   };
 
+  if (isLoading) {
+    return (
+      <div className="text-text-secondary mx-auto flex w-full max-w-md flex-1 items-center justify-center px-5 py-8">
+        불러오는 중...
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 py-8">
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-8">
@@ -57,7 +96,8 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
               className="bg-bg-card size-48 overflow-hidden rounded-full"
             >
               {avatarPreview ? (
-                <Image
+                // eslint-disable-next-line @next/next/no-img-element -- blob URL 및 가변 CDN
+                <img
                   src={avatarPreview}
                   alt="프로필"
                   width={192}

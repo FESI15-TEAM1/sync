@@ -1,6 +1,34 @@
 import { notFound } from 'next/navigation';
 
+import { APIError } from '@/lib/http/error';
+import { request } from '@/lib/http/server-fetch';
+import type { MyProfile, UserProfile } from '@/services/user/user.types';
+
 import Profile from './_components/Profile';
+
+async function fetchMyProfile() {
+  try {
+    return await request<MyProfile>('/users/me', { method: 'GET' });
+  } catch (error) {
+    if (error instanceof APIError && error.status === 401) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+async function fetchUserProfile(profileId: number) {
+  try {
+    return await request<UserProfile>(`/users/${profileId}`, {
+      method: 'GET',
+    });
+  } catch (error) {
+    if (error instanceof APIError && error.status === 404) {
+      return null;
+    }
+    throw error;
+  }
+}
 
 export default async function ProfilePage({
   params,
@@ -14,16 +42,16 @@ export default async function ProfilePage({
     notFound();
   }
 
-  const props = {
-    profileId,
-    nickname: 'JPOP 의 신',
-    email: 'test@test.com',
-    bio: '자기소개 입니다 웋히히',
-    groupCount: 2,
-    playlistCount: 14,
-    followerCount: 10,
-    followingCount: 50,
-  };
+  const me = await fetchMyProfile();
 
-  return <Profile {...props} />;
+  if (me && me.id === profileId) {
+    return <Profile isOwn profile={me} />;
+  }
+
+  const profile = await fetchUserProfile(profileId);
+  if (!profile) {
+    notFound();
+  }
+
+  return <Profile isOwn={false} profile={profile} />;
 }

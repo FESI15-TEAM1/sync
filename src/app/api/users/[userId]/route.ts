@@ -1,16 +1,16 @@
-import type { NextRequest } from 'next/server';
-
 import { APIError } from '@/lib/http/error';
 import { request } from '@/lib/http/server-fetch';
-import type { SessionUser } from '@/services/user/user.types';
+import type { UserProfile } from '@/services/user/user.types';
 
-export async function POST(req: NextRequest) {
-  const body = await req.json();
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ userId: string }> },
+) {
+  const { userId } = await params;
 
   try {
-    const data = await request<SessionUser>('/auth/login', {
-      method: 'POST',
-      body,
+    const data = await request<UserProfile>(`/users/${userId}`, {
+      method: 'GET',
     });
 
     return Response.json(data);

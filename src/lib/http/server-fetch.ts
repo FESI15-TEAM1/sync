@@ -10,21 +10,39 @@ interface RequestOptions {
   body?: unknown;
 }
 
+function buildCookieHeader(tokens: {
+  accessToken?: string;
+  refreshToken?: string;
+}) {
+  const parts: string[] = [];
+
+  if (tokens.accessToken) {
+    parts.push(`access_token=${tokens.accessToken}`);
+  }
+  if (tokens.refreshToken) {
+    parts.push(`refresh_token=${tokens.refreshToken}`);
+  }
+
+  return parts.length > 0 ? parts.join('; ') : undefined;
+}
+
 function sendRequest(
   endpoint: string,
   { method, params = {}, body }: RequestOptions,
-  accessToken?: string,
+  tokens: { accessToken?: string; refreshToken?: string } = {},
 ) {
   const url = new URL(`${BASE_URL}${endpoint}`);
   Object.entries(params).forEach(([key, value]) =>
     url.searchParams.set(key, value),
   );
 
+  const cookieHeader = buildCookieHeader(tokens);
+
   return fetch(url, {
     method,
     headers: {
       ...(body ? { 'Content-Type': 'application/json' } : {}),
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      ...(cookieHeader ? { Cookie: cookieHeader } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
   });
@@ -103,10 +121,12 @@ export function clearTokenCookies(cookieStore: CookieStore) {
 async function refreshAccessToken(
   refreshToken: string,
 ): Promise<Response | null> {
+  // 백엔드는 body가 아니라 refresh_token 쿠키로 재발급한다.
   const response = await fetch(`${BASE_URL}/auth/refresh`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken }),
+    headers: {
+      Cookie: `refresh_token=${refreshToken}`,
+    },
   });
 
   if (!response.ok) return null;
@@ -120,42 +140,40 @@ export async function request<T>(
 ): Promise<T> {
   const cookieStore = await cookies();
 
-  // 현재 저장된 access token
   const accessToken = cookieStore.get('accessToken')?.value;
+  const refreshToken = cookieStore.get('refreshToken')?.value;
 
-  // 최초 API 요청
-  let response = await sendRequest(endpoint, options, accessToken);
+  // 최초 API 요청 — 백엔드는 Bearer가 아니라 access_token 쿠키를 본다.
+  let response = await sendRequest(endpoint, options, {
+    accessToken,
+    refreshToken,
+  });
 
-  // access token 만료
-  if (response.status === 401 && accessToken) {
-    // refresh token 가져오기
-    const refreshToken = cookieStore.get('refreshToken')?.value;
-
-    // refresh token으로 access token 재발급
-    const refreshResponse = refreshToken
-      ? await refreshAccessToken(refreshToken)
-      : null;
+  // access 만료/없음 + refresh 있음 → 재발급 후 재시도
+  if (response.status === 401 && refreshToken) {
+    const refreshResponse = await refreshAccessToken(refreshToken);
 
     if (refreshResponse) {
-      // 백엔드가 내려준
-      // access_token / refresh_token을 모두 저장
       syncTokenCookies(refreshResponse, cookieStore);
 
-      // 새 access token 추출
       const newAccessToken = extractSetCookieValue(
         refreshResponse,
         'access_token',
       );
+      const newRefreshToken = extractSetCookieValue(
+        refreshResponse,
+        'refresh_token',
+      );
 
       if (newAccessToken) {
-        // 새 access token으로 원래 요청 재시도
-        response = await sendRequest(endpoint, options, newAccessToken);
+        response = await sendRequest(endpoint, options, {
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken ?? refreshToken,
+        });
       } else {
-        // refresh 응답에 access token이 없는 경우
         clearTokenCookies(cookieStore);
       }
     } else {
-      // refresh 요청 실패
       clearTokenCookies(cookieStore);
     }
   }

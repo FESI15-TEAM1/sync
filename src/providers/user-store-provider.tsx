@@ -28,7 +28,15 @@ export const UserStoreProvider = ({ children }: UserStoreProviderProps) => {
 
   useEffect(() => {
     getMe()
-      .then((user) => store.setState({ user }))
+      .then((me) =>
+        store.setState({
+          user: {
+            id: me.id,
+            nickname: me.nickname,
+            image: me.image,
+          },
+        }),
+      )
       .catch(() => {
         // 로그인이 먼저 끝나 유저가 채워졌다면 이 조회의 실패로 덮어쓰지 않는다.
         if (store.getState().user !== null) return;

@@ -1,10 +1,10 @@
 import { APIError } from '@/lib/http/error';
 import { request } from '@/lib/http/server-fetch';
-import type { MeResponse } from '@/services/user/user.types';
+import type { MyProfile } from '@/services/user/user.types';
 
 export async function GET() {
   try {
-    const data = await request<MeResponse>('/users/me', { method: 'GET' });
+    const data = await request<MyProfile>('/users/me', { method: 'GET' });
 
     return Response.json(data);
   } catch (error) {

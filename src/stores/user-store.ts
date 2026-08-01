@@ -1,13 +1,13 @@
 import { createStore } from 'zustand/vanilla';
 
-import type { MeResponse } from '@/services/user/user.types';
+import type { SessionUser } from '@/services/user/user.types';
 
 export type UserState = {
-  user: MeResponse | null;
+  user: SessionUser | null;
 };
 
 export type UserAction = {
-  setUser: (user: MeResponse | null) => void;
+  setUser: (user: SessionUser | null) => void;
 };
 
 export type UserStore = UserState & UserAction;
