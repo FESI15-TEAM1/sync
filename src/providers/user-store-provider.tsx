@@ -35,12 +35,16 @@ export const UserStoreProvider = ({ children }: UserStoreProviderProps) => {
             nickname: me.nickname,
             image: me.image,
           },
+          isLoading: false,
         }),
       )
       .catch(() => {
         // 로그인이 먼저 끝나 유저가 채워졌다면 이 조회의 실패로 덮어쓰지 않는다.
-        if (store.getState().user !== null) return;
-        store.setState({ user: null });
+        if (store.getState().user !== null) {
+          store.setState({ isLoading: false });
+          return;
+        }
+        store.setState({ user: null, isLoading: false });
       });
   }, [store]);
 

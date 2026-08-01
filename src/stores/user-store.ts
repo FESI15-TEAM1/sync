@@ -15,12 +15,12 @@ export type UserStore = UserState & UserAction;
 
 export const defaultUserState: UserState = {
   user: null,
-  isLoading: false,
+  isLoading: true,
 };
 
 export const createUserStore = (initState: UserState = defaultUserState) => {
   return createStore<UserStore>()((set) => ({
     ...initState,
-    setUser: (user) => set({ user }),
+    setUser: (user) => set({ user, isLoading: false }),
   }));
 };
