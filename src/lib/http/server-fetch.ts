@@ -180,10 +180,6 @@ export async function request<T>(
   }
   syncTokenCookies(response, cookieStore);
 
-  // 일반 API 응답 또는 로그인 응답에서
-  // Set-Cookie가 있다면 쿠키 동기화
-  syncTokenCookies(response, cookieStore);
-
   // 응답 JSON 파싱
   const data = await parseJson(response);
 

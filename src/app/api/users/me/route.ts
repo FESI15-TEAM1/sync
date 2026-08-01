@@ -35,9 +35,8 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
-  const body = await req.json();
-
   try {
+    const body = await req.json();
     const data = await request<MyProfile>('/users/me', {
       method: 'PATCH',
       body,
