@@ -3,7 +3,7 @@ import { APIError } from '@/lib/http/error';
 const BASE_URL = '/api';
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   body?: unknown;
   params?: Record<string, string>;
 }

@@ -5,7 +5,7 @@ import { APIError } from '@/lib/http/error';
 const BASE_URL = 'https://sync-back.store';
 
 interface RequestOptions {
-  method: 'GET' | 'POST' | 'DELETE' | 'PUT';
+  method: 'GET' | 'POST' | 'DELETE' | 'PUT' | 'PATCH';
   params?: Record<string, string>;
   body?: unknown;
 }

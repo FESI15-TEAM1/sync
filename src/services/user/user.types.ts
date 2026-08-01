@@ -26,3 +26,10 @@ export type UserProfile = {
   playlistCount: number;
   isFollowing: boolean;
 };
+
+// PATCH /users/me — 변경할 필드만 전송
+export type UpdateProfileRequest = {
+  nickname?: string;
+  image?: string;
+  description?: string;
+};

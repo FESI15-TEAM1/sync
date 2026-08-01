@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import {
   type ChangeEvent,
   type SubmitEvent,
@@ -13,19 +14,24 @@ import Button from '@/components/Button';
 import IconButton from '@/components/IconButton';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
-import { getMe } from '@/services/user/user.api';
+import { useUserStore } from '@/providers/user-store-provider';
+import { getMe, updateMe } from '@/services/user/user.api';
 
 type ProfileEditPageProps = {
   profileId: number;
 };
 
 export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
+  const router = useRouter();
+  const setUser = useUserStore((state) => state.setUser);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [nickname, setNickname] = useState('');
   const [bio, setBio] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -56,20 +62,44 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
     if (!file) return;
 
     const url = URL.createObjectURL(file);
+    setAvatarFile(file);
     setAvatarPreview((prev) => {
       if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
       return url;
     });
   };
 
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log({
-      profileId,
-      nickname,
-      bio,
-      hasAvatar: Boolean(avatarPreview),
-    });
+    if (isSubmitting) return;
+
+    if (avatarFile) {
+      alert(
+        '이미지 업로드 API가 아직 없어 프로필 사진은 저장되지 않습니다. 닉네임·자기소개만 저장합니다.',
+      );
+    }
+
+    setIsSubmitting(true);
+    try {
+      const updated = await updateMe({
+        nickname: nickname.trim(),
+        description: bio.trim(),
+      });
+
+      setUser({
+        id: updated.id,
+        nickname: updated.nickname,
+        image: updated.image,
+      });
+      router.push(`/profile/${updated.id}`);
+      router.refresh();
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   //회원 탈퇴
@@ -147,7 +177,13 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
         </div>
 
         <div className="flex flex-1 flex-col justify-end gap-3">
-          <Button type="submit" variant="primary" size="lg" className="w-full">
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            className="w-full"
+            isDisabled={isSubmitting || !nickname.trim()}
+          >
             저장하기
           </Button>
 
