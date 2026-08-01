@@ -9,6 +9,7 @@ import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import { getEmailError, getPasswordError } from '@/lib/auth-validation';
 import {
+  checkNickname,
   confirmEmailVerification,
   requestEmailVerification,
   signup,
@@ -34,18 +35,38 @@ export default function Signup() {
   const [isCodeValid, setIsCodeValid] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isCheckingNickname, setIsCheckingNickname] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCheckNickname = () => {
+  const handleCheckNickname = async () => {
+    if (isCheckingNickname) return;
+
     if (!nickname.trim()) {
       setNicknameError('닉네임을 입력해주세요.');
       setIsNicknameValid(false);
       return;
     }
 
-    setNicknameError('');
-    setIsNicknameValid(true);
-    alert('중복확인 되었습니다.');
+    setIsCheckingNickname(true);
+    try {
+      const { available } = await checkNickname(nickname.trim());
+
+      if (available) {
+        setNicknameError('');
+        setIsNicknameValid(true);
+        alert('사용 가능한 닉네임입니다.');
+      } else {
+        setNicknameError('이미 사용 중인 닉네임입니다.');
+        setIsNicknameValid(false);
+      }
+    } catch (error) {
+      setIsNicknameValid(false);
+      if (error instanceof Error) {
+        setNicknameError(error.message);
+      }
+    } finally {
+      setIsCheckingNickname(false);
+    }
   };
 
   const handleCheckEmail = async () => {
@@ -153,11 +174,15 @@ export default function Signup() {
             <InputField.Input
               type="text"
               value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
+              onChange={(e) => {
+                setNickname(e.target.value);
+                setIsNicknameValid(false);
+                setNicknameError('');
+              }}
             />
             <InputField.Button
               onClick={handleCheckNickname}
-              disabled={!nickname}
+              disabled={!nickname || isCheckingNickname}
             >
               중복확인
             </InputField.Button>

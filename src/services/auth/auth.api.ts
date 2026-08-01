@@ -1,13 +1,25 @@
 import { apiClient } from '@/lib/http/client-fetch';
 import type { MeResponse } from '@/services/user/user.types';
 
-import type { LoginRequest, SignupRequest } from './auth.types';
+import type {
+  LoginRequest,
+  NicknameCheckResponse,
+  SignupRequest,
+} from './auth.types';
 
 // 회원가입
 export function signup(data: SignupRequest) {
   return apiClient('/auth/signup', {
     method: 'POST',
     body: data,
+  });
+}
+
+// 닉네임 중복 확인
+export function checkNickname(nickname: string) {
+  return apiClient<NicknameCheckResponse>('/auth/nickname-check', {
+    method: 'GET',
+    params: { nickname },
   });
 }
 
