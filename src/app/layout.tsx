@@ -13,6 +13,7 @@ import { type ReactNode } from 'react';
 
 import Header from '@/components/domain/layout/Header';
 import Sidebar from '@/components/domain/layout/Sidebar';
+import MockInit from '@/mocks/MockInit';
 import { PlayerStoreProvider } from '@/providers/player-store-provider';
 import { SidebarStoreProvider } from '@/providers/sidebar-store-provider';
 import { UserStoreProvider } from '@/providers/user-store-provider';
@@ -39,6 +40,7 @@ export default function RootLayout({
       className={`h-full antialiased ${pretendard.variable} ${noto.variable}`}
     >
       <body className={`bg-bg-primary`}>
+        <MockInit />
         <UserStoreProvider>
           <PlayerStoreProvider>
             <SidebarStoreProvider>
