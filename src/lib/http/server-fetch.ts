@@ -101,21 +101,31 @@ function extractSetCookieValue(response: Response, name: string) {
   return undefined;
 }
 
+// Server Component 렌더링 중에는 쿠키를 쓸 수 없어 여기서 에러가 던져진다.
+// Server Action/Route Handler에서 호출된 경우에만 실제로 반영되면 되므로 무시한다.
 function syncTokenCookies(response: Response, cookieStore: CookieStore) {
   const newAccessToken = extractSetCookieValue(response, 'access_token');
   const newRefreshToken = extractSetCookieValue(response, 'refresh_token');
 
-  if (newAccessToken) {
-    cookieStore.set('accessToken', newAccessToken, ACCESS_TOKEN_COOKIE);
-  }
-  if (newRefreshToken) {
-    cookieStore.set('refreshToken', newRefreshToken, REFRESH_TOKEN_COOKIE);
+  try {
+    if (newAccessToken) {
+      cookieStore.set('accessToken', newAccessToken, ACCESS_TOKEN_COOKIE);
+    }
+    if (newRefreshToken) {
+      cookieStore.set('refreshToken', newRefreshToken, REFRESH_TOKEN_COOKIE);
+    }
+  } catch {
+    // no-op: Server Component 렌더링 중 호출된 경우
   }
 }
 
 export function clearTokenCookies(cookieStore: CookieStore) {
-  cookieStore.delete({ name: 'accessToken', path: '/' });
-  cookieStore.delete({ name: 'refreshToken', path: '/' });
+  try {
+    cookieStore.delete({ name: 'accessToken', path: '/' });
+    cookieStore.delete({ name: 'refreshToken', path: '/' });
+  } catch {
+    // no-op: Server Component 렌더링 중 호출된 경우
+  }
 }
 
 async function refreshAccessToken(
