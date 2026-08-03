@@ -67,7 +67,7 @@ export default function AddForm() {
   };
 
   return (
-    <div className="flex flex-col items-center gap-6">
+    <div className="flex w-4xl flex-col items-center gap-6">
       {/* 이미지 색션 */}
       <div className="relative h-40 w-40">
         <label
@@ -109,7 +109,6 @@ export default function AddForm() {
           }
           placeholder="플레이리스트 이름을 입력하세요"
         ></InputField.Input>
-        <InputField.Button>검색</InputField.Button>
       </InputField>
 
       <Textarea
@@ -131,13 +130,11 @@ export default function AddForm() {
       <div className="flex w-full items-center justify-center gap-3">
         <InputField className="w-full">
           <InputField.Input
-            value={form.title}
-            onChange={(e) =>
-              setForm((prev) => ({ ...prev, title: e.target.value }))
-            }
-            placeholder="플레이리스트 이름을 입력하세요"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            placeholder="아티스트 명 또는 곡 이름을 검색하세요."
           ></InputField.Input>
-          <InputField.Button>검색</InputField.Button>
+          <InputField.Button onClick={fetchSearchData}>검색</InputField.Button>
         </InputField>
       </div>
       {searchList.length > 0 ? (
