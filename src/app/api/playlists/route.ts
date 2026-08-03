@@ -1,54 +1,41 @@
-import type { NextRequest } from 'next/server';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
-import { APIError } from '@/lib/http/error';
-import { request } from '@/lib/http/server-fetch';
-import type { CreatePlaylistRequest } from '@/services/playlist/playlist';
-
-export async function POST(req: NextRequest) {
-  const body: CreatePlaylistRequest = await req.json();
-
-  if (!body.title) {
-    return Response.json(
-      {
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: '제목은 필수입니다.',
-        },
-      },
-      { status: 400 },
-    );
-  }
-
+export async function POST(
+  request: Request,
+  { params }: { params: { id: string } },
+) {
   try {
-    const data = await request<{ id: number }>('/playlists', {
-      method: 'POST',
-      body,
-    });
+    const accessToken = (await cookies()).get('accessToken')?.value;
 
-    return Response.json({ id: data.id }, { status: 201 });
-  } catch (error) {
-    if (error instanceof APIError) {
-      return Response.json(
-        {
-          error: {
-            code: error.code,
-            message: error.message,
-          },
-        },
-        {
-          status: error.status,
-        },
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: '인증되지않은 사용자 입니다.' },
+        { status: 401 },
       );
     }
 
-    return Response.json(
-      {
-        error: {
-          code: 'INTERNAL_SERVER_ERROR',
-          message: '서버 오류가 발생했습니다.',
-        },
+    const body = await request.json();
+    const res = await fetch(`https://sync-back.store/playlists/${params.id}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
       },
-      { status: 500 },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      return NextResponse.json(
+        { error: 'Failed to add track' },
+        { status: res.status },
+      );
+    }
+    const data = await res.json();
+    return NextResponse.json(data, { status: 201 });
+  } catch {
+    return NextResponse.json(
+      { error: '유요하지 않은 json body 입니다' },
+      { status: 400 },
     );
   }
 }
