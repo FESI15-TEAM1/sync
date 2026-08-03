@@ -1,26 +1,19 @@
-import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
 
 import { APIError } from '@/lib/http/error';
 import { request } from '@/lib/http/server-fetch';
+import type { SessionUser } from '@/services/user/user.types';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
   try {
-    const data = await request<{ accessToken: string; refreshToken: string }>(
-      '/auth/login',
-      {
-        method: 'POST',
-        body,
-      },
-    );
+    const data = await request<SessionUser>('/auth/login', {
+      method: 'POST',
+      body,
+    });
 
-    const cookieStore = await cookies();
-    cookieStore.set('accessToken', data.accessToken);
-    cookieStore.set('refreshToken', data.refreshToken);
-
-    return Response.json({ success: true });
+    return Response.json(data);
   } catch (error) {
     if (error instanceof APIError) {
       return Response.json(

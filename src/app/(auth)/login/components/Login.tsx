@@ -1,21 +1,54 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { type SubmitEvent } from 'react';
 
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import { getEmailError, getPasswordError } from '@/lib/auth-validation';
+import { useUserStore } from '@/providers/user-store-provider';
 
-export default function Login() {
+import { loginAction } from '../actions';
+
+export default function LoginForm() {
+  const router = useRouter();
+
+  const setUser = useUserStore((state) => state.setUser);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log(email, password);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (formData: FormData) => {
+    setIsSubmitting(true);
+
+    try {
+      const result = await loginAction(formData);
+
+      if (!result.success) {
+        alert(result.message);
+        return;
+      }
+
+      if (result.user) {
+        setUser(result.user);
+      }
+
+      router.push('/');
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert('로그인 중 오류가 발생했습니다.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -31,40 +64,56 @@ export default function Login() {
         </p>
       </div>
 
-      <form className="flex flex-col gap-1" onSubmit={handleSubmit}>
+      <form action={handleSubmit} className="flex flex-col gap-1">
         <InputField>
           <InputField.Label>이메일</InputField.Label>
+
           <InputField.Input
+            name="email"
+            type="email"
             value={email}
             onChange={(e) => {
               const value = e.target.value;
+
               setEmail(value);
               setEmailError(getEmailError(value));
             }}
           />
+
           <InputField.Error>{emailError}</InputField.Error>
         </InputField>
 
         <InputField>
           <InputField.Label>비밀번호</InputField.Label>
+
           <InputField.Password
+            name="password"
             value={password}
             onChange={(e) => {
               const value = e.target.value;
+
               setPassword(value);
               setPasswordError(getPasswordError(value));
             }}
           />
+
           <InputField.Error>{passwordError}</InputField.Error>
         </InputField>
 
         <Button
           type="submit"
-          isDisabled={!email || !password || !!emailError || !!passwordError}
+          isDisabled={
+            !email ||
+            !password ||
+            !!emailError ||
+            !!passwordError ||
+            isSubmitting
+          }
         >
-          로그인
+          {isSubmitting ? '로그인 중...' : '로그인'}
         </Button>
       </form>
+
       <div className="mt-8 flex items-center gap-4">
         <span className="bg-border h-px flex-1"></span>
         <span className="text-text-secondary text-sm">또는</span>
