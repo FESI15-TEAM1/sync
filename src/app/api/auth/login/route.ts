@@ -2,23 +2,36 @@ import { cookies } from 'next/headers';
 import type { NextRequest } from 'next/server';
 
 import { APIError } from '@/lib/http/error';
-import { request } from '@/lib/http/server-fetch';
+import { serverFetch } from '@/lib/http/server-fetch';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
   try {
-    const data = await request<{ accessToken: string; refreshToken: string }>(
-      '/auth/login',
-      {
-        method: 'POST',
-        body,
-      },
-    );
+    const data = await serverFetch<{
+      accessToken: string;
+      refreshToken: string;
+      expiresIn: number;
+    }>('/auth/login', {
+      method: 'POST',
+      body,
+    });
 
     const cookieStore = await cookies();
-    cookieStore.set('accessToken', data.accessToken);
-    cookieStore.set('refreshToken', data.refreshToken);
+    cookieStore.set('accessToken', data.accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: data.expiresIn,
+    });
+    cookieStore.set('refreshToken', data.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 14,
+    });
 
     return Response.json({ success: true });
   } catch (error) {

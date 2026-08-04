@@ -1,10 +1,10 @@
-import { apiClient } from '@/lib/http/client-fetch';
+import { clientFetch } from '@/lib/http/client-fetch';
 
 import type { LoginRequest, SignupRequest } from './auth.types';
 
 // 회원가입
 export function signup(data: SignupRequest) {
-  return apiClient('/auth/signup', {
+  return clientFetch('/auth/signup', {
     method: 'POST',
     body: data,
   });
@@ -12,7 +12,7 @@ export function signup(data: SignupRequest) {
 
 // 이메일 인증 코드 발송
 export function requestEmailVerification(email: string) {
-  return apiClient('/auth/email-verify-request', {
+  return clientFetch('/auth/email-verify-request', {
     method: 'POST',
     body: {
       email,
@@ -22,7 +22,7 @@ export function requestEmailVerification(email: string) {
 
 // 이메일 인증 코드 확인
 export function confirmEmailVerification(email: string, code: string) {
-  return apiClient('/auth/email-verify-confirm', {
+  return clientFetch('/auth/email-verify-confirm', {
     method: 'POST',
     body: {
       email,
@@ -33,7 +33,7 @@ export function confirmEmailVerification(email: string, code: string) {
 
 // 로그인
 export function login(data: LoginRequest) {
-  return apiClient('/auth/login', {
+  return clientFetch('/auth/login', {
     method: 'POST',
     body: data,
   });

@@ -1,18 +1,16 @@
+import { APIError } from './error';
+
 const BASE_URL = '/api';
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  params?: Record<string, string>;
   body?: unknown;
 }
 
-// 응답 바디가 비어있거나 JSON이 아닐 경우 안전하게 파싱
 async function parseJson(response: Response) {
   const text = await response.text();
-
-  if (!text) {
-    return null;
-  }
-
+  if (!text) return null;
   try {
     return JSON.parse(text);
   } catch {
@@ -20,19 +18,23 @@ async function parseJson(response: Response) {
   }
 }
 
-export async function apiClient<T>(
+export async function clientFetch<T>(
   endpoint: string,
-  { method, body }: RequestOptions = {},
+  { method = 'GET', params, body }: RequestOptions = {},
 ): Promise<T> {
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
-    method,
-    headers: body ? { 'Content-Type': 'application/json' } : undefined,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  const response = await fetch(
+    `${BASE_URL}${endpoint}${params ? '?' + new URLSearchParams(params) : ''}`,
+    { method, body: JSON.stringify(body) },
+  );
+  const data = await parseJson(response);
 
   if (!response.ok) {
-    throw new Error(`API Error : ${response.status}`);
+    throw new APIError(
+      response.status,
+      data?.error?.code ?? 'INTERNAL_SERVER_ERROR',
+      data?.error?.message ?? `서버 오류가 발생했습니다. (${response.status})`,
+    );
   }
 
-  return parseJson(response);
+  return data;
 }
