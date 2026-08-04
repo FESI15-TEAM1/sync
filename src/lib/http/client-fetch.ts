@@ -1,7 +1,8 @@
 const BASE_URL = '/api';
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  params?: Record<string, string>;
   body?: unknown;
 }
 
