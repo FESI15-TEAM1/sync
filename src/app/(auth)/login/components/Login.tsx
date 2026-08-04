@@ -1,21 +1,34 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { type SubmitEvent } from 'react';
 
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import { getEmailError, getPasswordError } from '@/lib/auth-validation';
+import { APIError } from '@/lib/http/error';
+import { login } from '@/services/auth/auth.api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+
+  const router = useRouter();
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(email, password);
+    try {
+      await login({ email, password });
+      router.push('/');
+    } catch (error) {
+      if (error instanceof APIError) {
+        console.error(error.message);
+        alert(error.message);
+      }
+    }
   };
 
   return (
@@ -61,7 +74,8 @@ export default function Login() {
 
         <Button
           type="submit"
-          isDisabled={!email || !password || !!emailError || !!passwordError}
+          // isDisabled={!email || !password || !!emailError || !!passwordError}
+          isDisabled={false}
         >
           로그인
         </Button>

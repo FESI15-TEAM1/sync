@@ -1,13 +1,13 @@
 import type { NextRequest } from 'next/server';
 
 import { APIError } from '@/lib/http/error';
-import { request } from '@/lib/http/server-fetch';
+import { serverFetch } from '@/lib/http/server-fetch';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
   try {
-    const data = await request('/auth/email-verify-confirm', {
+    const data = await serverFetch('/auth/email-verify-confirm', {
       method: 'POST',
       body,
     });
