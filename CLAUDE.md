@@ -7,37 +7,60 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev          # start dev server (turbopack)
+npm run dev          # dev server (Next 16 → Turbopack by default)
+npm run dev:https    # dev server over HTTPS
 npm run build        # production build
 npm run lint         # eslint (flat config, eslint.config.mjs)
-npm test             # run jest test suite once
-npm run test:watch   # jest in watch mode
-npx jest path/to/file.test.tsx   # run a single test file
-npx jest -t "test name"          # run tests matching a name
+npm test             # jest suite once
+npm run test:watch   # jest watch mode
+npx jest path/to/file.test.tsx   # single test file
+npx jest -t "test name"          # tests matching a name
 ```
 
-`npm run prepare` installs the husky git hooks. The pre-commit hook runs `npm run lint` and `npm test` — both must pass to commit.
+Node >= 24 is required. `npm run prepare` installs husky hooks; the pre-commit hook runs `npm run lint` and `npm test`, and CI runs the same two before deploying to Vercel.
 
 ## Architecture
 
-- **Next.js App Router**, TypeScript, Tailwind CSS v4, path alias `@/*` → `src/*`.
-- **React Compiler is enabled** (`reactCompiler: true` in `next.config.ts`) — avoid manual `useMemo`/`useCallback` optimizations unless there's a specific reason; let the compiler handle memoization.
-- SVGs are imported as React components via `@svgr/webpack` (configured under `turbopack.rules` in `next.config.ts`), e.g. `import EyeIcon from '@/assets/icons/eye.svg'`. In Jest, SVG imports are mocked by `__mocks__/svg.tsx` via `moduleNameMapper` in `jest.config.ts`.
-- Route groups: `src/app/(auth)/` holds `login`/`signup`; feature routes (`group`, `playlist`, `playroom`, `search`, `stage`) each keep page-local building blocks in a `_components/` (or similarly named) subfolder next to the route.
-- `src/app/api/` contains Next.js route handlers; `src/app/api/youtube/client.ts` wraps the YouTube Data API with a typed `request<T>()` helper and a `YoutubeApiError` class — follow this pattern (typed request wrapper + custom error class) for other external API integrations.
-- **Client global state** uses Zustand with the SSR-safe context-provider pattern (see `src/stores/sidebar-store.ts` + `src/providers/sidebar-store-provider.tsx`): a vanilla store factory (`createStore` from `zustand/vanilla`) is instantiated once per-request inside a `'use client'` provider component (`useState(() => createStore())`), exposed through React Context, and consumed via a `useXStore(selector)` hook that throws if used outside its provider. Follow this pattern rather than a module-level singleton store when adding new client state.
-- **Server/remote state**: `@tanstack/react-query` + devtools are dependencies for data fetching/caching from route handlers or external APIs.
-- Shared form-field styling lives in `src/components/Input.tsx` as the exported `fieldStyle` constant (built with `clsx` + `tailwind-merge`); `src/components/Textarea.tsx` imports it to stay visually consistent with `Input`. Reuse `fieldStyle` for any new form-field component instead of duplicating the class string.
-- `src/components/` holds generic/shared UI (`Button`, `Input`, `Textarea`, `IconButton`, and `common/`); `src/components/domain/` holds domain-specific presentational components (`PlaylistCard`, `Track`, `domain/layout/`).
-- Path aliasing and TS config: `strict: true`, `moduleResolution: "bundler"`, only `@/*` is aliased — no other custom path aliases exist.
+Next.js App Router + TypeScript + Tailwind v4, `strict: true`, path alias `@/*` → `src/*` (the only alias). This is a Korean-language product: UI strings, code comments, and API error messages are in Korean — match that when editing.
 
-## Testing
+### Request flow — the core pattern
 
-- Jest + `@testing-library/react`, environment `jsdom`, config built via `next/jest`.
-- Setup file `jest.setup.ts` only imports `@testing-library/jest-dom` matchers.
-- Components that consume a Zustand store hook (e.g. anything using `useSidebarStore`) must be rendered wrapped in their provider in tests — see `src/app/testPage.test.tsx` for the pattern (`render(<SidebarStoreProvider><Component /></SidebarStoreProvider>)`).
+The browser never talks to the backend directly. Every call goes:
 
-## Lint conventions
+component → `src/services/<domain>/*.api.ts` → `clientFetch` → own route handler under `src/app/api/` → `serverFetch` → backend
 
-- Import order is enforced by `eslint-plugin-simple-import-sort` (auto-sorted, not alphabetical-by-hand).
-- `@typescript-eslint/consistent-type-imports` is an error — use `import { type Foo } from '...'` for type-only imports.
+- **`clientFetch`** (`src/lib/http`) is browser-side and based at `/api`, so it only ever reaches this app's own route handlers. It throws `APIError` parsed from the response's `{ error: { code, message } }` envelope.
+- **`serverFetch`** (`src/lib/http`) is for route handlers and server components only — it reads cookies. It attaches the bearer token, transparently refreshes an expired one and retries once, and clears the auth cookies if refresh fails.
+- **`APIError(status, code, message)`** is the single error type crossing both boundaries.
+
+Auth is httpOnly-cookie based and always set server-side in a route handler; tokens are never exposed to client JS.
+
+**Every route handler follows the same shape** — call `serverFetch` inside a `try`, and in `catch` re-emit an `APIError` as the `{ error: { code, message } }` envelope with its status, falling back to a 500 envelope otherwise. Keep that envelope intact: `clientFetch` parses exactly this shape, so deviating breaks client-side error messages.
+
+`src/services/<domain>/` holds `*.api.ts` (thin functions over `clientFetch`/`serverFetch`) plus `*.types.ts` for request/response types. Always check which fetcher a service uses — a `serverFetch`-based service is server-only and cannot be called from a client component.
+
+`swagger.json` at the repo root is the backend's OpenAPI spec — consult it for endpoint shapes instead of guessing.
+
+### External APIs
+
+Third-party integrations get their own client module under `src/app/api/<service>/`: a typed `request<T>()` wrapper plus a custom error class, with the API key read server-side and never sent to the client.
+
+### Client state
+
+Zustand with the **SSR-safe context-provider pattern**, not module-level singletons: a vanilla `createStore()` factory in `src/stores/`, instantiated once per request via `useState(() => createXStore())` inside a `'use client'` provider in `src/providers/`, exposed through React Context, and consumed via a `useXStore(selector)` hook that throws outside its provider. Follow this pattern for any new global client state, and render such components inside their provider in tests.
+
+`@tanstack/react-query` is installed but **not yet wired up** — there is no `QueryClientProvider` and no `useQuery` call anywhere. Data fetching today is server components plus direct `*.api.ts` calls; adding react-query means introducing the provider first.
+
+### Components & routing
+
+- `src/components/` — generic UI; `src/components/domain/` — domain-specific presentational components.
+- Route-local building blocks live in a `_components/` folder beside the route. Route groups: `(auth)` for login/signup, `(main)` for the home page.
+- Shared form-field styling is a single exported class constant (clsx + tailwind-merge) that field components compose — reuse it instead of duplicating the class string.
+- **React Compiler is enabled** (`reactCompiler: true`) — skip manual `useMemo`/`useCallback` unless there's a specific reason.
+- SVGs import as React components via `@svgr/webpack`: `import EyeIcon from '@/assets/icons/eye.svg'`. Remote image hosts must be allowlisted in `next.config.ts`.
+
+## Conventions
+
+- Import order enforced by `eslint-plugin-simple-import-sort` (auto-sorted, not hand-alphabetized); `@typescript-eslint/consistent-type-imports` is an error — use `import { type Foo } from '...'`.
+- Prettier: single quotes, semicolons, trailing commas, 2-space indent, `prettier-plugin-tailwindcss` sorts class names.
+- Naming (also enforced in CodeRabbit review, `.coderabbit.yaml`): components PascalCase, hooks `use` + camelCase, API functions verb+noun camelCase, constants SCREAMING_SNAKE_CASE, handlers `handle*`, booleans `is`/`has`. Always type API response data; wrap fallible calls in try-catch.
