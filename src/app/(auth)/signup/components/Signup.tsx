@@ -167,7 +167,7 @@ export default function Signup() {
           <InputField>
             <InputField.Label>이메일</InputField.Label>
             <InputField.Input
-              type="text"
+              type="email"
               value={email}
               onChange={(e) => {
                 const value = e.target.value;

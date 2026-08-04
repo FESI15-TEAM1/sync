@@ -35,6 +35,7 @@ export default function Login() {
         <InputField>
           <InputField.Label>이메일</InputField.Label>
           <InputField.Input
+            type="email"
             value={email}
             onChange={(e) => {
               const value = e.target.value;
