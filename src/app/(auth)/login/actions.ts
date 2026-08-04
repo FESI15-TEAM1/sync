@@ -3,11 +3,17 @@
 import { request } from '@/lib/http/server-fetch';
 import type { SessionUser } from '@/services/user/user.types';
 
+type LoginResponse = SessionUser & {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+};
+
 type LoginFormState = {
   success: boolean;
   message?: string;
   user?: SessionUser;
-};
+}
 
 export async function loginAction(formData: FormData): Promise<LoginFormState> {
   const email = formData.get('email');
@@ -21,16 +27,25 @@ export async function loginAction(formData: FormData): Promise<LoginFormState> {
   }
 
   try {
-    // 토큰은 백엔드가 Set-Cookie로 내려주고, server-fetch의 request()가
-    // 우리 도메인의 accessToken/refreshToken 쿠키로 동기화해준다.
-    const user = await request<SessionUser>('/auth/login', {
+    //server-fetch의 request()에서
+    //accessToken / refreshToken을  HttpOnly 쿠키에 저장한다.
+    const result = await request<LoginResponse>('/auth/login', {
       method: 'POST',
       body: { email, password },
     });
 
+    //클라이언트ㅔ에는 사용자 정보만 전달
+    //토큰을 HttpOnly쿠키에 저장되어 있으므로
+    //클라이언트로 직접 반환하지 않는다.
     return {
       success: true,
-      user,
+      user: {
+        id: result.id,
+        nickname: result.nickname,
+        email: result.email,
+        image: result.image
+
+      },
     };
   } catch (error) {
     if (error instanceof Error) {

@@ -6,7 +6,6 @@ import { useState } from 'react';
 
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
-import { getEmailError, getPasswordError } from '@/lib/auth-validation';
 import { useUserStore } from '@/providers/user-store-provider';
 
 import { loginAction } from '../actions';
@@ -19,9 +18,6 @@ export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (formData: FormData) => {
@@ -31,7 +27,7 @@ export default function LoginForm() {
       const result = await loginAction(formData);
 
       if (!result.success) {
-        alert(result.message);
+        alert('로그인 정보가 맞지 않습니다.');
         return;
       }
 
@@ -40,12 +36,8 @@ export default function LoginForm() {
       }
 
       router.push('/');
-    } catch (error) {
-      if (error instanceof Error) {
-        alert(error.message);
-      } else {
-        alert('로그인 중 오류가 발생했습니다.');
-      }
+    } catch {
+      alert('로그인 정보가 맞지 않습니다.');
     } finally {
       setIsSubmitting(false);
     }
@@ -72,15 +64,8 @@ export default function LoginForm() {
             name="email"
             type="email"
             value={email}
-            onChange={(e) => {
-              const value = e.target.value;
-
-              setEmail(value);
-              setEmailError(getEmailError(value));
-            }}
+            onChange={(e) => setEmail(e.target.value)}
           />
-
-          <InputField.Error>{emailError}</InputField.Error>
         </InputField>
 
         <InputField>
@@ -89,26 +74,13 @@ export default function LoginForm() {
           <InputField.Password
             name="password"
             value={password}
-            onChange={(e) => {
-              const value = e.target.value;
-
-              setPassword(value);
-              setPasswordError(getPasswordError(value));
-            }}
+            onChange={(e) => setPassword(e.target.value)}
           />
-
-          <InputField.Error>{passwordError}</InputField.Error>
         </InputField>
 
         <Button
           type="submit"
-          isDisabled={
-            !email ||
-            !password ||
-            !!emailError ||
-            !!passwordError ||
-            isSubmitting
-          }
+          isDisabled={!email || !password || isSubmitting}
         >
           {isSubmitting ? '로그인 중...' : '로그인'}
         </Button>

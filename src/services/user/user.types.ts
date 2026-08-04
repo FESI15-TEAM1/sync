@@ -1,6 +1,7 @@
 // 로그인 응답 / 헤더·세션용 최소 유저 정보
 export type SessionUser = {
   id: number;
+  email: string;
   nickname: string;
   image: string | null;
 };
