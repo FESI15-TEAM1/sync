@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { APIError } from '@/lib/http/error';
-import { serverClient } from '@/lib/http/server-fetch';
+import { serverFetch } from '@/lib/http/server-fetch';
 
 export async function POST(
   req: Request,
@@ -9,7 +9,7 @@ export async function POST(
 ) {
   try {
     const body = await req.json();
-    const data = await serverClient(`/playlists/${params.id}`, {
+    const data = await serverFetch(`/playlists/${params.id}`, {
       method: 'POST',
       body,
     });

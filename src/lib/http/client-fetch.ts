@@ -18,7 +18,7 @@ async function parseJson(response: Response) {
   }
 }
 
-export async function apiClient<T>(
+export async function clientFetch<T>(
   endpoint: string,
   { method = 'GET', params, body }: RequestOptions = {},
 ): Promise<T> {

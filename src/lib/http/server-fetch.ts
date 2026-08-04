@@ -60,7 +60,7 @@ async function refreshAccessToken(refreshToken: string): Promise<{
   return newToken;
 }
 // 라우트 헨들러 전용
-export async function serverClient<T>(
+export async function serverFetch<T>(
   endpoint: string,
   options: RequestOptions,
 ): Promise<T> {
