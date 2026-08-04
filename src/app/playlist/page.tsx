@@ -50,15 +50,6 @@ export const data = {
   ],
   nextCursor: null,
 };
-export interface PlaylistItem {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-  isPublic: boolean;
-  trackCount: number;
-  createdAt: string;
-}
 
 export default function PlayList() {
   return (

@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import ListItem from './ListItem';
 
-type PlayroomListData = {
+export type PlayroomListData = {
   id: number;
   title: string;
   description: string;
