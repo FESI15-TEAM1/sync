@@ -56,7 +56,16 @@ async function refreshAccessToken(refreshToken: string): Promise<{
     body: JSON.stringify({ refreshToken }),
   });
   if (!response.ok) return null;
-  const newToken = await response.json();
+
+  const newToken = await parseJson(response);
+
+  if (
+    !newToken?.accessToken ||
+    !newToken?.refreshToken ||
+    !newToken?.expiresIn
+  ) {
+    return null;
+  }
   return newToken;
 }
 // 라우트 헨들러 전용

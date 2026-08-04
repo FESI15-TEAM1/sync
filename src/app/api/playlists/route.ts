@@ -3,13 +3,10 @@ import { NextResponse } from 'next/server';
 import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
 
-export async function POST(
-  req: Request,
-  { params }: { params: { id: string } },
-) {
+export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const data = await serverFetch(`/playlists/${params.id}`, {
+    const data = await serverFetch(`/playlists/`, {
       method: 'POST',
       body,
     });
@@ -17,7 +14,12 @@ export async function POST(
   } catch (error) {
     if (error instanceof APIError) {
       return NextResponse.json(
-        { error: error.message },
+        {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        },
         { status: error.status },
       );
     }
