@@ -134,9 +134,11 @@ export default function Profile(props: ProfileProps) {
           <Modal
             isOpen={isWithdrawModalOpen}
             onClose={() => {
-              setWithdrawError('');
-              setIsWithdrawModalOpen(false);
+              if (!isWithdrawing) {
+                setIsWithdrawModalOpen(false);
+              }
             }}
+            closeOnBackdropClick={false}
           >
             <Modal.Header>회원 탈퇴</Modal.Header>
 

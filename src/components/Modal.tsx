@@ -27,14 +27,20 @@ function useModal() {
 type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  closeOnBackdropClick?: boolean;
   children: ReactNode;
 };
 
-export function Modal({ isOpen, onClose, children }: ModalProps) {
+export function Modal({
+  isOpen,
+  onClose,
+  closeOnBackdropClick = true,
+  children,
+}: ModalProps) {
   if (!isOpen) return null;
 
   const handleBackdropClick = (e: MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
+    if (closeOnBackdropClick && e.target === e.currentTarget) {
       onClose();
     }
   };
