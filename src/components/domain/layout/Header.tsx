@@ -79,9 +79,10 @@ export default function Header() {
           <>
             <Button
               type="button"
+              size="md"
+              variant="primary"
               onClick={handleLogout}
               isDisabled={isLoggingOut}
-              className="text-text-secondary hover:text-text-primary text-sm disabled:opacity-50"
             >
               로그아웃
             </Button>
