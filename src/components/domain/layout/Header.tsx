@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 
 import Bell from '@/assets/icons/bell.svg';
 import SyncLogo from '@/assets/icons/syncLogo.svg';
@@ -22,7 +22,7 @@ export default function Header() {
   const setUser = useUserStore((state) => state.setUser);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const headerElement = headerRef.current;
     if (!headerElement) return;
 
