@@ -23,3 +23,10 @@ export function updateMe(data: UpdateProfileRequest) {
     body: data,
   });
 }
+
+// 회원 탈퇴
+export function withdraw() {
+  return clientFetch<null>('/users/me', {
+    method: 'DELETE',
+  });
+}

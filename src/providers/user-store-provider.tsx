@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import {
   createContext,
   type ReactNode,
@@ -26,11 +27,22 @@ export interface UserStoreProviderProps {
 export const UserStoreProvider = ({ children }: UserStoreProviderProps) => {
   const [store] = useState(() => createUserStore());
 
+  const { data: me, isPending, isSuccess } = useQuery({
+    queryKey: ['me'],
+    queryFn: getMe,
+    retry: false,
+  });
+
   useEffect(() => {
-    getMe()
-      .then((user) => store.getState().setUser(user))
-      .catch(() => store.getState().setUser(null));
-  }, [store]);
+    const userStore = store.getState();
+
+    userStore.setLoading(isPending);
+
+    // 조회 실패(네트워크 오류 등)는 미인증과 다르므로 사용자 상태를 초기화하지 않음
+    if (isSuccess) {
+      userStore.setUser(me ?? null);
+    }
+  }, [store, isPending, isSuccess, me]);
 
   return (
     <UserStoreContext.Provider value={store}>
