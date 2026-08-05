@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 
+import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
 import type { MyProfile } from '@/services/user/user.types';
 
@@ -17,14 +18,17 @@ export default async function ProfileEdit({
     notFound();
   }
 
-  let me: MyProfile | null = null;
+  let me: MyProfile;
   try {
     me = await serverFetch<MyProfile>('/users/me', { method: 'GET' });
-  } catch {
-    me = null;
+  } catch (error) {
+    if (error instanceof APIError && (error.status === 401 || error.status === 403)) {
+      notFound();
+    }
+    throw error;
   }
 
-  if (!me || me.id !== profileId) {
+  if (me.id !== profileId) {
     notFound();
   }
 
