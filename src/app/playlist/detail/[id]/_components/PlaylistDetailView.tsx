@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
@@ -15,7 +16,9 @@ import defaultImg from '@/assets/images/mook.jpg';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import KebabModal from '@/components/domain/KebabModal';
+import { clientFetch } from '@/lib/http/client-fetch';
 import { usePlayerStore } from '@/providers/player-store-provider';
+import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 import { type PlaylistTrack } from '@/services/playlist/playlist';
 
 export default function PlaylistDetailView({
@@ -36,6 +39,13 @@ export default function PlaylistDetailView({
 
   const id = params.id;
 
+  const { data, isPending, error } = useQuery({
+    queryKey: ['playlists', id],
+    queryFn: () => clientFetch<PlaylistDetail>(`/playlists/${id}`),
+  });
+  if (isPending)
+    return <div className="text-text-primary font-bold">로딩중...</div>;
+  if (error) return <div>에러남</div>;
   const handleTrackClick = (track: PlaylistTrack) => {
     if (currentTrack?.videoId === track.videoId) {
       if (isPlaying) playerRef.current?.pause();
@@ -110,7 +120,7 @@ export default function PlaylistDetailView({
       <Button className="w-full"> 그룹생성 요청</Button>
       <div className="bg-bg-card rounded-xl p-4">
         <TrackList
-          trackList={tracks}
+          trackList={data?.tracks}
           onTrackClick={handleTrackClick}
           Button={(track) => (
             <TrackHoverController
