@@ -103,9 +103,9 @@ export default function Header() {
           // 로그아웃 상태
           <Link
             href="/login"
-            className="text-text-secondary hover:text-text-primary text-sm"
+            className="bg-primary text-text-primary hover:bg-secondary rounded-3xl px-4 py-2 text-base font-bold"
           >
-            <Button>로그인</Button>
+            로그인
           </Link>
         )}
       </div>
