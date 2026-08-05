@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import {
   createContext,
   type ReactNode,
@@ -26,11 +27,16 @@ export interface UserStoreProviderProps {
 export const UserStoreProvider = ({ children }: UserStoreProviderProps) => {
   const [store] = useState(() => createUserStore());
 
+  const { data: me, isPending } = useQuery({
+    queryKey: ['me'],
+    queryFn: getMe,
+    retry: false,
+  });
+
   useEffect(() => {
-    getMe()
-      .then((user) => store.getState().setUser(user))
-      .catch(() => store.getState().setUser(null));
-  }, [store]);
+    if (isPending) return;
+    store.getState().setUser(me ?? null);
+  }, [store, me, isPending]);
 
   return (
     <UserStoreContext.Provider value={store}>
