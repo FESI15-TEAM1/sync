@@ -18,15 +18,18 @@ export default function PlaylistView({
   myData,
   likedData,
   userNickname,
+  isOwner,
 }: {
   myData: MyPlaylistItem[];
   likedData: Playlist[];
   userNickname: string;
+  isOwner: boolean;
 }) {
   const [tab, setTab] = useState<Tab>('mine');
   const router = useRouter();
 
-  const items = tab === 'mine' ? myData : likedData;
+  const activeTab = isOwner ? tab : 'mine';
+  const items = activeTab === 'mine' ? myData : likedData;
 
   return (
     <div className="text-text-primary relative flex flex-col items-center justify-center p-2">
@@ -42,22 +45,28 @@ export default function PlaylistView({
           onClick={() => setTab('mine')}
           className={clsx(
             'm-auto text-2xl font-bold transition-colors',
-            tab === 'mine' ? 'text-text-primary' : 'text-text-secondary',
+            activeTab === 'mine' ? 'text-text-primary' : 'text-text-secondary',
           )}
         >
           MINE
         </button>
-        <span className="text-text-secondary text-2xl">|</span>
-        <button
-          type="button"
-          onClick={() => setTab('liked')}
-          className={clsx(
-            'm-auto text-2xl font-bold transition-colors',
-            tab === 'liked' ? 'text-text-primary' : 'text-text-secondary',
-          )}
-        >
-          LIKED
-        </button>
+        {isOwner && (
+          <>
+            <span className="text-text-secondary text-2xl">|</span>
+            <button
+              type="button"
+              onClick={() => setTab('liked')}
+              className={clsx(
+                'm-auto text-2xl font-bold transition-colors',
+                activeTab === 'liked'
+                  ? 'text-text-primary'
+                  : 'text-text-secondary',
+              )}
+            >
+              LIKED
+            </button>
+          </>
+        )}
       </div>
       <div className="mt-4 flex flex-col flex-wrap">
         <div className="mt-20 w-full">
