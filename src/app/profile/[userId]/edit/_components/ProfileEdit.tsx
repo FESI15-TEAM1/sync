@@ -9,6 +9,7 @@ import Button from '@/components/Button';
 import IconButton from '@/components/IconButton';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
+import { APIError } from '@/lib/http/error';
 import { useUserStore } from '@/providers/user-store-provider';
 import { requestUploadUrl } from '@/services/upload/upload.api';
 import type { UploadUrlRequest } from '@/services/upload/upload.types';
@@ -31,6 +32,7 @@ export default function ProfileEditPage({ profile }: ProfileEditPageProps) {
   const [nickname, setNickname] = useState(profile.nickname);
   const [bio, setBio] = useState(profile.description ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [nicknameError, setNicknameError] = useState('');
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -49,6 +51,7 @@ export default function ProfileEditPage({ profile }: ProfileEditPageProps) {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
+    setNicknameError('');
     try {
       let image: string | undefined;
 
@@ -80,7 +83,15 @@ export default function ProfileEditPage({ profile }: ProfileEditPageProps) {
       router.push(`/profile/${updated.id}`);
       router.refresh();
     } catch (error) {
-      if (error instanceof Error) {
+      if (error instanceof APIError) {
+        if (error.status === 400 || error.status === 409) {
+          setNicknameError(error.message);
+        } else if (error.status === 401) {
+          router.push('/login');
+        } else {
+          alert(error.message);
+        }
+      } else if (error instanceof Error) {
         alert(error.message);
       }
     } finally {
@@ -139,8 +150,12 @@ export default function ProfileEditPage({ profile }: ProfileEditPageProps) {
             <InputField.Input
               placeholder="닉네임을 입력하세요"
               value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
+              onChange={(e) => {
+                setNickname(e.target.value);
+                setNicknameError('');
+              }}
             />
+            <InputField.Error>{nicknameError}</InputField.Error>
           </InputField>
 
           <Textarea
