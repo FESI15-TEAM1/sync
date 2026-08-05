@@ -21,13 +21,7 @@ import { usePlayerStore } from '@/providers/player-store-provider';
 import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 import { type PlaylistTrack } from '@/services/playlist/playlist';
 
-export default function PlaylistDetailView({
-  tracks,
-  comments,
-}: {
-  tracks: PlaylistTrack[];
-  comments: CommentItemsType;
-}) {
+export default function PlaylistDetailView() {
   const currentTrack = usePlayerStore((state) => state.currentTrack);
   const isPlaying = usePlayerStore((state) => state.isPlaying);
   const playTrack = usePlayerStore((state) => state.playTrack);
@@ -39,13 +33,26 @@ export default function PlaylistDetailView({
 
   const id = params.id;
 
-  const { data, isPending, error } = useQuery({
+  const {
+    data: playlist,
+    isPending: isPlaylistPending,
+    error: playlistError,
+  } = useQuery({
     queryKey: ['playlists', id],
     queryFn: () => clientFetch<PlaylistDetail>(`/playlists/${id}`),
   });
-  if (isPending)
+  const {
+    data: comments,
+    isPending: isCommentsPending,
+    error: commentsError,
+  } = useQuery({
+    queryKey: ['playlists', id, 'comments'],
+    queryFn: () => clientFetch<CommentItemsType>(`/playlists/${id}/comments`),
+  });
+  if (isCommentsPending || isPlaylistPending)
     return <div className="text-text-primary font-bold">로딩중...</div>;
-  if (error) return <div>에러남</div>;
+  if (commentsError || playlistError) return <div>에러남</div>;
+
   const handleTrackClick = (track: PlaylistTrack) => {
     if (currentTrack?.videoId === track.videoId) {
       if (isPlaying) playerRef.current?.pause();
@@ -56,10 +63,10 @@ export default function PlaylistDetailView({
   };
 
   const handleEnd = () => {
-    const currentIndex = tracks.findIndex(
+    const currentIndex = playlist.tracks.findIndex(
       (track) => track.videoId === currentTrack?.videoId,
     );
-    const nextTrack = tracks[currentIndex + 1];
+    const nextTrack = playlist.tracks[currentIndex + 1];
     if (nextTrack) playTrack(nextTrack);
     else stop();
   };
@@ -120,7 +127,7 @@ export default function PlaylistDetailView({
       <Button className="w-full"> 그룹생성 요청</Button>
       <div className="bg-bg-card rounded-xl p-4">
         <TrackList
-          trackList={data?.tracks}
+          trackList={playlist?.tracks}
           onTrackClick={handleTrackClick}
           Button={(track) => (
             <TrackHoverController
