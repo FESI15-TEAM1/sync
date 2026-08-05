@@ -30,8 +30,13 @@ export async function GET(
       );
     }
     return NextResponse.json(
-      { error: '유효하지 않은 json body 입니다' },
-      { status: 400 },
+      {
+        error: {
+          code: 'INTERNAL_SERVER_ERROR',
+          message: '서버 오류가 발생하였습니다.',
+        },
+      },
+      { status: 500 },
     );
   }
 }
