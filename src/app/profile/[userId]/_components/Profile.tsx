@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import SyncLogo from '@/assets/icons/syncLogo.svg';
 import Button from '@/components/Button';
 import KebabModal from '@/components/domain/KebabModal';
 import { Modal } from '@/components/Modal';
@@ -157,9 +158,11 @@ export default function Profile(props: ProfileProps) {
               />
             ) : (
               <div
-                className="bg-input size-16 shrink-0 rounded-full"
+                className="bg-input flex size-16 shrink-0 items-center justify-center rounded-full"
                 aria-hidden
-              />
+              >
+                <SyncLogo width={32} height={32} />
+              </div>
             )}
             <div className="min-w-0 flex-1">
               <h1 className="text-text-primary text-xl font-bold">

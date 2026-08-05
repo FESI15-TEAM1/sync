@@ -1,13 +1,11 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLayoutEffect, useRef, useState } from 'react';
 
 import Bell from '@/assets/icons/bell.svg';
 import SyncLogo from '@/assets/icons/syncLogo.svg';
-import initImage from '@/assets/images/mook.jpg';
 import Button from '@/components/Button';
 import { useUserStore } from '@/providers/user-store-provider';
 import { logout } from '@/services/auth/auth.api';
@@ -57,8 +55,6 @@ export default function Header() {
     }
   };
 
-  const defaultImage = initImage;
-
   return (
     <header
       className="bg-bg-card flex-[0 0 auto] flex items-center justify-between px-4 py-4 text-center shadow-md"
@@ -90,13 +86,23 @@ export default function Header() {
             </Button>
 
             <Link href={`/profile/${user.id}`}>
-              <Image
-                src={user.image ?? defaultImage.src}
-                alt="프로필"
-                width={45}
-                height={45}
-                className="rounded-full"
-              />
+              {user.image ? (
+                // eslint-disable-next-line @next/next/no-img-element -- 유저 업로드 CDN 호스트가 가변
+                <img
+                  src={user.image}
+                  alt="프로필"
+                  width={45}
+                  height={45}
+                  className="size-11.25 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <div
+                  className="bg-input flex size-11.25 shrink-0 items-center justify-center rounded-full"
+                  aria-hidden
+                >
+                  <SyncLogo width={24} height={24} />
+                </div>
+              )}
             </Link>
           </>
         ) : (
