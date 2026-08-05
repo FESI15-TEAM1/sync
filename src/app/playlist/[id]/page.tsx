@@ -14,7 +14,7 @@ export default async function Playlist({
 }) {
   const routeUserId = (await params).id;
 
-  const initalData = await serverFetch<MyplaylistResponse>(
+  const initialData = await serverFetch<MyplaylistResponse>(
     `/users/${routeUserId}/playlists`,
     {
       method: 'GET',
@@ -32,7 +32,7 @@ export default async function Playlist({
 
   const isOwner = currentUserId === Number(routeUserId);
 
-  const initalLikeData = isOwner
+  const initialLikeData = isOwner
     ? await serverFetch<LikePlaylistResponse>(`/users/me/liked-playlists`, {
         method: 'GET',
       })
@@ -41,8 +41,8 @@ export default async function Playlist({
   return (
     <div>
       <PlaylistView
-        myData={initalData.items}
-        likedData={initalLikeData?.items ?? []}
+        myData={initialData.items}
+        likedData={initialLikeData?.items ?? []}
         userNickname={userNickname.nickname}
         isOwner={isOwner}
       />
