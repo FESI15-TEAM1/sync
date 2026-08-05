@@ -112,17 +112,16 @@ export default function PlaylistDetailView() {
         />
         <div className="mb-4 flex flex-col gap-3">
           <h3 className="text-text-primary text-xl font-bold">
-            JPOP 플레이리스트
+            {playlist.title}
           </h3>
-          <span className="text-text-secondary text-sm">작성자 : 아냐포져</span>
+          <span className="text-text-secondary text-sm">{`작성자: ${playlist.owner.nickname}`}</span>
           <span>
             <Heart />
           </span>
         </div>
       </div>
       <p className="bg-bg-card text-text-primary rounded-xl p-4">
-        공부할떄 들으면 집중 잘되는 노래들로 모아봤습니다. 비슷한 취향있으신
-        분은좋아요 그룹생성 요청 눌러주세요,
+        {playlist.description}
       </p>
       <Button className="w-full"> 그룹생성 요청</Button>
       <div className="bg-bg-card rounded-xl p-4">

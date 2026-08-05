@@ -18,7 +18,11 @@ export default function PlaylistCardList({
       {data.map((item) => {
         return (
           <Link href={`/playlist/detail/${item.id}`} key={item.id}>
-            <PlaylistCard title={item.title} trackCount={item.trackCount} />
+            <PlaylistCard
+              title={item.title}
+              trackCount={item.trackCount}
+              img={item.image}
+            />
           </Link>
         );
       })}
