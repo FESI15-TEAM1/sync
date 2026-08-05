@@ -9,6 +9,7 @@ import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import { getEmailError } from '@/lib/auth-validation';
 import { APIError } from '@/lib/http/error';
+import { useUserStore } from '@/providers/user-store-provider';
 import { login } from '@/services/auth/auth.api';
 
 export default function Login() {
@@ -18,10 +19,12 @@ export default function Login() {
   const [passwordError, setPasswordError] = useState('');
 
   const router = useRouter();
+  const setUser = useUserStore((state) => state.setUser);
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await login({ email, password });
+      const user = await login({ email, password });
+      setUser(user);
       router.push('/');
     } catch (error) {
       if (error instanceof APIError) {

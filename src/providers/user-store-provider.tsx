@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { useStore } from 'zustand';
 
+import { getMe } from '@/services/user/user.api';
 import type { UserStore } from '@/stores/user-store';
 import { createUserStore } from '@/stores/user-store';
 
@@ -24,6 +25,12 @@ export interface UserStoreProviderProps {
 
 export const UserStoreProvider = ({ children }: UserStoreProviderProps) => {
   const [store] = useState(() => createUserStore());
+
+  useEffect(() => {
+    getMe()
+      .then((user) => store.getState().setUser(user))
+      .catch(() => store.getState().setUser(null));
+  }, [store]);
 
   return (
     <UserStoreContext.Provider value={store}>

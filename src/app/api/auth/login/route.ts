@@ -3,16 +3,19 @@ import type { NextRequest } from 'next/server';
 
 import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
+import type { SessionUser } from '@/services/user/user.types';
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-
   try {
-    const data = await serverFetch<{
-      accessToken: string;
-      refreshToken: string;
-      expiresIn: number;
-    }>('/auth/login', {
+    const body = await req.json();
+
+    const data = await serverFetch<
+      SessionUser & {
+        accessToken: string;
+        refreshToken: string;
+        expiresIn: number;
+      }
+    >('/auth/login', {
       method: 'POST',
       body,
     });
@@ -33,7 +36,14 @@ export async function POST(req: NextRequest) {
       maxAge: 60 * 60 * 24 * 14,
     });
 
-    return Response.json({ success: true });
+    const user: SessionUser = {
+      id: data.id,
+      nickname: data.nickname,
+      email: data.email,
+      image: data.image,
+    };
+
+    return Response.json(user);
   } catch (error) {
     if (error instanceof APIError) {
       return Response.json(
