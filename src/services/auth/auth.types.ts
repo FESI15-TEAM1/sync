@@ -12,3 +12,6 @@ export type LoginRequest = {
 export type NicknameCheckResponse = {
   available: boolean;
 };
+
+// 응답 본문 없음 (204 No Content)
+export type LogoutResponse = null;

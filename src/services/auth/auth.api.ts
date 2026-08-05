@@ -3,6 +3,7 @@ import type { SessionUser } from '@/services/user/user.types';
 
 import type {
   LoginRequest,
+  LogoutResponse,
   NicknameCheckResponse,
   SignupRequest,
 } from './auth.types';
@@ -54,7 +55,7 @@ export function login(data: LoginRequest) {
 
 // 로그아웃
 export function logout() {
-  return clientFetch('/auth/logout', {
+  return clientFetch<LogoutResponse>('/auth/logout', {
     method: 'POST',
   });
 }
