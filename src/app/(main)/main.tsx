@@ -1,6 +1,6 @@
 import Section from '@/app/(main)/_components/Section';
+import PlaylistCardList from '@/components/domain/playlists/PlaylistCardList';
 
-import PlaylistCardList from '../playlist/_components/PlayListCardLIst';
 import PlayroomList from '../stage/_components/PlayroomList';
 
 export default function Main() {
