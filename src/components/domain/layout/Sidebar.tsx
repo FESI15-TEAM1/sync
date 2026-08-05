@@ -68,7 +68,7 @@ export default function Sidebar() {
             내 그룹
           </Link>
           <Link
-            href={'/playlist/1'}
+            href={'/playlist'}
             className={`${checkSamePathname('/playlist', pathname)}`}
             onClick={() => close()}
           >

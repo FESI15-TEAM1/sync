@@ -54,6 +54,7 @@ export default function PlaylistPlayer({
       onReady={handleReady}
       onStateChange={handleStateChange}
       onEnd={onEnded}
+      className="hidden"
     />
   );
 }

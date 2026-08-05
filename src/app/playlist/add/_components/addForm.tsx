@@ -7,9 +7,9 @@ import {
   isYoutubeVideoItem,
   type YoutubeSearchResponse,
 } from '@/app/api/youtube/youtube.types';
-import TrackList from '@/app/playlist/_components/TrackList';
 import Minus from '@/assets/icons/minus.svg';
 import Button from '@/components/Button';
+import TrackList from '@/components/domain/playlists/TrackList';
 import IconButton from '@/components/IconButton';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';

@@ -1,10 +1,10 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 
-import TrackList from '@/app/playlist/_components/TrackList';
 import type { CommentItemsType } from '@/app/playlist/detail/[id]/_components/CommentItemList';
 import ComentItemList from '@/app/playlist/detail/[id]/_components/CommentItemList';
 import PlaylistPlayer from '@/app/playlist/detail/[id]/_components/PlaylistPlayer';
@@ -15,16 +15,13 @@ import defaultImg from '@/assets/images/mook.jpg';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import KebabModal from '@/components/domain/KebabModal';
+import TrackList from '@/components/domain/playlists/TrackList';
+import { clientFetch } from '@/lib/http/client-fetch';
 import { usePlayerStore } from '@/providers/player-store-provider';
+import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 import { type PlaylistTrack } from '@/services/playlist/playlist';
 
-export default function PlaylistDetailView({
-  tracks,
-  comments,
-}: {
-  tracks: PlaylistTrack[];
-  comments: CommentItemsType;
-}) {
+export default function PlaylistDetailView() {
   const currentTrack = usePlayerStore((state) => state.currentTrack);
   const isPlaying = usePlayerStore((state) => state.isPlaying);
   const playTrack = usePlayerStore((state) => state.playTrack);
@@ -36,6 +33,26 @@ export default function PlaylistDetailView({
 
   const id = params.id;
 
+  const {
+    data: playlist,
+    isPending: isPlaylistPending,
+    error: playlistError,
+  } = useQuery({
+    queryKey: ['playlists', id],
+    queryFn: () => clientFetch<PlaylistDetail>(`/playlists/${id}`),
+  });
+  const {
+    data: comments,
+    isPending: isCommentsPending,
+    error: commentsError,
+  } = useQuery({
+    queryKey: ['playlists', id, 'comments'],
+    queryFn: () => clientFetch<CommentItemsType>(`/playlists/${id}/comments`),
+  });
+  if (isCommentsPending || isPlaylistPending)
+    return <div className="text-text-primary font-bold">로딩중...</div>;
+  if (commentsError || playlistError) return <div>에러남</div>;
+
   const handleTrackClick = (track: PlaylistTrack) => {
     if (currentTrack?.videoId === track.videoId) {
       if (isPlaying) playerRef.current?.pause();
@@ -46,10 +63,10 @@ export default function PlaylistDetailView({
   };
 
   const handleEnd = () => {
-    const currentIndex = tracks.findIndex(
+    const currentIndex = playlist.tracks.findIndex(
       (track) => track.videoId === currentTrack?.videoId,
     );
-    const nextTrack = tracks[currentIndex + 1];
+    const nextTrack = playlist.tracks[currentIndex + 1];
     if (nextTrack) playTrack(nextTrack);
     else stop();
   };
@@ -95,22 +112,21 @@ export default function PlaylistDetailView({
         />
         <div className="mb-4 flex flex-col gap-3">
           <h3 className="text-text-primary text-xl font-bold">
-            JPOP 플레이리스트
+            {playlist.title}
           </h3>
-          <span className="text-text-secondary text-sm">작성자 : 아냐포져</span>
+          <span className="text-text-secondary text-sm">{`작성자: ${playlist.owner.nickname}`}</span>
           <span>
             <Heart />
           </span>
         </div>
       </div>
       <p className="bg-bg-card text-text-primary rounded-xl p-4">
-        공부할떄 들으면 집중 잘되는 노래들로 모아봤습니다. 비슷한 취향있으신
-        분은좋아요 그룹생성 요청 눌러주세요,
+        {playlist.description}
       </p>
       <Button className="w-full"> 그룹생성 요청</Button>
       <div className="bg-bg-card rounded-xl p-4">
         <TrackList
-          trackList={tracks}
+          trackList={playlist?.tracks}
           onTrackClick={handleTrackClick}
           Button={(track) => (
             <TrackHoverController
