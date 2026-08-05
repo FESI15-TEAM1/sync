@@ -34,9 +34,14 @@ export const UserStoreProvider = ({ children }: UserStoreProviderProps) => {
   });
 
   useEffect(() => {
-    if (isPending) return;
-    store.getState().setUser(me ?? null);
-  }, [store, me, isPending]);
+    const userStore = store.getState();
+
+    userStore.setLoading(isPending);
+
+    if (!isPending) {
+      userStore.setUser(me ?? null);
+    }
+  }, [store, isPending, me]);
 
   return (
     <UserStoreContext.Provider value={store}>

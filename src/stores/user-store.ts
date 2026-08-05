@@ -9,6 +9,7 @@ export type UserState = {
 
 export type UserAction = {
   setUser: (user: SessionUser | null) => void;
+  setLoading: (isLoading: boolean) => void;
 };
 
 export type UserStore = UserState & UserAction;
@@ -22,5 +23,6 @@ export const createUserStore = (initState: UserState = defaultUserState) => {
   return createStore<UserStore>()((set) => ({
     ...initState,
     setUser: (user) => set({ user, isLoading: false }),
+    setLoading: (isLoading) => set({ isLoading }),
   }));
 };
