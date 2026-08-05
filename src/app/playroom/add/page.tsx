@@ -45,7 +45,7 @@ export default async function AddPlayroom() {
   try {
     user = await serverFetch<MyProfile>('/users/me', { method: 'GET' });
   } catch (error) {
-    if (error instanceof APIError) redirect('/login');
+    if (error instanceof APIError && error.status === 401) redirect('/login');
     throw error;
   }
 
