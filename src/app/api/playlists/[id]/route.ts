@@ -40,3 +40,42 @@ export async function GET(
     );
   }
 }
+
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const body = await req.json();
+    const data = await serverFetch<PlaylistDetail>(
+      `/playlists/${(await params).id}`,
+      {
+        method: 'PUT',
+        body,
+      },
+    );
+
+    return NextResponse.json(data, { status: 200 });
+  } catch (error) {
+    if (error instanceof APIError) {
+      return NextResponse.json(
+        {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        },
+        { status: error.status },
+      );
+    }
+    return NextResponse.json(
+      {
+        error: {
+          code: 'INTERNAL_SERVER_ERROR',
+          message: '서버 오류가 발생하였습니다.',
+        },
+      },
+      { status: 500 },
+    );
+  }
+}
