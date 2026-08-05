@@ -4,8 +4,8 @@ import clsx from 'clsx';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import PlaylistCardList from '@/app/playlist/_components/PlayListCardLIst';
 import BackButton from '@/components/common/BackButton';
+import PlaylistCardList from '@/components/domain/playlists/PlaylistCardList';
 import IconButton from '@/components/IconButton';
 import type {
   MyPlaylistItem,

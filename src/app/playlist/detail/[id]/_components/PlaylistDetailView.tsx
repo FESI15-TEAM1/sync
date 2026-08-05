@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 
-import TrackList from '@/app/playlist/_components/TrackList';
 import type { CommentItemsType } from '@/app/playlist/detail/[id]/_components/CommentItemList';
 import ComentItemList from '@/app/playlist/detail/[id]/_components/CommentItemList';
 import PlaylistPlayer from '@/app/playlist/detail/[id]/_components/PlaylistPlayer';
@@ -16,6 +15,7 @@ import defaultImg from '@/assets/images/mook.jpg';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import KebabModal from '@/components/domain/KebabModal';
+import TrackList from '@/components/domain/playlists/TrackList';
 import { clientFetch } from '@/lib/http/client-fetch';
 import { usePlayerStore } from '@/providers/player-store-provider';
 import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
