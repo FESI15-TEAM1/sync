@@ -85,7 +85,7 @@ export default function Header() {
               로그아웃
             </Button>
 
-            <Link href={`/profile/${user.id}`}>
+            <Link aria-label="프로필" href={`/profile/${user.id}`}>
               {user.image ? (
                 // eslint-disable-next-line @next/next/no-img-element -- 유저 업로드 CDN 호스트가 가변
                 <img
