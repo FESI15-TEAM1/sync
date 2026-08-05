@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { redirect, useRouter } from 'next/navigation';
 import { type ChangeEvent, useState } from 'react';
 
 import {
@@ -14,11 +15,14 @@ import IconButton from '@/components/IconButton';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
 import Toggle from '@/components/Toggle';
+import { APIError } from '@/lib/http/error';
 import type {
   CreatePlaylistRequest,
   PlaylistTrack,
 } from '@/services/playlist/playlist';
 import { postPlaylist } from '@/services/playlist/playlist.api';
+import { requestUploadUrl } from '@/services/upload/upload.api';
+import type { UploadUrlRequest } from '@/services/upload/upload.types';
 
 export default function AddForm() {
   const [preview, setPreview] = useState<string | null>(null);
@@ -29,14 +33,23 @@ export default function AddForm() {
     isPublic: true,
     tracks: [],
   });
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useState<string>('');
   const [searchList, setSearchList] = useState<PlaylistTrack[]>([]);
+  const [imgFile, setImgFile] = useState<File | null>(null);
+  const router = useRouter();
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPreview(URL.createObjectURL(file));
+
+    const url = URL.createObjectURL(file);
+    setImgFile(file);
+    setPreview((prev) => {
+      if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
+      return url;
+    });
   };
+
   const fetchSearchData = async () => {
     const data = await fetch(`/api/youtube/searchTrack?q=${searchValue}`);
     const result: YoutubeSearchResponse = await data.json();
@@ -61,9 +74,39 @@ export default function AddForm() {
       tracks: prev.tracks.filter((item) => item.videoId !== track.videoId),
     }));
   };
-  const handleSubmit = () => {
-    postPlaylist(form);
-    console.log(form);
+  const handleSubmit = async () => {
+    try {
+      if (imgFile) {
+        const { uploadUrl, fileUrl } = await requestUploadUrl({
+          domain: 'playlist',
+          contentType: imgFile.type as UploadUrlRequest['contentType'],
+        });
+        const putResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': imgFile.type },
+          body: imgFile,
+        });
+        if (!putResponse.ok) {
+          throw new Error('이미지 업로드에 실패했습니다.');
+        }
+
+        const finalForm = { ...form, image: fileUrl };
+        setForm(finalForm);
+
+        console.log(finalForm);
+        postPlaylist(finalForm);
+        router.push('/playlist');
+      }
+    } catch (error) {
+      if (error instanceof APIError) {
+        if (error.status === 400) {
+          alert(error.message);
+        }
+        if (error.status === 401) {
+          redirect('/login');
+        }
+      }
+    }
   };
 
   return (
@@ -88,7 +131,7 @@ export default function AddForm() {
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={handleFileChange}
+          onChange={handleAvatarChange}
         />
         <IconButton
           variants="primary"
