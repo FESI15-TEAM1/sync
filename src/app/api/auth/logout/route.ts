@@ -7,18 +7,18 @@ export async function POST() {
   const cookieStore = await cookies();
 
   try {
-    // 백엔드 로그아웃 요청
-    // 성공하면 refreshToken 무효화 처리
     await serverFetch('/auth/logout', {
       method: 'POST',
     });
-  } catch (error) {
-    // 백엔드 로그아웃 실패 여부와 관계없이
-    // 클라이언트 인증 쿠키 제거
+
+    // 백엔드 로그아웃 성공 후 쿠키 제거
     cookieStore.delete('accessToken');
     cookieStore.delete('refreshToken');
 
-    // 백엔드에서 내려준 에러 응답 유지
+    return new Response(null, {
+      status: 204,
+    });
+  } catch (error) {
     if (error instanceof APIError) {
       return Response.json(
         {
@@ -33,7 +33,6 @@ export async function POST() {
       );
     }
 
-    // 예상하지 못한 서버 오류
     return Response.json(
       {
         error: {
@@ -46,12 +45,4 @@ export async function POST() {
       },
     );
   }
-
-  // 로그아웃 성공 시 쿠키 제거
-  cookieStore.delete('accessToken');
-  cookieStore.delete('refreshToken');
-
-  return new Response(null, {
-    status: 204,
-  });
 }
