@@ -7,7 +7,7 @@ import { type SubmitEvent } from 'react';
 
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
-import { getEmailError, getPasswordError } from '@/lib/auth-validation';
+import { getEmailError } from '@/lib/auth-validation';
 import { APIError } from '@/lib/http/error';
 import { login } from '@/services/auth/auth.api';
 
@@ -66,13 +66,12 @@ export default function Login() {
             onChange={(e) => {
               const value = e.target.value;
               setPassword(value);
-              setPasswordError(getPasswordError(value));
             }}
           />
-          <InputField.Error>{passwordError}</InputField.Error>
         </InputField>
 
         <Button
+          className="mt-6"
           type="submit"
           // isDisabled={!email || !password || !!emailError || !!passwordError}
           isDisabled={false}
