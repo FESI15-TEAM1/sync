@@ -7,6 +7,7 @@ import SyncLogo from '@/assets/icons/syncLogo.svg';
 import Button from '@/components/Button';
 import KebabModal from '@/components/domain/KebabModal';
 import { Modal } from '@/components/Modal';
+import { APIError } from '@/lib/http/error';
 import { useUserStore } from '@/providers/user-store-provider';
 import { logout } from '@/services/auth/auth.api';
 import { withdraw } from '@/services/user/user.api';
@@ -48,18 +49,26 @@ export default function Profile(props: ProfileProps) {
 
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
+  const [withdrawError, setWithdrawError] = useState('');
 
   const handleEditProfile = () => {
     router.push(`/profile/${profile.id}/edit`);
   };
 
   const handleLogout = async () => {
+    setLogoutError('');
     try {
       await logout();
       setUser(null);
       router.push('/');
     } catch (error) {
       console.error('로그아웃 실패:', error);
+      setLogoutError(
+        error instanceof APIError
+          ? error.message
+          : '로그아웃에 실패했습니다. 다시 시도해주세요.',
+      );
     }
   };
 
@@ -67,15 +76,21 @@ export default function Profile(props: ProfileProps) {
     if (isWithdrawing) return;
 
     setIsWithdrawing(true);
+    setWithdrawError('');
     try {
       await withdraw();
       setUser(null);
       router.push('/');
+      setIsWithdrawModalOpen(false);
     } catch (error) {
       console.error('회원 탈퇴 실패:', error);
+      setWithdrawError(
+        error instanceof APIError
+          ? error.message
+          : '회원 탈퇴에 실패했습니다. 다시 시도해주세요.',
+      );
     } finally {
       setIsWithdrawing(false);
-      setIsWithdrawModalOpen(false);
     }
   };
 
@@ -91,26 +106,37 @@ export default function Profile(props: ProfileProps) {
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 py-6">
         <div className="flex flex-col gap-5">
           {isOwn ? (
-            <div className="flex justify-end">
-              <KebabModal>
-                <KebabModal.Item onClick={handleEditProfile}>
-                  프로필 수정
-                </KebabModal.Item>
-                <KebabModal.Item onClick={handleLogout}>
-                  로그아웃
-                </KebabModal.Item>
-                <KebabModal.Item
-                  onClick={() => setIsWithdrawModalOpen(true)}
-                  variant="danger"
-                >
-                  회원 탈퇴
-                </KebabModal.Item>
-              </KebabModal>
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex justify-end">
+                <KebabModal>
+                  <KebabModal.Item onClick={handleEditProfile}>
+                    프로필 수정
+                  </KebabModal.Item>
+                  <KebabModal.Item onClick={handleLogout}>
+                    로그아웃
+                  </KebabModal.Item>
+                  <KebabModal.Item
+                    onClick={() => {
+                      setWithdrawError('');
+                      setIsWithdrawModalOpen(true);
+                    }}
+                    variant="danger"
+                  >
+                    회원 탈퇴
+                  </KebabModal.Item>
+                </KebabModal>
+              </div>
+              {logoutError ? (
+                <p className="text-sm text-red-500">{logoutError}</p>
+              ) : null}
             </div>
           ) : null}
           <Modal
             isOpen={isWithdrawModalOpen}
-            onClose={() => setIsWithdrawModalOpen(false)}
+            onClose={() => {
+              setWithdrawError('');
+              setIsWithdrawModalOpen(false);
+            }}
           >
             <Modal.Header>회원 탈퇴</Modal.Header>
 
@@ -119,6 +145,9 @@ export default function Profile(props: ProfileProps) {
                 탈퇴하면 계정 정보와 로그인 상태가 사라지며 되돌릴 수 없습니다.
                 정말 탈퇴하시겠습니까?
               </p>
+              {withdrawError ? (
+                <p className="mt-2 text-sm text-red-500">{withdrawError}</p>
+              ) : null}
             </Modal.Body>
 
             <Modal.Footer>
@@ -127,7 +156,10 @@ export default function Profile(props: ProfileProps) {
                 size="md"
                 variant="outline"
                 isDisabled={isWithdrawing}
-                onClick={() => setIsWithdrawModalOpen(false)}
+                onClick={() => {
+                  setWithdrawError('');
+                  setIsWithdrawModalOpen(false);
+                }}
                 className="flex h-9 w-28 shrink-0 items-center justify-center rounded-full px-0 font-bold"
               >
                 취소

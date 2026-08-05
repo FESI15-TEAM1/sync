@@ -1,12 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import {
-  type ChangeEvent,
-  type SubmitEvent,
-  useRef,
-  useState,
-} from 'react';
+import { type ChangeEvent, type SubmitEvent, useRef, useState } from 'react';
 
 import PencilIcon from '@/assets/icons/pencil.svg';
 import SyncLogo from '@/assets/icons/syncLogo.svg';
@@ -93,11 +88,6 @@ export default function ProfileEditPage({ profile }: ProfileEditPageProps) {
     }
   };
 
-  //회원 탈퇴
-  const handleWithDraw = () => {
-    console.log('회원탈퇴 계정', profile.id);
-  };
-
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 py-8">
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-8">
@@ -171,14 +161,6 @@ export default function ProfileEditPage({ profile }: ProfileEditPageProps) {
           >
             저장하기
           </Button>
-
-          <button
-            type="button"
-            onClick={handleWithDraw}
-            className="self-end text-sm text-red-400"
-          >
-            회원탈퇴
-          </button>
         </div>
       </form>
     </div>

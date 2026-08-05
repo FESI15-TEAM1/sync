@@ -75,9 +75,9 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE() {
-  const cookieStore = await cookies();
-
   try {
+    const cookieStore = await cookies();
+
     await serverFetch('/users/me', {
       method: 'DELETE',
     });
