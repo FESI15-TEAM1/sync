@@ -6,9 +6,9 @@ import { serverFetch } from '@/lib/http/server-fetch';
 import type { SessionUser } from '@/services/user/user.types';
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-
   try {
+    const body = await req.json();
+
     const data = await serverFetch<
       SessionUser & {
         accessToken: string;

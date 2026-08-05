@@ -46,12 +46,14 @@ export default function Header() {
     setIsLoggingOut(true);
     try {
       await logout();
-    } catch {
-      // 네트워크 실패여도 클라이언트 세션은 종료한다.
-    } finally {
+      //로그아웃 성공 시에만 사용자 상태 초기화
       setUser(null);
-      setIsLoggingOut(false);
       router.push('/');
+    } catch (error) {
+      // 로그아웃 실패 시 현재 로그인 상태를 유지
+      console.error('로그아웃 실패:', error);
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
