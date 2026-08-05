@@ -68,7 +68,6 @@ async function refreshAccessToken(refreshToken: string): Promise<{
   }
   return newToken;
 }
-// 라우트 헨들러 전용
 export async function serverFetch<T>(
   endpoint: string,
   options: RequestOptions,
@@ -80,7 +79,6 @@ export async function serverFetch<T>(
   let response = await sendRequest(endpoint, options, accessToken);
   let data = await parseJson(response);
 
-  //401 이면서 토큰만료 인증코드를 받았을때 처리
   if (
     response.status === 401 &&
     data?.error?.code === 'TOKEN_EXPIRED' &&
