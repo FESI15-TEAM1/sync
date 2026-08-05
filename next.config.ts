@@ -14,7 +14,13 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
-    remotePatterns: [{ protocol: 'https', hostname: 'i.ytimg.com' }],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'i.ytimg.com' },
+      {
+        protocol: 'https',
+        hostname: 'sync-images.s3.ap-northeast-2.amazonaws.com',
+      },
+    ],
   },
 };
 
