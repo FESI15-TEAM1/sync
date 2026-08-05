@@ -27,7 +27,7 @@ export interface UserStoreProviderProps {
 export const UserStoreProvider = ({ children }: UserStoreProviderProps) => {
   const [store] = useState(() => createUserStore());
 
-  const { data: me, isPending } = useQuery({
+  const { data: me, isPending, isSuccess } = useQuery({
     queryKey: ['me'],
     queryFn: getMe,
     retry: false,
@@ -38,10 +38,11 @@ export const UserStoreProvider = ({ children }: UserStoreProviderProps) => {
 
     userStore.setLoading(isPending);
 
-    if (!isPending) {
+    // 조회 실패(네트워크 오류 등)는 미인증과 다르므로 사용자 상태를 초기화하지 않음
+    if (isSuccess) {
       userStore.setUser(me ?? null);
     }
-  }, [store, isPending, me]);
+  }, [store, isPending, isSuccess, me]);
 
   return (
     <UserStoreContext.Provider value={store}>
