@@ -16,6 +16,7 @@ import Sidebar from '@/components/domain/layout/Sidebar';
 import { PlayerStoreProvider } from '@/providers/player-store-provider';
 import { QueryProvider } from '@/providers/query-privider';
 import { SidebarStoreProvider } from '@/providers/sidebar-store-provider';
+import { UserStoreProvider } from '@/providers/user-store-provider';
 
 const noto = Noto_Sans({
   weight: ['100', '300', '400', '500', '700', '900'],
@@ -40,17 +41,19 @@ export default function RootLayout({
     >
       <body className={`bg-bg-primary`}>
         <QueryProvider>
-          <PlayerStoreProvider>
-            <SidebarStoreProvider>
-              <div className="sticky top-0 z-50">
-                <Header />
-                <Sidebar />
-              </div>
-              <div className="max-w-full lg:ml-64">
-                <main className="p-4">{children}</main>
-              </div>
-            </SidebarStoreProvider>
-          </PlayerStoreProvider>
+          <UserStoreProvider>
+            <PlayerStoreProvider>
+              <SidebarStoreProvider>
+                <div className="sticky top-0 z-50">
+                  <Header />
+                  <Sidebar />
+                </div>
+                <div className="max-w-full lg:ml-64">
+                  <main className="p-4">{children}</main>
+                </div>
+              </SidebarStoreProvider>
+            </PlayerStoreProvider>
+          </UserStoreProvider>
         </QueryProvider>
       </body>
     </html>

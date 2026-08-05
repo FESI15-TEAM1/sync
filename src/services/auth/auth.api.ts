@@ -1,12 +1,25 @@
 import { clientFetch } from '@/lib/http/client-fetch';
+import type { SessionUser } from '@/services/user/user.types';
 
-import type { LoginRequest, SignupRequest } from './auth.types';
+import type {
+  LoginRequest,
+  NicknameCheckResponse,
+  SignupRequest,
+} from './auth.types';
 
 // 회원가입
 export function signup(data: SignupRequest) {
   return clientFetch('/auth/signup', {
     method: 'POST',
     body: data,
+  });
+}
+
+// 닉네임 중복 확인
+export function checkNickname(nickname: string) {
+  return clientFetch<NicknameCheckResponse>('/auth/nickname-check', {
+    method: 'GET',
+    params: { nickname },
   });
 }
 
@@ -33,8 +46,15 @@ export function confirmEmailVerification(email: string, code: string) {
 
 // 로그인
 export function login(data: LoginRequest) {
-  return clientFetch('/auth/login', {
+  return clientFetch<SessionUser>('/auth/login', {
     method: 'POST',
     body: data,
+  });
+}
+
+// 로그아웃
+export function logout() {
+  return clientFetch('/auth/logout', {
+    method: 'POST',
   });
 }
