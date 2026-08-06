@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 
+import { clearAuthCookies, setAuthCookies } from '@/lib/http/auth-cookies';
 import { APIError } from '@/lib/http/error';
 
 const BASE_URL =
@@ -87,25 +88,11 @@ export async function serverFetch<T>(
     const tokens = await refreshAccessToken(refreshToken);
 
     if (tokens) {
-      cookieStore.set('accessToken', tokens.accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: tokens.expiresIn,
-      });
-      cookieStore.set('refreshToken', tokens.refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 60 * 60 * 24 * 14,
-      });
+      setAuthCookies(cookieStore, tokens);
       response = await sendRequest(endpoint, options, tokens.accessToken);
       data = await parseJson(response);
     } else {
-      cookieStore.delete('accessToken');
-      cookieStore.delete('refreshToken');
+      clearAuthCookies(cookieStore);
     }
   }
 

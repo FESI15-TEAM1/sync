@@ -34,6 +34,10 @@ export default function Login() {
     }
   };
 
+  function handleSocialLogin(provider: 'kakao' | 'google') {
+    window.location.href = `/api/auth/login/${provider}`;
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 py-10">
       <div className="mb-8">
@@ -82,6 +86,17 @@ export default function Login() {
           로그인
         </Button>
       </form>
+
+      <div className="mt-8 space-y-3">
+        <Button type="button" onClick={() => handleSocialLogin('kakao')}>
+          카카오 로그인
+        </Button>
+
+        <Button type="button" onClick={() => handleSocialLogin('google')}>
+          구글 로그인
+        </Button>
+      </div>
+
       <div className="mt-8 flex items-center gap-4">
         <span className="bg-border h-px flex-1"></span>
         <span className="text-text-secondary text-sm">또는</span>
