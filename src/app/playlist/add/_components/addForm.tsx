@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { redirect, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { type ChangeEvent, useState } from 'react';
 
 import {
@@ -76,6 +76,8 @@ export default function AddForm() {
   };
   const handleSubmit = async () => {
     try {
+      let image = form.image;
+
       if (imgFile) {
         const { uploadUrl, fileUrl } = await requestUploadUrl({
           domain: 'playlist',
@@ -89,21 +91,17 @@ export default function AddForm() {
         if (!putResponse.ok) {
           throw new Error('이미지 업로드에 실패했습니다.');
         }
-
-        const finalForm = { ...form, image: fileUrl };
-        setForm(finalForm);
-
-        console.log(finalForm);
-        postPlaylist(finalForm);
-        router.push('/playlist');
+        image = fileUrl;
       }
+      await postPlaylist({ ...form, image });
+      router.push('/playlist');
     } catch (error) {
       if (error instanceof APIError) {
         if (error.status === 400) {
           alert(error.message);
         }
         if (error.status === 401) {
-          redirect('/login');
+          router.replace('/login');
         }
       }
     }
