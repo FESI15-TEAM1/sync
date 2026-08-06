@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { type ChangeEvent, type SubmitEvent, useState } from 'react';
 
 import defaultCover from '@/assets/images/default.png';
@@ -9,30 +10,39 @@ import BackButton from '@/components/common/BackButton';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
-import { getRandomGradientClassName } from '@/lib/gradient';
+import { APIError } from '@/lib/http/error';
+import { createGroup } from '@/services/group/group.api';
+import type { MyPlaylistItem } from '@/services/playlist/playlistCard.type';
+import { requestUploadUrl } from '@/services/upload/upload.api';
+import type { UploadUrlRequest } from '@/services/upload/upload.types';
 
-type Playlist = {
-  id: string;
-  title: string;
-  songCount: number;
-};
+const SUBMIT_ERROR_MESSAGE =
+  '그룹 생성에 실패했습니다. 잠시 후 다시 시도해주세요.';
 
-const MOCK_PLAYLISTS: Playlist[] = [
-  { id: '1', title: '비 오는 날 감성', songCount: 10 },
-  { id: '2', title: '헤비로터', songCount: 20 },
-  { id: '3', title: '새벽 드라이브', songCount: 30 },
-];
+export default function AddPage({
+  playlists,
+}: {
+  playlists: MyPlaylistItem[];
+}) {
+  const router = useRouter();
 
-export default function AddPage() {
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
   const [groupName, setGroupName] = useState('');
   const [groupDescription, setGroupDescription] = useState('');
   const [isPublic, setIsPublic] = useState(false);
-  const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>([]);
+  const [selectedPlaylists, setSelectedPlaylists] = useState<number[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const trimmedName = groupName.trim();
+  const trimmedDescription = groupDescription.trim();
 
   const handleCoverChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    setCoverFile(file);
 
     // 사용자가 선택한 파일(file)을 브라우저에서 미리 볼 수 있는 임시 URL 생성
     const url = URL.createObjectURL(file);
@@ -45,21 +55,60 @@ export default function AddPage() {
     });
   };
 
-  const togglePlaylist = (id: string) => {
+  const togglePlaylist = (id: number) => {
     setSelectedPlaylists((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   };
 
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log({
-      groupName,
-      isPublic,
-      selectedPlaylists,
-      coverPreview: coverPreview ?? defaultCover.src,
-      gradientClassName: getRandomGradientClassName(),
-    });
+
+    if (
+      !trimmedName ||
+      !trimmedDescription ||
+      selectedPlaylists.length === 0
+    )
+      return;
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      let image: string | undefined;
+
+      if (coverFile) {
+        const { uploadUrl, fileUrl } = await requestUploadUrl({
+          domain: 'group',
+          contentType: coverFile.type as UploadUrlRequest['contentType'],
+        });
+
+        const putResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': coverFile.type },
+          body: coverFile,
+        });
+        if (!putResponse.ok) {
+          throw new Error('이미지 업로드에 실패했습니다.');
+        }
+
+        image = fileUrl;
+      }
+
+      const { id } = await createGroup({
+        title: trimmedName,
+        description: trimmedDescription,
+        image,
+        isPublic,
+        playlistIds: selectedPlaylists,
+      });
+      router.push(`/group/${id}`);
+    } catch (error) {
+      setIsSubmitting(false);
+      setErrorMessage(
+        error instanceof APIError ? error.message : SUBMIT_ERROR_MESSAGE,
+      );
+    }
   };
 
   return (
@@ -150,38 +199,55 @@ export default function AddPage() {
           <h2 className="text-md ml-2 font-bold text-white">
             플레이리스트 추가
           </h2>
-          <ul>
-            <div className="w-full scrollbar-none overflow-x-scroll">
-              <div className="flex w-max gap-4">
-                {MOCK_PLAYLISTS.map((playlist) => {
-                  const isSelected = selectedPlaylists.includes(playlist.id);
+          {playlists.length === 0 ? (
+            <p className="text-text-secondary py-4 text-sm">
+              생성된 플레이리스트가 없습니다.
+            </p>
+          ) : (
+            <ul>
+              <div className="w-full scrollbar-none overflow-x-scroll">
+                <div className="flex w-max gap-4">
+                  {playlists.map((playlist) => {
+                    const isSelected = selectedPlaylists.includes(playlist.id);
 
-                  return (
-                    <div
-                      className="relative cursor-pointer"
-                      key={playlist.id}
-                      onClick={() => togglePlaylist(playlist.id)}
-                    >
-                      <PlaylistCard
-                        title={playlist.title}
-                        trackCount={playlist.songCount}
-                      />
-                      {isSelected && (
-                        <div className='absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-2xl bg-[rgba(0,0,0,50%)] after:block after:text-white after:content-["selected"]' />
-                      )}
-                    </div>
-                  );
-                })}
+                    return (
+                      <button
+                        type="button"
+                        aria-pressed={isSelected}
+                        className="relative w-fit cursor-pointer appearance-none border-0 bg-transparent p-0 text-left"
+                        key={playlist.id}
+                        onClick={() => togglePlaylist(playlist.id)}
+                      >
+                        <PlaylistCard
+                          img={playlist.image}
+                          title={playlist.title}
+                          trackCount={playlist.trackCount}
+                        />
+                        {isSelected && (
+                          <div className='absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-2xl bg-[rgba(0,0,0,50%)] after:block after:text-white after:content-["선택됨"]' />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </ul>
+            </ul>
+          )}
         </div>
+
+        <p role="alert" className="min-h-5 text-sm text-red-500">
+          {errorMessage}
+        </p>
+
         <Button
           isDisabled={
-            !groupName || !groupDescription || selectedPlaylists.length === 0
+            !trimmedName ||
+            !trimmedDescription ||
+            selectedPlaylists.length === 0 ||
+            isSubmitting
           }
         >
-          그룹 생성하기
+          {isSubmitting ? '생성 중...' : '그룹 생성하기'}
         </Button>
       </form>
     </div>
