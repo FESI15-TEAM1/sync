@@ -68,8 +68,8 @@ export default function PlaylistView({
           </>
         )}
       </div>
-      <div className="mt-4 flex flex-col flex-wrap">
-        <div className="mt-20 w-full">
+      <div className="mt-4">
+        <div className="mt-20">
           <PlaylistCardList data={items} />
         </div>
       </div>

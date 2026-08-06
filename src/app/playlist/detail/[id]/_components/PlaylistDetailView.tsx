@@ -104,7 +104,7 @@ export default function PlaylistDetailView() {
       </div>
       <div className="ju flex items-center gap-4">
         <Image
-          src={defaultImg}
+          src={playlist.image}
           width={145}
           height={145}
           alt="플레이리스트 이미지"
