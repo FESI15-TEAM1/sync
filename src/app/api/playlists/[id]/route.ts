@@ -79,3 +79,37 @@ export async function PUT(
     );
   }
 }
+
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const data = await serverFetch(`/playlists/${(await params).id}`, {
+      method: 'DELETE',
+    });
+
+    return NextResponse.json(data);
+  } catch (error) {
+    if (error instanceof APIError) {
+      return NextResponse.json(
+        {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        },
+        { status: error.status },
+      );
+    }
+    return NextResponse.json(
+      {
+        error: {
+          code: 'INTERNAL_SERVER_ERROR',
+          message: '서버 오류가 발생하였습니다.',
+        },
+      },
+      { status: 500 },
+    );
+  }
+}
