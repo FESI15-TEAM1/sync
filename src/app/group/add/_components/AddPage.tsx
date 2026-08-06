@@ -35,6 +35,9 @@ export default function AddPage({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const trimmedName = groupName.trim();
+  const trimmedDescription = groupDescription.trim();
+
   const handleCoverChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -61,8 +64,11 @@ export default function AddPage({
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const trimmedName = groupName.trim();
-    if (!trimmedName || !groupDescription || selectedPlaylists.length === 0)
+    if (
+      !trimmedName ||
+      !trimmedDescription ||
+      selectedPlaylists.length === 0
+    )
       return;
 
     setIsSubmitting(true);
@@ -91,7 +97,7 @@ export default function AddPage({
 
       const { id } = await createGroup({
         title: trimmedName,
-        description: groupDescription,
+        description: trimmedDescription,
         image,
         isPublic,
         playlistIds: selectedPlaylists,
@@ -204,13 +210,13 @@ export default function AddPage({
               <div className="w-full scrollbar-none overflow-x-scroll">
                 <div className="flex w-max gap-4">
                   {playlists.map((playlist) => {
-                    const isSelected = selectedPlaylists.includes(
-                      playlist.id,
-                    );
+                    const isSelected = selectedPlaylists.includes(playlist.id);
 
                     return (
-                      <div
-                        className="relative cursor-pointer"
+                      <button
+                        type="button"
+                        aria-pressed={isSelected}
+                        className="relative w-fit cursor-pointer appearance-none border-0 bg-transparent p-0 text-left"
                         key={playlist.id}
                         onClick={() => togglePlaylist(playlist.id)}
                       >
@@ -220,9 +226,9 @@ export default function AddPage({
                           trackCount={playlist.trackCount}
                         />
                         {isSelected && (
-                          <div className='absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-2xl bg-[rgba(0,0,0,50%)] after:block after:text-white after:content-["selected"]' />
+                          <div className='absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-2xl bg-[rgba(0,0,0,50%)] after:block after:text-white after:content-["선택됨"]' />
                         )}
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -237,8 +243,8 @@ export default function AddPage({
 
         <Button
           isDisabled={
-            !groupName ||
-            !groupDescription ||
+            !trimmedName ||
+            !trimmedDescription ||
             selectedPlaylists.length === 0 ||
             isSubmitting
           }
