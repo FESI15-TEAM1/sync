@@ -89,16 +89,26 @@ export default function PlaylistDetailView({
     }, 2000);
   };
 
+  const handleOpenDeleteModal = () => {
+    setErrorMessage('');
+    setIsOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setErrorMessage('');
+    setIsOpen(false);
+  };
   const handleDelete = async () => {
     try {
       await deletePlaylist(Number(id));
-      setIsOpen(false);
+      handleCloseDeleteModal();
       router.push('/playlist');
     } catch (error) {
-      if (error instanceof APIError) {
-        setIsOpen(true);
-        setErrorMessage(error.message);
-      }
+      setErrorMessage(
+        error instanceof APIError
+          ? error.message
+          : '플레이리스트를 삭제하는 중 오류가 발생했습니다.',
+      );
     }
   };
   return (
@@ -125,7 +135,7 @@ export default function PlaylistDetailView({
                   수정하기
                 </KebabModal.Item>
                 <KebabModal.Item
-                  onClick={() => setIsOpen(!isOpen)}
+                  onClick={handleOpenDeleteModal}
                   variant={'danger'}
                 >
                   삭제하기
@@ -186,7 +196,7 @@ export default function PlaylistDetailView({
         <h4 className="text-text-primary mb-2 text-xl font-bold">댓글</h4>
         <ComentItemList comments={comments} />
       </div>
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+      <Modal isOpen={isOpen} onClose={handleCloseDeleteModal}>
         <div className="p-5">
           <Modal.Body>
             <h2
@@ -203,7 +213,7 @@ export default function PlaylistDetailView({
               size="md"
               variant="outline"
               className="flex h-9 w-28 shrink-0 items-center justify-center rounded-full px-0 font-bold"
-              onClick={() => setIsOpen(false)}
+              onClick={handleCloseDeleteModal}
             >
               취소
             </Button>
