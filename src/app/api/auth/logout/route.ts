@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 
+import { clearAuthCookies } from '@/lib/http/auth-cookies';
 import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
 
@@ -12,8 +13,7 @@ export async function POST() {
     });
 
     // 백엔드 로그아웃 성공 후 쿠키 제거
-    cookieStore.delete('accessToken');
-    cookieStore.delete('refreshToken');
+    clearAuthCookies(cookieStore);
 
     return new Response(null, {
       status: 204,
