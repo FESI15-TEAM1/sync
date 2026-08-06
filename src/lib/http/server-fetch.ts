@@ -79,11 +79,7 @@ export async function serverFetch<T>(
   let response = await sendRequest(endpoint, options, accessToken);
   let data = await parseJson(response);
 
-  if (
-    response.status === 401 &&
-    data?.error?.code === 'TOKEN_EXPIRED' &&
-    refreshToken
-  ) {
+  if (response.status === 401 && refreshToken) {
     const tokens = await refreshAccessToken(refreshToken);
 
     if (tokens) {
@@ -92,7 +88,7 @@ export async function serverFetch<T>(
         secure: true,
         sameSite: 'lax',
         path: '/',
-        maxAge: tokens.expiresIn,
+        maxAge: 60 * 60 * 24 * 14,
       });
       cookieStore.set('refreshToken', tokens.refreshToken, {
         httpOnly: true,
@@ -103,6 +99,7 @@ export async function serverFetch<T>(
       });
       response = await sendRequest(endpoint, options, tokens.accessToken);
       data = await parseJson(response);
+      console.log('Refresh!!!');
     } else {
       cookieStore.delete('accessToken');
       cookieStore.delete('refreshToken');

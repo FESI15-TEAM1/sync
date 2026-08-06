@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       secure: true,
       sameSite: 'lax',
       path: '/',
-      maxAge: data.expiresIn,
+      maxAge: 60 * 60 * 24 * 14,
     });
     cookieStore.set('refreshToken', data.refreshToken, {
       httpOnly: true,
