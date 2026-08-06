@@ -11,7 +11,7 @@ import PlaylistPlayer from '@/app/playlist/detail/[id]/_components/PlaylistPlaye
 import { type PlaylistPlayerHandle } from '@/app/playlist/detail/[id]/_components/PlaylistPlayer';
 import TrackHoverController from '@/app/playlist/detail/[id]/_components/TrackHoverController';
 import Heart from '@/assets/icons/heart.svg';
-import defaultImg from '@/assets/images/mook.jpg';
+import defaultImg from '@/assets/images/default.png';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import KebabModal from '@/components/domain/KebabModal';
@@ -104,7 +104,7 @@ export default function PlaylistDetailView() {
       </div>
       <div className="ju flex items-center gap-4">
         <Image
-          src={playlist.image}
+          src={playlist.image || defaultImg}
           width={145}
           height={145}
           alt="플레이리스트 이미지"
