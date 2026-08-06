@@ -3,12 +3,12 @@
 import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 
-import type { PlayroomListData } from '@/app/stage/_components/PlayroomList';
-import PlayroomList from '@/app/stage/_components/PlayroomList';
 import SearchBar from '@/components/domain/layout/SearchBar';
 import PlaylistCard from '@/components/domain/PlaylistCard';
+import PlayroomList from '@/components/domain/playroom/PlayroomList';
+import { type PlayroomCardData } from '@/services/playroom/playroom.types';
 
-export default function SearchForm({ data }: { data: PlayroomListData[] }) {
+export default function SearchForm({ data }: { data: PlayroomCardData[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [dragRange, setDragRange] = useState(0);
