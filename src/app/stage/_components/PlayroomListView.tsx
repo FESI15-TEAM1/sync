@@ -3,9 +3,10 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { type ReactNode, useEffect, useRef } from 'react';
 
+import Button from '@/components/Button';
 import PlayroomList from '@/components/domain/playroom/PlayroomList';
 import { getPlayrooms } from '@/services/playroom/playroom.api';
-import type { PlayroomSummary } from '@/services/playroom/playroom.types';
+import { type PlayroomSummary } from '@/services/playroom/playroom.types';
 
 const PAGE_SIZE = 15;
 const STALE_TIME = 30_000;
@@ -16,10 +17,11 @@ export default function PlayroomListView() {
   const {
     data,
     isPending,
-    isError,
     fetchNextPage,
     hasNextPage,
+    isFetching,
     isFetchingNextPage,
+    isFetchNextPageError,
   } = useInfiniteQuery({
     queryKey: ['playrooms'],
     queryFn: ({ pageParam }) =>
@@ -38,18 +40,20 @@ export default function PlayroomListView() {
 
   useEffect(() => {
     const target = loadMoreRef.current;
-    if (!target || !hasNextPage || isFetchingNextPage) return;
+    // 백그라운드 refetch 등 진행 중인 요청이 있으면 다음 페이지 요청과 충돌하므로 관찰하지 않습니다.
+    // 다음 페이지 요청이 실패한 뒤에는 자동 재요청이 반복되지 않도록 재시도 버튼으로만 이어받습니다.
+    if (!target || !hasNextPage || isFetching || isFetchNextPageError) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) fetchNextPage();
+        if (entry.isIntersecting && !isFetching) fetchNextPage();
       },
       { rootMargin: LOAD_MORE_ROOT_MARGIN },
     );
     observer.observe(target);
 
     return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [hasNextPage, isFetching, isFetchNextPageError, fetchNextPage]);
 
   if (isPending) {
     return (
@@ -59,7 +63,9 @@ export default function PlayroomListView() {
     );
   }
 
-  if (isError) {
+  // 첫 페이지부터 실패해 보여줄 목록이 없는 경우입니다.
+  // 다음 페이지 실패는 이미 받은 목록을 유지한 채 하단에서 따로 안내합니다.
+  if (!data) {
     return (
       <StatusMessage className="text-red-500">
         플레이룸을 불러오는데 실패하였습니다.
@@ -82,11 +88,29 @@ export default function PlayroomListView() {
       <PlayroomList data={playrooms} />
 
       {hasNextPage && (
-        <div ref={loadMoreRef} className="flex justify-center py-4">
+        <div
+          ref={loadMoreRef}
+          className="flex flex-col items-center justify-center gap-2 py-4"
+        >
           {isFetchingNextPage && (
             <p className="text-text-secondary text-sm">
               플레이룸을 더 불러오는 중입니다...
             </p>
+          )}
+
+          {isFetchNextPageError && (
+            <>
+              <p className="text-sm text-red-500" role="alert">
+                플레이룸을 더 불러오는데 실패하였습니다.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => fetchNextPage()}
+              >
+                다시 시도
+              </Button>
+            </>
           )}
         </div>
       )}
