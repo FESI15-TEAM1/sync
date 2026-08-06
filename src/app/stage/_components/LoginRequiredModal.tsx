@@ -15,9 +15,16 @@ export default function LoginRequiredModal({
   onConfirm,
 }: LoginRequiredModalProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabelledBy="login-required-modal-title"
+    >
       <Modal.Body>
-        <h2 className="text-text-primary text-center text-lg font-bold">
+        <h2
+          id="login-required-modal-title"
+          className="text-text-primary text-center text-lg font-bold"
+        >
           로그인이 필요합니다
         </h2>
         <p className="text-text-secondary mt-2 text-center text-sm">

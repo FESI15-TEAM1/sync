@@ -29,6 +29,7 @@ type ModalProps = {
   onClose: () => void;
   closeOnBackdropClick?: boolean;
   children: ReactNode;
+  ariaLabelledBy?: string;
 };
 
 export function Modal({
@@ -36,6 +37,7 @@ export function Modal({
   onClose,
   closeOnBackdropClick = true,
   children,
+  ariaLabelledBy,
 }: ModalProps) {
   if (!isOpen) return null;
 
@@ -54,6 +56,7 @@ export function Modal({
         <div
           role="dialog"
           aria-modal="true"
+          aria-labelledby={ariaLabelledBy ?? 'modal-title'}
           className="bg-bg-primary flex max-h-[90vh] w-full max-w-md flex-col rounded-2xl p-5 shadow-xl"
         >
           {children}
@@ -63,12 +66,21 @@ export function Modal({
   );
 }
 
-function Header({ children }: { children: ReactNode }) {
+function Header({
+  ariaLabelledById,
+  children,
+}: {
+  ariaLabelledById?: string;
+  children: ReactNode;
+}) {
   const { onClose } = useModal();
 
   return (
     <div className="mb-4 flex items-center justify-between">
-      <h2 id="modal-title" className="text-text-primary text-lg font-bold">
+      <h2
+        id={ariaLabelledById ?? 'modal-title'}
+        className="text-text-primary text-lg font-bold"
+      >
         {children}
       </h2>
 
