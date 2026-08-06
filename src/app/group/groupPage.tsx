@@ -81,24 +81,22 @@ export default function GroupPage() {
           {MOCK_REQUESTS.map((request) => (
             <div
               key={request.id}
-              className="bg-bg-card flex flex-col gap-3 rounded-2xl p-4"
+              className="bg-bg-card flex items-center gap-3 rounded-2xl p-4"
             >
-              <div className="flex items-start gap-3">
-                <div
-                  aria-hidden
-                  className={`size-10 shrink-0 rounded-full bg-linear-to-br ${request.gradientClassName}`}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-text-primary text-sm leading-snug">
-                    <span className="font-semibold">{request.requester}</span>
-                    님이 {request.message}
-                  </p>
-                  <p className="text-text-secondary mt-1 text-xs">
-                    {request.meta}
-                  </p>
-                </div>
+              <div
+                aria-hidden
+                className={`size-14 shrink-0 rounded-full bg-linear-to-br ${request.gradientClassName}`}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-text-primary text-sm leading-snug">
+                  <span className="font-semibold">{request.requester}</span>
+                  님이 {request.message}
+                </p>
+                <p className="text-text-secondary mt-1 text-xs">
+                  {request.meta}
+                </p>
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="flex shrink-0 gap-2">
                 <Button
                   variant="outline"
                   isDisabled={false}
