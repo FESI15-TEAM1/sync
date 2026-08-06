@@ -21,7 +21,8 @@ export interface GetGroupsParams {
 export interface GroupSummary {
   id: number;
   title: string;
-  image: string;
+  // 커버 이미지를 등록하지 않은 그룹은 내려오지 않습니다.
+  image?: string;
   memberCount: number;
   playlistCount: number;
 }
