@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { type ChangeEvent, type SubmitEvent, useState } from 'react';
 
 import defaultCover from '@/assets/images/default.png';
@@ -9,26 +10,27 @@ import BackButton from '@/components/common/BackButton';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
-import { getRandomGradientClassName } from '@/lib/gradient';
+import { APIError } from '@/lib/http/error';
+import { createGroup } from '@/services/group/group.api';
+import type { MyPlaylistItem } from '@/services/playlist/playlistCard.type';
 
-type Playlist = {
-  id: string;
-  title: string;
-  songCount: number;
-};
+const SUBMIT_ERROR_MESSAGE =
+  '그룹 생성에 실패했습니다. 잠시 후 다시 시도해주세요.';
 
-const MOCK_PLAYLISTS: Playlist[] = [
-  { id: '1', title: '비 오는 날 감성', songCount: 10 },
-  { id: '2', title: '헤비로터', songCount: 20 },
-  { id: '3', title: '새벽 드라이브', songCount: 30 },
-];
+export default function AddPage({
+  playlists,
+}: {
+  playlists: MyPlaylistItem[];
+}) {
+  const router = useRouter();
 
-export default function AddPage() {
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [groupName, setGroupName] = useState('');
   const [groupDescription, setGroupDescription] = useState('');
   const [isPublic, setIsPublic] = useState(false);
-  const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>([]);
+  const [selectedPlaylists, setSelectedPlaylists] = useState<number[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleCoverChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -45,21 +47,37 @@ export default function AddPage() {
     });
   };
 
-  const togglePlaylist = (id: string) => {
+  const togglePlaylist = (id: number) => {
     setSelectedPlaylists((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   };
 
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log({
-      groupName,
-      isPublic,
-      selectedPlaylists,
-      coverPreview: coverPreview ?? defaultCover.src,
-      gradientClassName: getRandomGradientClassName(),
-    });
+
+    const trimmedName = groupName.trim();
+    if (!trimmedName || !groupDescription || selectedPlaylists.length === 0)
+      return;
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const { id } = await createGroup({
+        title: trimmedName,
+        description: groupDescription,
+        image: coverPreview ?? undefined,
+        isPublic,
+        playlistIds: selectedPlaylists,
+      });
+      router.push(`/group/${id}`);
+    } catch (error) {
+      setIsSubmitting(false);
+      setErrorMessage(
+        error instanceof APIError ? error.message : SUBMIT_ERROR_MESSAGE,
+      );
+    }
   };
 
   return (
@@ -150,38 +168,55 @@ export default function AddPage() {
           <h2 className="text-md ml-2 font-bold text-white">
             플레이리스트 추가
           </h2>
-          <ul>
-            <div className="w-full scrollbar-none overflow-x-scroll">
-              <div className="flex w-max gap-4">
-                {MOCK_PLAYLISTS.map((playlist) => {
-                  const isSelected = selectedPlaylists.includes(playlist.id);
+          {playlists.length === 0 ? (
+            <p className="text-text-secondary py-4 text-sm">
+              생성된 플레이리스트가 없습니다.
+            </p>
+          ) : (
+            <ul>
+              <div className="w-full scrollbar-none overflow-x-scroll">
+                <div className="flex w-max gap-4">
+                  {playlists.map((playlist) => {
+                    const isSelected = selectedPlaylists.includes(
+                      playlist.id,
+                    );
 
-                  return (
-                    <div
-                      className="relative cursor-pointer"
-                      key={playlist.id}
-                      onClick={() => togglePlaylist(playlist.id)}
-                    >
-                      <PlaylistCard
-                        title={playlist.title}
-                        trackCount={playlist.songCount}
-                      />
-                      {isSelected && (
-                        <div className='absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-2xl bg-[rgba(0,0,0,50%)] after:block after:text-white after:content-["selected"]' />
-                      )}
-                    </div>
-                  );
-                })}
+                    return (
+                      <div
+                        className="relative cursor-pointer"
+                        key={playlist.id}
+                        onClick={() => togglePlaylist(playlist.id)}
+                      >
+                        <PlaylistCard
+                          img={playlist.image}
+                          title={playlist.title}
+                          trackCount={playlist.trackCount}
+                        />
+                        {isSelected && (
+                          <div className='absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-2xl bg-[rgba(0,0,0,50%)] after:block after:text-white after:content-["selected"]' />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </ul>
+            </ul>
+          )}
         </div>
+
+        <p role="alert" className="min-h-5 text-sm text-red-500">
+          {errorMessage}
+        </p>
+
         <Button
           isDisabled={
-            !groupName || !groupDescription || selectedPlaylists.length === 0
+            !groupName ||
+            !groupDescription ||
+            selectedPlaylists.length === 0 ||
+            isSubmitting
           }
         >
-          그룹 생성하기
+          {isSubmitting ? '생성 중...' : '그룹 생성하기'}
         </Button>
       </form>
     </div>
