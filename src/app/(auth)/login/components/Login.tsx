@@ -1,10 +1,13 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { type SubmitEvent } from 'react';
 
+import Google from '@/assets/images/google-login.png';
+import Kakao from '@/assets/images/kakao-login.png';
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import { getEmailError } from '@/lib/auth-validation';
@@ -87,13 +90,33 @@ export default function Login() {
         </Button>
       </form>
 
-      <div className="mt-8 space-y-3">
-        <Button type="button" onClick={() => handleSocialLogin('kakao')}>
-          카카오 로그인
+      <div className="mt-8 flex justify-center gap-3">
+        <Button
+          variant="secondary"
+          type="button"
+          onClick={() => handleSocialLogin('kakao')}
+        >
+          <Image
+            src={Kakao}
+            alt="카카오 로그인"
+            width={40}
+            height={40}
+            className="mr-2"
+          />
         </Button>
 
-        <Button type="button" onClick={() => handleSocialLogin('google')}>
-          구글 로그인
+        <Button
+          variant="secondary"
+          type="button"
+          onClick={() => handleSocialLogin('google')}
+        >
+          <Image
+            src={Google}
+            alt="구글 로그인"
+            width={40}
+            height={40}
+            className="mr-2"
+          />
         </Button>
       </div>
 
