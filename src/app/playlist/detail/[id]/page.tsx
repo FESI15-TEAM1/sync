@@ -24,7 +24,7 @@ async function getCurrentUserId() {
     });
     return me.id;
   } catch (error) {
-    if (error instanceof APIError) return null;
+    if (error instanceof APIError && error.status === 401) return null;
     throw error;
   }
 }
