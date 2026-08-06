@@ -33,10 +33,14 @@ export type PlayroomCardData = Pick<
   'id' | 'title' | 'description' | 'hashtags' | 'listenerCount' | 'host'
 >;
 
+/** 한 페이지 개수의 허용 범위. 벗어난 값은 백엔드가 임의로 보정하므로 요청 전에 걸러냅니다. */
+export const PLAYROOM_LIMIT_MIN = 1;
+export const PLAYROOM_LIMIT_MAX = 50;
+
 export interface GetPlayroomsParams {
   // 이전 응답의 nextCursor. 첫 페이지는 생략합니다.
   cursor?: string;
-  // 한 페이지 개수(1~50). 생략하면 백엔드 기본값 20, 범위를 벗어나면 백엔드가 보정합니다.
+  // 한 페이지 개수(1~50). 생략하면 백엔드 기본값 20이고, 범위를 벗어나거나 정수가 아니면 400 으로 거부됩니다.
   limit?: number;
 }
 
