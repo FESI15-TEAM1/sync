@@ -14,5 +14,5 @@ export function useDelayedLoading(isLoading: boolean, delay = 300) {
     };
   }, [isLoading, delay]);
 
-  return showLoading;
+  return showLoading && isLoading;
 }
