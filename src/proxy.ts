@@ -6,15 +6,41 @@ const BASE_URL =
 
 const REFRESH_MAX_AGE = 60 * 60 * 24 * 14;
 
-const cookieOptions = {
+const baseCookieOptions = {
   httpOnly: true,
   secure: true,
   sameSite: 'lax' as const,
   path: '/',
-  maxAge: REFRESH_MAX_AGE,
 };
 
-async function refreshAccessToken(refreshToken: string) {
+// 같은 refreshToken으로 동시에 여러 요청이 들어와도 /auth/refresh는 한 번만 호출한다.
+// refreshToken은 회전(rotate) 방식이라, 동시 요청이 각자 호출하면 먼저 도착한
+// 하나만 성공하고 나머지는 이미 회전되어버린 토큰으로 401을 받는다.
+const inFlightRefreshes = new Map<string, Promise<RefreshResult>>();
+
+type RefreshResult =
+  | { status: 'transient' }
+  | { status: 'invalid' }
+  | { status: 'success'; tokens: NewTokens };
+
+interface NewTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}
+
+function refreshAccessToken(refreshToken: string): Promise<RefreshResult> {
+  const inFlight = inFlightRefreshes.get(refreshToken);
+  if (inFlight) return inFlight;
+
+  const promise = requestNewTokens(refreshToken).finally(() => {
+    inFlightRefreshes.delete(refreshToken);
+  });
+  inFlightRefreshes.set(refreshToken, promise);
+  return promise;
+}
+
+async function requestNewTokens(refreshToken: string): Promise<RefreshResult> {
   let response: Response;
   try {
     response = await fetch(`${BASE_URL}/auth/refresh`, {
@@ -26,7 +52,8 @@ async function refreshAccessToken(refreshToken: string) {
     return { status: 'transient' };
   }
 
-  // 401 = refreshToken이 무효/만료/이미 사용됨 → 재로그인이 실제로 필요한 케이스
+  // refreshToken이 없음/서명 불일치/만료/이미 사용됨 → 재로그인 필요
+  // (/auth/refresh는 accessToken을 받지 않으므로 TOKEN_EXPIRED가 나올 일이 없다)
   if (response.status === 401) return { status: 'invalid' };
   if (!response.ok) return { status: 'transient' };
 
@@ -53,11 +80,16 @@ export async function proxy(request: NextRequest) {
   const result = await refreshAccessToken(refreshToken);
 
   // 백엔드/네트워크 일시 장애: 세션은 유지하고 다음 요청에서 재시도하도록 둔다
-  // TODO: 백엔드가 TOKEN_EXPIRED/UNAUTHORIZED 코드를 안정적으로 내려주면
-  // 'invalid' 상태에서만 쿠키를 지우도록 다시 분기한다. 그 전까지는 401도
-  // 세션을 유지한 채 다음 요청에서 재시도한다.
-  if (result.status === 'transient' || result.status === 'invalid') {
+  if (result.status === 'transient') {
     return NextResponse.next();
+  }
+
+  // refreshToken 자체가 무효 → 재로그인이 필요하므로 쿠키를 지운다
+  if (result.status === 'invalid') {
+    const response = NextResponse.next();
+    response.cookies.delete('accessToken');
+    response.cookies.delete('refreshToken');
+    return response;
   }
 
   const { tokens } = result;
@@ -67,11 +99,14 @@ export async function proxy(request: NextRequest) {
   request.cookies.set('refreshToken', tokens.refreshToken);
 
   const response = NextResponse.next({ request });
+
   response.cookies.set('accessToken', tokens.accessToken, {
-    ...cookieOptions,
+    ...baseCookieOptions,
+    maxAge: tokens.expiresIn,
   });
   response.cookies.set('refreshToken', tokens.refreshToken, {
-    ...cookieOptions,
+    ...baseCookieOptions,
+    maxAge: REFRESH_MAX_AGE,
   });
 
   return response;
