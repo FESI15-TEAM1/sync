@@ -10,7 +10,12 @@ export async function GET(
 
   if (provider !== 'kakao' && provider !== 'google') {
     return NextResponse.json(
-      { error: '지원하지 않는 소셜 로그인입니다.' },
+      {
+        error: {
+          code: 'UNSUPPORTED_SOCIAL_LOGIN',
+          message: '지원하지 않는 소셜 로그인입니다.',
+        },
+      },
       { status: 400 },
     );
   }
