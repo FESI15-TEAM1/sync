@@ -28,6 +28,7 @@ function sendRequest(
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
+    redirect: 'error',
   });
 }
 
@@ -50,8 +51,27 @@ export async function serverFetch<T>(
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('accessToken')?.value;
 
-  const response = await sendRequest(endpoint, options, accessToken);
-  const data = await parseJson(response);
+  let response: Response;
+  try {
+    response = await sendRequest(endpoint, options, accessToken);
+  } catch {
+    throw new APIError(
+      502,
+      'BAD_GATEWAY',
+      '서버와 통신 중 오류가 발생했습니다.',
+    );
+  }
+
+  let data: { error?: { code?: string; message?: string } } | null;
+  try {
+    data = await parseJson(response);
+  } catch {
+    throw new APIError(
+      response.status,
+      'INTERNAL_SERVER_ERROR',
+      `서버 응답을 처리하는 중 오류가 발생했습니다. (${response.status})`,
+    );
+  }
 
   if (!response.ok) {
     throw new APIError(
