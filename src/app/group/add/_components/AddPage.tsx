@@ -106,9 +106,7 @@ export default function AddPage({
     } catch (error) {
       setIsSubmitting(false);
       setErrorMessage(
-        error instanceof APIError || error instanceof Error
-          ? error.message
-          : SUBMIT_ERROR_MESSAGE,
+        error instanceof APIError ? error.message : SUBMIT_ERROR_MESSAGE,
       );
     }
   };
