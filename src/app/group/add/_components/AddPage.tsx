@@ -13,6 +13,8 @@ import Textarea from '@/components/Textarea';
 import { APIError } from '@/lib/http/error';
 import { createGroup } from '@/services/group/group.api';
 import type { MyPlaylistItem } from '@/services/playlist/playlistCard.type';
+import { requestUploadUrl } from '@/services/upload/upload.api';
+import type { UploadUrlRequest } from '@/services/upload/upload.types';
 
 const SUBMIT_ERROR_MESSAGE =
   '그룹 생성에 실패했습니다. 잠시 후 다시 시도해주세요.';
@@ -25,6 +27,7 @@ export default function AddPage({
   const router = useRouter();
 
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
   const [groupName, setGroupName] = useState('');
   const [groupDescription, setGroupDescription] = useState('');
   const [isPublic, setIsPublic] = useState(false);
@@ -35,6 +38,8 @@ export default function AddPage({
   const handleCoverChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    setCoverFile(file);
 
     // 사용자가 선택한 파일(file)을 브라우저에서 미리 볼 수 있는 임시 URL 생성
     const url = URL.createObjectURL(file);
@@ -64,10 +69,30 @@ export default function AddPage({
     setErrorMessage(null);
 
     try {
+      let image: string | undefined;
+
+      if (coverFile) {
+        const { uploadUrl, fileUrl } = await requestUploadUrl({
+          domain: 'group',
+          contentType: coverFile.type as UploadUrlRequest['contentType'],
+        });
+
+        const putResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': coverFile.type },
+          body: coverFile,
+        });
+        if (!putResponse.ok) {
+          throw new Error('이미지 업로드에 실패했습니다.');
+        }
+
+        image = fileUrl;
+      }
+
       const { id } = await createGroup({
         title: trimmedName,
         description: groupDescription,
-        image: coverPreview ?? undefined,
+        image,
         isPublic,
         playlistIds: selectedPlaylists,
       });
@@ -75,7 +100,9 @@ export default function AddPage({
     } catch (error) {
       setIsSubmitting(false);
       setErrorMessage(
-        error instanceof APIError ? error.message : SUBMIT_ERROR_MESSAGE,
+        error instanceof APIError || error instanceof Error
+          ? error.message
+          : SUBMIT_ERROR_MESSAGE,
       );
     }
   };
