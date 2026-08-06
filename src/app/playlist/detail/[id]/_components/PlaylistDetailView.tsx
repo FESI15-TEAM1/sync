@@ -16,12 +16,19 @@ import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import KebabModal from '@/components/domain/KebabModal';
 import TrackList from '@/components/domain/playlists/TrackList';
+import Modal from '@/components/Modal';
 import { clientFetch } from '@/lib/http/client-fetch';
+import { APIError } from '@/lib/http/error';
 import { usePlayerStore } from '@/providers/player-store-provider';
 import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 import { type PlaylistTrack } from '@/services/playlist/playlist';
+import { deletePlaylist } from '@/services/playlist/playlist.api';
 
-export default function PlaylistDetailView() {
+export default function PlaylistDetailView({
+  userid,
+}: {
+  userid: number | null;
+}) {
   const currentTrack = usePlayerStore((state) => state.currentTrack);
   const isPlaying = usePlayerStore((state) => state.isPlaying);
   const playTrack = usePlayerStore((state) => state.playTrack);
@@ -30,9 +37,12 @@ export default function PlaylistDetailView() {
   const [showToast, setShowToast] = useState(false);
   const router = useRouter();
   const params = useParams();
+  const [isOpen, setIsOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const id = params.id;
 
+  console.log('id: ', id);
   const {
     data: playlist,
     isPending: isPlaylistPending,
@@ -79,8 +89,20 @@ export default function PlaylistDetailView() {
     }, 2000);
   };
 
+  const handleDelete = async () => {
+    try {
+      await deletePlaylist(Number(id));
+      setIsOpen(false);
+      router.push('/playlist');
+    } catch (error) {
+      if (error instanceof APIError) {
+        setIsOpen(true);
+        setErrorMessage(error.message);
+      }
+    }
+  };
   return (
-    <div className="flex max-w-7xl flex-col gap-10 p-2">
+    <div className="flex max-w-3xl flex-col gap-10 p-2 lg:min-w-3xl">
       <div
         className={`bg-bg-card fixed top-25 left-1/2 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white transition-all duration-300 ${showToast ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0'} `}
       >
@@ -90,15 +112,32 @@ export default function PlaylistDetailView() {
         <BackButton />
         <KebabModal>
           <>
-            {/* 아이디값 을 가져와서 분기처리 리스트 주인과 일반유저 */}
-            <KebabModal.Item onClick={handleShare}>공유하기</KebabModal.Item>
-            <KebabModal.Item
-              onClick={() => {
-                router.push(`/playlist/detail/${id}/edit`);
-              }}
-            >
-              수정하기
-            </KebabModal.Item>
+            {userid == playlist.owner.userId ? (
+              <>
+                <KebabModal.Item onClick={handleShare}>
+                  공유하기
+                </KebabModal.Item>
+                <KebabModal.Item
+                  onClick={() => {
+                    router.push(`/playlist/detail/${id}/edit`);
+                  }}
+                >
+                  수정하기
+                </KebabModal.Item>
+                <KebabModal.Item
+                  onClick={() => setIsOpen(!isOpen)}
+                  variant={'danger'}
+                >
+                  삭제하기
+                </KebabModal.Item>
+              </>
+            ) : (
+              <>
+                <KebabModal.Item onClick={handleShare}>
+                  공유하기
+                </KebabModal.Item>
+              </>
+            )}
           </>
         </KebabModal>
       </div>
@@ -147,6 +186,39 @@ export default function PlaylistDetailView() {
         <h4 className="text-text-primary mb-2 text-xl font-bold">댓글</h4>
         <ComentItemList comments={comments} />
       </div>
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+        <div className="p-5">
+          <Modal.Body>
+            <h2
+              id="login-required-modal-title"
+              className="text-text-primary text-center text-lg font-bold"
+            >
+              {errorMessage ? errorMessage : '정말로 삭제하시겠습니까?'}
+            </h2>
+          </Modal.Body>
+
+          <Modal.Footer>
+            <Button
+              type="button"
+              size="md"
+              variant="outline"
+              className="flex h-9 w-28 shrink-0 items-center justify-center rounded-full px-0 font-bold"
+              onClick={() => setIsOpen(false)}
+            >
+              취소
+            </Button>
+            <Button
+              type="button"
+              size="md"
+              variant="primary"
+              className="flex h-9 w-28 shrink-0 items-center justify-center rounded-full px-0 font-bold"
+              onClick={handleDelete}
+            >
+              삭제
+            </Button>
+          </Modal.Footer>
+        </div>
+      </Modal>
     </div>
   );
 }
