@@ -14,7 +14,7 @@ export function setAuthCookies(cookieStore: CookieStore, tokens: AuthTokens) {
     secure: true,
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 24 * 14,
+    maxAge: tokens.expiresIn,
   });
 
   cookieStore.set('refreshToken', tokens.refreshToken, {
