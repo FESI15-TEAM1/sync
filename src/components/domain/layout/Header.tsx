@@ -7,6 +7,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import Bell from '@/assets/icons/bell.svg';
 import SyncLogo from '@/assets/icons/syncLogo.svg';
 import Button from '@/components/Button';
+import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useUserStore } from '@/providers/user-store-provider';
 import { logout } from '@/services/auth/auth.api';
 
@@ -17,6 +18,7 @@ export default function Header() {
   const router = useRouter();
   const user = useUserStore((state) => state.user);
   const isLoading = useUserStore((state) => state.isLoading);
+  const showLoading = useDelayedLoading(isLoading, 300);
   const setUser = useUserStore((state) => state.setUser);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -72,8 +74,10 @@ export default function Header() {
       <div className="flex items-center gap-3">
         <Bell width={30} height={30} color={'white'} />
         {isLoading ? (
-          // 인증 상태 확인 중
-          <div className="h-[45px] w-[45px] animate-pulse rounded-full bg-gray-300" />
+          // 200ms 이상 로딩이 지속될 때만 스켈레톤 표시(짧은 로딩의 깜빡임 방지)
+          <div
+            className={`size-11.25 rounded-full ${showLoading ? 'animate-pulse bg-gray-300' : ''}`}
+          />
         ) : user ? (
           // 로그인 상태
 
