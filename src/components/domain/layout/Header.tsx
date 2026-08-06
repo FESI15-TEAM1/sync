@@ -63,8 +63,10 @@ export default function Header() {
       <div className="flex items-center gap-3">
         <HamburgerButton />
         <div className="flex items-center">
-          <SyncLogo width={45} height={45} />
-          <span className="text-text-primary text-2xl font-bold">Sync</span>
+          <Link className="flex items-center gap-2" href="/">
+            <SyncLogo width={45} height={45} />
+            <span className="text-text-primary text-2xl font-bold">Sync</span>
+          </Link>
         </div>
       </div>
       <div className="flex items-center gap-3">
