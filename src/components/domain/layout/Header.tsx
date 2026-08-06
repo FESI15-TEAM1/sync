@@ -18,7 +18,7 @@ export default function Header() {
   const router = useRouter();
   const user = useUserStore((state) => state.user);
   const isLoading = useUserStore((state) => state.isLoading);
-  const showLoading = useDelayedLoading(isLoading, 300);
+  const showLoading = useDelayedLoading(isLoading);
   const setUser = useUserStore((state) => state.setUser);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
