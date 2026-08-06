@@ -1,10 +1,13 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { type SubmitEvent } from 'react';
 
+import Google from '@/assets/images/google-login.png';
+import Kakao from '@/assets/images/kakao-login.png';
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import { getEmailError } from '@/lib/auth-validation';
@@ -33,6 +36,10 @@ export default function Login() {
       }
     }
   };
+
+  function handleSocialLogin(provider: 'kakao' | 'google') {
+    window.location.href = `/api/auth/login/${provider}`;
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 py-10">
@@ -82,6 +89,37 @@ export default function Login() {
           로그인
         </Button>
       </form>
+
+      <div className="mt-8 flex justify-center gap-3">
+        <Button
+          variant="secondary"
+          type="button"
+          onClick={() => handleSocialLogin('kakao')}
+        >
+          <Image
+            src={Kakao}
+            alt="카카오 로그인"
+            width={40}
+            height={40}
+            className="mr-2"
+          />
+        </Button>
+
+        <Button
+          variant="secondary"
+          type="button"
+          onClick={() => handleSocialLogin('google')}
+        >
+          <Image
+            src={Google}
+            alt="구글 로그인"
+            width={40}
+            height={40}
+            className="mr-2"
+          />
+        </Button>
+      </div>
+
       <div className="mt-8 flex items-center gap-4">
         <span className="bg-border h-px flex-1"></span>
         <span className="text-text-secondary text-sm">또는</span>

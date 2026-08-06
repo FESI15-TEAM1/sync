@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 
+import { clearAuthCookies, setAuthCookies } from '@/lib/http/auth-cookies';
 import { APIError } from '@/lib/http/error';
 
 const BASE_URL =
