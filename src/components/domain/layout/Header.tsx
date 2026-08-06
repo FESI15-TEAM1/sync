@@ -74,37 +74,26 @@ export default function Header() {
           <div className="h-[45px] w-[45px] animate-pulse rounded-full bg-gray-300" />
         ) : user ? (
           // 로그인 상태
-          <>
-            <Button
-              type="button"
-              size="md"
-              variant="primary"
-              onClick={handleLogout}
-              isDisabled={isLoggingOut}
-            >
-              로그아웃
-            </Button>
 
-            <Link aria-label="프로필" href={`/profile/${user.id}`}>
-              {user.image ? (
-                // eslint-disable-next-line @next/next/no-img-element -- 유저 업로드 CDN 호스트가 가변
-                <img
-                  src={user.image}
-                  alt="프로필"
-                  width={45}
-                  height={45}
-                  className="size-11.25 shrink-0 rounded-full object-cover"
-                />
-              ) : (
-                <div
-                  className="bg-input flex size-11.25 shrink-0 items-center justify-center rounded-full"
-                  aria-hidden
-                >
-                  <SyncLogo width={24} height={24} />
-                </div>
-              )}
-            </Link>
-          </>
+          <Link aria-label="프로필" href={`/profile/${user.id}`}>
+            {user.image ? (
+              // eslint-disable-next-line @next/next/no-img-element -- 유저 업로드 CDN 호스트가 가변
+              <img
+                src={user.image}
+                alt="프로필"
+                width={45}
+                height={45}
+                className="size-11.25 shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="bg-input flex size-11.25 shrink-0 items-center justify-center rounded-full"
+                aria-hidden
+              >
+                <SyncLogo width={24} height={24} />
+              </div>
+            )}
+          </Link>
         ) : (
           // 로그아웃 상태
           <Link
