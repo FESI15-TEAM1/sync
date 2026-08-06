@@ -32,16 +32,22 @@ export default function EditForm() {
   const params = useParams();
   const id = params.id as string;
 
-  const { data: playlist, isPending } = useQuery({
+  const {
+    data: playlist,
+    isPending,
+    error,
+  } = useQuery({
     queryKey: ['playlists', id],
     queryFn: () => clientFetch<PlaylistDetail>(`/playlists/${id}`),
   });
 
-  if (isPending || !playlist) {
+  if (isPending) {
     return <div className="text-text-primary font-bold">로딩중...</div>;
   }
+  if (playlist) return <EditPlaylistForm id={id} playlist={playlist} />;
 
-  return <EditPlaylistForm id={id} playlist={playlist} />;
+  if (error)
+    return <div className="text-text-primary font-bold">{error.message}</div>;
 }
 
 function EditPlaylistForm({
@@ -79,15 +85,20 @@ function EditPlaylistForm({
   };
 
   const fetchSearchData = async () => {
-    const data = await fetch(`/api/youtube/searchTrack?q=${searchValue}`);
-    const result: YoutubeSearchResponse = await data.json();
-    const videos = result.items.filter(isYoutubeVideoItem).map((item) => ({
-      videoId: item.id.videoId,
-      title: item.snippet.title,
-      artist: item.snippet.channelTitle,
-      thumbnail: item.snippet.thumbnails.default.url,
-    }));
-    setSearchList(videos);
+    try {
+      const response = await fetch(`/api/youtube/searchTrack?q=${searchValue}`);
+      if (!response.ok) throw new Error('곡 검색에 실패했습니다.');
+      const result: YoutubeSearchResponse = await response.json();
+      const videos = result.items.filter(isYoutubeVideoItem).map((item) => ({
+        videoId: item.id.videoId,
+        title: item.snippet.title,
+        artist: item.snippet.channelTitle,
+        thumbnail: item.snippet.thumbnails.default.url,
+      }));
+      setSearchList(videos);
+    } catch {
+      alert('곡 검색에 실패했습니다.');
+    }
   };
   const handleAddTrack = (track: PlaylistTrack) => {
     setForm((prev) => ({ ...prev, tracks: [...prev.tracks, track] }));
@@ -199,9 +210,7 @@ function EditPlaylistForm({
         <label className="ml-2 text-base font-bold text-white">공개여부</label>
         <Toggle
           checked={form.isPublic}
-          onChange={(isPublic) =>
-            setForm((prev) => ({ ...prev, isPublic }))
-          }
+          onChange={(isPublic) => setForm((prev) => ({ ...prev, isPublic }))}
         />
       </div>
       {/* 검색 색션 */}

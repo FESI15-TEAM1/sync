@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-import mookImage from '../../assets/images/mook.jpg';
+import mookImage from '../../assets/images/default.png';
 
 export default function PlaylistCard({
   img,
