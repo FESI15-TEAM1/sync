@@ -26,3 +26,12 @@ export const deletePlaylist = (id: number | string) => {
     method: 'DELETE',
   });
 };
+export const postComments = (
+  id: number | string,
+  content: { content: string },
+) => {
+  return clientFetch(`/playlists/${id}/comments`, {
+    method: 'POST',
+    body: content,
+  });
+};
