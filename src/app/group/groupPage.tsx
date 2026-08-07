@@ -6,7 +6,10 @@ import { useEffect, useRef } from 'react';
 
 import Button from '@/components/Button';
 import GroupList from '@/components/domain/group/GroupList';
+import { APIError } from '@/lib/http/error';
 import { getGroups } from '@/services/group/group.api';
+
+import LoginRequired from './login-required/_components/LoginRequired';
 
 const GROUP_PAGE_SIZE = 10;
 // 바닥에 닿기 전에 미리 다음 페이지를 불러와 스크롤이 끊기지 않게 합니다.
@@ -47,6 +50,7 @@ export default function GroupPage() {
     data: groupsData,
     isPending: isGroupsPending,
     isError: isGroupsError,
+    error: groupsError,
     fetchNextPage,
     hasNextPage,
     isFetching: isGroupsFetching,
@@ -62,6 +66,9 @@ export default function GroupPage() {
   });
 
   const groups = groupsData?.pages.flatMap((page) => page.items) ?? [];
+
+  const isGroupsAuthError =
+    isGroupsError && groupsError instanceof APIError && groupsError.status === 401;
 
   // 목록 끝의 감지용 요소가 화면에 들어오면 다음 페이지를 이어서 불러옵니다.
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -174,7 +181,9 @@ export default function GroupPage() {
           </p>
         )}
 
-        {isGroupsError && (
+        {isGroupsAuthError && <LoginRequired />}
+
+        {isGroupsError && !isGroupsAuthError && (
           <p className="text-sm text-red-500" role="alert">
             그룹 목록을 불러오는데 실패하였습니다.
           </p>
