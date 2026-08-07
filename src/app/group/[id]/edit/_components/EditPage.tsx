@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { type ChangeEvent, type SubmitEvent, useState } from 'react';
 
 import defaultCover from '@/assets/images/default.png';
@@ -9,6 +10,10 @@ import BackButton from '@/components/common/BackButton';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
+import { APIError } from '@/lib/http/error';
+import { updateGroup } from '@/services/group/group.api';
+import { requestUploadUrl } from '@/services/upload/upload.api';
+import type { UploadUrlRequest } from '@/services/upload/upload.types';
 
 type Playlist = {
   id: string;
@@ -16,28 +21,50 @@ type Playlist = {
   songCount: number;
 };
 
+// TODO: 그룹에 담긴 플레이리스트 목록 API 연동 시 교체. PATCH /groups/{groupId}는
+// playlistIds를 받지 않으므로(별도 엔드포인트 PUT /groups/{groupId}/playlists),
+// 이 선택 UI는 아직 수정 요청에 반영되지 않는다.
 const MOCK_PLAYLISTS: Playlist[] = [
   { id: '1', title: '비 오는 날 감성', songCount: 10 },
   { id: '2', title: '헤비로터', songCount: 20 },
   { id: '3', title: '새벽 드라이브', songCount: 30 },
 ];
 
+const SUBMIT_ERROR_MESSAGE =
+  '그룹 수정에 실패했습니다. 잠시 후 다시 시도해주세요.';
+
 type EditPageProps = {
   groupId: string;
+  initialGroup: {
+    title: string;
+    description: string;
+    image: string | null;
+    isPublic: boolean;
+  };
 };
 
-export default function EditPage({ groupId }: EditPageProps) {
+export default function EditPage({ groupId, initialGroup }: EditPageProps) {
+  const router = useRouter();
+
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
-  const [groupName, setGroupName] = useState('인디밴드 러버스');
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [groupName, setGroupName] = useState(initialGroup.title);
   const [groupDescription, setGroupDescription] = useState(
-    '인디 음악을 좋아하는 사람들의 모임',
+    initialGroup.description,
   );
-  const [isPublic, setIsPublic] = useState(false);
+  const [isPublic, setIsPublic] = useState(initialGroup.isPublic);
   const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>(['1']);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const trimmedName = groupName.trim();
+  const trimmedDescription = groupDescription.trim();
 
   const handleCoverChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    setCoverFile(file);
 
     const url = URL.createObjectURL(file);
     setCoverPreview((prev) => {
@@ -52,16 +79,49 @@ export default function EditPage({ groupId }: EditPageProps) {
     );
   };
 
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log({
-      groupId,
-      groupName,
-      groupDescription,
-      isPublic,
-      selectedPlaylists,
-      coverPreview: coverPreview ?? defaultCover.src,
-    });
+
+    if (!trimmedName || !trimmedDescription || selectedPlaylists.length === 0)
+      return;
+
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      let image: string | undefined;
+
+      if (coverFile) {
+        const { uploadUrl, fileUrl } = await requestUploadUrl({
+          domain: 'group',
+          contentType: coverFile.type as UploadUrlRequest['contentType'],
+        });
+
+        const putResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': coverFile.type },
+          body: coverFile,
+        });
+        if (!putResponse.ok) {
+          throw new Error('이미지 업로드에 실패했습니다.');
+        }
+
+        image = fileUrl;
+      }
+
+      await updateGroup(groupId, {
+        title: trimmedName,
+        description: trimmedDescription,
+        isPublic,
+        ...(image ? { image } : {}),
+      });
+      router.push(`/group/${groupId}`);
+    } catch (error) {
+      setIsSubmitting(false);
+      setErrorMessage(
+        error instanceof APIError ? error.message : SUBMIT_ERROR_MESSAGE,
+      );
+    }
   };
 
   return (
@@ -74,7 +134,7 @@ export default function EditPage({ groupId }: EditPageProps) {
             className="flex cursor-pointer items-center gap-3"
           >
             <Image
-              src={coverPreview ?? defaultCover}
+              src={coverPreview ?? initialGroup.image ?? defaultCover}
               alt="그룹 커버"
               width={72}
               height={72}
@@ -177,13 +237,21 @@ export default function EditPage({ groupId }: EditPageProps) {
               </div>
             </div>
           </ul>
+
+          <p role="alert" className="min-h-5 text-sm text-red-500">
+            {errorMessage}
+          </p>
+
           <Button
             className="mt-4 w-full"
             isDisabled={
-              !groupName || !groupDescription || selectedPlaylists.length === 0
+              !trimmedName ||
+              !trimmedDescription ||
+              selectedPlaylists.length === 0 ||
+              isSubmitting
             }
           >
-            수정하기
+            {isSubmitting ? '수정 중...' : '수정하기'}
           </Button>
         </div>
       </form>
