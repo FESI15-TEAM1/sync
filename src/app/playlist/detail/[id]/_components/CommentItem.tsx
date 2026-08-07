@@ -1,14 +1,22 @@
+'use client';
+
 import Image from 'next/image';
+import { useState } from 'react';
 
 import type { CommentItemType } from '@/app/playlist/detail/[id]/_components/CommentItemList';
 import defaultImage from '@/assets/images/default.png';
+import Input from '@/components/Input';
 
 export default function CommentItem({
   comment,
   userid,
+  onEditSave,
+  isSaving,
 }: {
   comment: CommentItemType;
   userid: string | number | null;
+  onEditSave: (commentId: number, content: string) => Promise<unknown>;
+  isSaving: boolean;
 }) {
   function formatTimeAgo(dateString: string) {
     const date = new Date(dateString);
@@ -27,7 +35,33 @@ export default function CommentItem({
 
     return date.toLocaleDateString('ko-KR');
   }
-  console.log(userid);
+  const [isEdit, setIsEdit] = useState<boolean>(false);
+  const [editComments, setEditComments] = useState(comment.content);
+
+  const handleEditStart = () => {
+    setEditComments(comment.content);
+    setIsEdit(true);
+  };
+
+  const handleEditCancel = () => {
+    setEditComments(comment.content);
+    setIsEdit(false);
+  };
+
+  const handleEditSave = async () => {
+    const content = editComments.trim();
+    if (!content || isSaving) return;
+    if (content === comment.content) {
+      setIsEdit(false);
+      return;
+    }
+    try {
+      await onEditSave(comment.id, content);
+      setIsEdit(false);
+    } catch {
+      // 에러는 상위에서 alert로 안내 — 재시도할 수 있도록 편집 상태는 유지
+    }
+  };
 
   return (
     <div className="text-text-primary relative flex items-center gap-3">
@@ -46,12 +80,53 @@ export default function CommentItem({
             {formatTimeAgo(comment.createdAt)}
           </span>
         </div>
-        <span className="text-sm">{comment.content}</span>
+        {isEdit ? (
+          <Input
+            autoFocus
+            disabled={isSaving}
+            onChange={(e) => setEditComments(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleEditSave();
+              }
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                handleEditCancel();
+              }
+            }}
+            value={editComments}
+            className="w-full rounded-none border-0 border-b border-transparent bg-transparent p-0 text-sm text-white transition-colors focus:border-white focus:outline-none disabled:opacity-50"
+          />
+        ) : (
+          <span className="text-sm">{comment.content}</span>
+        )}
       </div>
       {userid === comment.author.userId && (
-        <button className="text-text-secondary absolute right-0 cursor-pointer text-[12px]">
-          수정
-        </button>
+        <div className="text-text-secondary absolute right-0 flex gap-2 text-[12px]">
+          {isEdit ? (
+            <>
+              <button
+                className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={handleEditSave}
+                disabled={isSaving}
+              >
+                저장
+              </button>
+              <button
+                className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={handleEditCancel}
+                disabled={isSaving}
+              >
+                취소
+              </button>
+            </>
+          ) : (
+            <button className="cursor-pointer" onClick={handleEditStart}>
+              수정
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
