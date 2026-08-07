@@ -14,7 +14,7 @@ import { type ReactNode } from 'react';
 import Header from '@/components/domain/layout/Header';
 import Sidebar from '@/components/domain/layout/Sidebar';
 import { PlayerStoreProvider } from '@/providers/player-store-provider';
-import { QueryProvider } from '@/providers/query-privider';
+import { QueryProvider } from '@/providers/query-provider';
 import { SidebarStoreProvider } from '@/providers/sidebar-store-provider';
 import { UserStoreProvider } from '@/providers/user-store-provider';
 
