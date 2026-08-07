@@ -41,13 +41,10 @@ export async function POST(
 ) {
   try {
     const body = await req.json();
-    const data = await serverFetch<CommentItemsType>(
-      `/playlists/${(await params).id}/comments`,
-      {
-        method: 'POST',
-        body,
-      },
-    );
+    const data = await serverFetch(`/playlists/${(await params).id}/comments`, {
+      method: 'POST',
+      body,
+    });
 
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
