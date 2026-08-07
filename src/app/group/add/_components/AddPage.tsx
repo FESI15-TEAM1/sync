@@ -63,33 +63,38 @@ export default function AddPage({
 
   const { mutate: submitGroup, isPending: isSubmitting } = useMutation({
     mutationFn: async () => {
-      let image: string | undefined;
+      try {
+        let image: string | undefined;
 
-      if (coverFile) {
-        const { uploadUrl, fileUrl } = await requestUploadUrl({
-          domain: 'group',
-          contentType: coverFile.type as UploadUrlRequest['contentType'],
-        });
+        if (coverFile) {
+          const { uploadUrl, fileUrl } = await requestUploadUrl({
+            domain: 'group',
+            contentType: coverFile.type as UploadUrlRequest['contentType'],
+          });
 
-        const putResponse = await fetch(uploadUrl, {
-          method: 'PUT',
-          headers: { 'Content-Type': coverFile.type },
-          body: coverFile,
-        });
-        if (!putResponse.ok) {
-          throw new Error('이미지 업로드에 실패했습니다.');
+          const putResponse = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': coverFile.type },
+            body: coverFile,
+          });
+          if (!putResponse.ok) {
+            throw new Error('이미지 업로드에 실패했습니다.');
+          }
+
+          image = fileUrl;
         }
 
-        image = fileUrl;
+        return await createGroup({
+          title: trimmedName,
+          description: trimmedDescription,
+          image,
+          isPublic,
+          playlistIds: selectedPlaylists,
+        });
+      } catch (error) {
+        if (error instanceof APIError) throw error;
+        throw new Error(SUBMIT_ERROR_MESSAGE);
       }
-
-      return createGroup({
-        title: trimmedName,
-        description: trimmedDescription,
-        image,
-        isPublic,
-        playlistIds: selectedPlaylists,
-      });
     },
     onSuccess: ({ id }) => {
       router.push(`/group/${id}`);
@@ -104,7 +109,12 @@ export default function AddPage({
   const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!trimmedName || !trimmedDescription || selectedPlaylists.length === 0)
+    if (
+      isSubmitting ||
+      !trimmedName ||
+      !trimmedDescription ||
+      selectedPlaylists.length === 0
+    )
       return;
 
     setErrorMessage(null);
