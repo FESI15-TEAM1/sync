@@ -15,13 +15,10 @@ import Heart from '@/assets/icons/heart.svg';
 import defaultImg from '@/assets/images/default.png';
 import Button from '@/components/Button';
 import TrackList from '@/components/domain/playlists/TrackList';
-import Modal from '@/components/Modal';
 import { clientFetch } from '@/lib/http/client-fetch';
-import { APIError } from '@/lib/http/error';
 import { usePlayerStore } from '@/providers/player-store-provider';
 import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 import { type PlaylistTrack } from '@/services/playlist/playlist';
-import { deletePlaylist } from '@/services/playlist/playlist.api';
 
 const RESTART_THRESHOLD_SECONDS = 3;
 
