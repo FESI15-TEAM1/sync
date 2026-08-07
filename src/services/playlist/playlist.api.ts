@@ -35,3 +35,13 @@ export const postComments = (
     body: content,
   });
 };
+export const updateComment = (
+  id: number | string,
+  commentId: number | string,
+  content: { content: string },
+) => {
+  return clientFetch(`/playlists/${id}/comments/${commentId}`, {
+    method: 'PATCH',
+    body: content,
+  });
+};
