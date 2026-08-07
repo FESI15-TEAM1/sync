@@ -6,6 +6,7 @@ import { useState } from 'react';
 import type { CommentItemType } from '@/app/playlist/detail/[id]/_components/CommentItemList';
 import defaultImage from '@/assets/images/default.png';
 import Input from '@/components/Input';
+import { formatTimeAgo } from '@/lib/formatITimeAgo';
 
 export default function CommentItem({
   comment,
@@ -18,23 +19,6 @@ export default function CommentItem({
   onEditSave: (commentId: number, content: string) => Promise<unknown>;
   isSaving: boolean;
 }) {
-  function formatTimeAgo(dateString: string) {
-    const date = new Date(dateString);
-    const now = new Date();
-
-    const diff = now.getTime() - date.getTime();
-
-    const minutes = Math.floor(diff / (1000 * 60));
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-    if (minutes < 1) return '방금 전';
-    if (minutes < 60) return `${minutes}분 전`;
-    if (hours < 24) return `${hours}시간 전`;
-    if (days < 7) return `${days}일 전`;
-
-    return date.toLocaleDateString('ko-KR');
-  }
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [editComments, setEditComments] = useState(comment.content);
 
@@ -89,10 +73,6 @@ export default function CommentItem({
               if (e.key === 'Enter') {
                 e.preventDefault();
                 handleEditSave();
-              }
-              if (e.key === 'Escape') {
-                e.preventDefault();
-                handleEditCancel();
               }
             }}
             value={editComments}
