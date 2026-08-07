@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { type ChangeEvent, type SubmitEvent, useState } from 'react';
@@ -32,7 +33,6 @@ export default function AddPage({
   const [groupDescription, setGroupDescription] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [selectedPlaylists, setSelectedPlaylists] = useState<number[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const trimmedName = groupName.trim();
@@ -61,20 +61,8 @@ export default function AddPage({
     );
   };
 
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (
-      !trimmedName ||
-      !trimmedDescription ||
-      selectedPlaylists.length === 0
-    )
-      return;
-
-    setIsSubmitting(true);
-    setErrorMessage(null);
-
-    try {
+  const { mutate: submitGroup, isPending: isSubmitting } = useMutation({
+    mutationFn: async () => {
       let image: string | undefined;
 
       if (coverFile) {
@@ -95,20 +83,32 @@ export default function AddPage({
         image = fileUrl;
       }
 
-      const { id } = await createGroup({
+      return createGroup({
         title: trimmedName,
         description: trimmedDescription,
         image,
         isPublic,
         playlistIds: selectedPlaylists,
       });
+    },
+    onSuccess: ({ id }) => {
       router.push(`/group/${id}`);
-    } catch (error) {
-      setIsSubmitting(false);
+    },
+    onError: (error) => {
       setErrorMessage(
         error instanceof APIError ? error.message : SUBMIT_ERROR_MESSAGE,
       );
-    }
+    },
+  });
+
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!trimmedName || !trimmedDescription || selectedPlaylists.length === 0)
+      return;
+
+    setErrorMessage(null);
+    submitGroup();
   };
 
   return (
