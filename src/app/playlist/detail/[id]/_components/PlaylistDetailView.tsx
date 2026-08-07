@@ -1,12 +1,12 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import type { CommentItemsType } from '@/app/playlist/detail/[id]/_components/CommentItemList';
-import ComentItemList from '@/app/playlist/detail/[id]/_components/CommentItemList';
+import CommentsSection from '@/app/playlist/detail/[id]/_components/CommentsSection';
+import PlaylistHeaderActions from '@/app/playlist/detail/[id]/_components/PlaylistHeaderActions';
 import PlaylistPlayer from '@/app/playlist/detail/[id]/_components/PlaylistPlayer';
 import { type PlaylistPlayerHandle } from '@/app/playlist/detail/[id]/_components/PlaylistPlayer';
 import PlaylistPlayerBar from '@/app/playlist/detail/[id]/_components/PlaylistPlayerBar';
@@ -14,17 +14,11 @@ import TrackHoverController from '@/app/playlist/detail/[id]/_components/TrackHo
 import Heart from '@/assets/icons/heart.svg';
 import defaultImg from '@/assets/images/default.png';
 import Button from '@/components/Button';
-import BackButton from '@/components/common/BackButton';
-import KebabModal from '@/components/domain/KebabModal';
 import TrackList from '@/components/domain/playlists/TrackList';
-import InputField from '@/components/InputField';
-import Modal from '@/components/Modal';
 import { clientFetch } from '@/lib/http/client-fetch';
-import { APIError } from '@/lib/http/error';
 import { usePlayerStore } from '@/providers/player-store-provider';
 import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 import { type PlaylistTrack } from '@/services/playlist/playlist';
-import { deletePlaylist, postComments } from '@/services/playlist/playlist.api';
 
 const RESTART_THRESHOLD_SECONDS = 3;
 
@@ -39,17 +33,11 @@ export default function PlaylistDetailView({
   const stop = usePlayerStore((state) => state.stop);
   const setIsPlaying = usePlayerStore((state) => state.setIsPlaying);
   const playerRef = useRef<PlaylistPlayerHandle | null>(null);
-  const [showToast, setShowToast] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const router = useRouter();
   const params = useParams();
-  const [isOpen, setIsOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [commentContent, sedtCommentContent] = useState('');
 
   const id = params.id;
-  const queryClient = useQueryClient();
 
   const {
     data: playlist,
@@ -59,27 +47,7 @@ export default function PlaylistDetailView({
     queryKey: ['playlists', id],
     queryFn: () => clientFetch<PlaylistDetail>(`/playlists/${id}`),
   });
-  const {
-    data: comments,
-    isPending: isCommentsPending,
-    error: commentsError,
-  } = useQuery({
-    queryKey: ['playlists', id, 'comments'],
-    queryFn: () => clientFetch<CommentItemsType>(`/playlists/${id}/comments`),
-  });
 
-  const { mutate: submitComment } = useMutation({
-    mutationFn: () => postComments(Number(id), { content: commentContent }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['playlists', id, 'comments'],
-      });
-      sedtCommentContent(''); // 입력창도 비워주기
-    },
-    onError: (error) => {
-      if (error instanceof APIError) alert(error.message);
-    },
-  });
   const [trackIdForTime, setTrackIdForTime] = useState(currentTrack?.videoId);
   if (currentTrack?.videoId !== trackIdForTime) {
     setTrackIdForTime(currentTrack?.videoId);
@@ -105,9 +73,9 @@ export default function PlaylistDetailView({
     return () => setIsPlaying(false);
   }, [setIsPlaying]);
 
-  if (isCommentsPending || isPlaylistPending)
+  if (isPlaylistPending)
     return <div className="text-text-primary font-bold">로딩중...</div>;
-  if (commentsError || playlistError) return <div>에러남</div>;
+  if (playlistError) return <div>에러남</div>;
 
   const handleTogglePlay = () => {
     if (isPlaying) playerRef.current?.pause();
@@ -161,80 +129,14 @@ export default function PlaylistDetailView({
     setCurrentTime(time);
   };
 
-  const handleShare = async () => {
-    await navigator.clipboard.writeText(window.location.href);
-    setShowToast(true);
-
-    setTimeout(() => {
-      setShowToast(false);
-    }, 2000);
-  };
-
-  const handleOpenDeleteModal = () => {
-    setErrorMessage('');
-    setIsOpen(true);
-  };
-
-  const handleCloseDeleteModal = () => {
-    setErrorMessage('');
-    setIsOpen(false);
-  };
-  const handleDelete = async () => {
-    try {
-      await deletePlaylist(Number(id));
-      handleCloseDeleteModal();
-      router.push('/playlist');
-    } catch (error) {
-      setErrorMessage(
-        error instanceof APIError
-          ? error.message
-          : '플레이리스트를 삭제하는 중 오류가 발생했습니다.',
-      );
-    }
-  };
-
   return (
     <div
       className={`flex max-w-7xl flex-col gap-10 p-2 ${currentTrack ? 'pb-24' : ''}`}
     >
-      <div
-        className={`bg-bg-card fixed top-25 left-1/2 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white transition-all duration-300 ${showToast ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0'} `}
-      >
-        링크가 복사되었습니다.
-      </div>
-      <div className="flex justify-between">
-        <BackButton />
-        <KebabModal>
-          <>
-            {userid == playlist.owner.userId ? (
-              <>
-                <KebabModal.Item onClick={handleShare}>
-                  공유하기
-                </KebabModal.Item>
-                <KebabModal.Item
-                  onClick={() => {
-                    router.push(`/playlist/detail/${id}/edit`);
-                  }}
-                >
-                  수정하기
-                </KebabModal.Item>
-                <KebabModal.Item
-                  onClick={handleOpenDeleteModal}
-                  variant={'danger'}
-                >
-                  삭제하기
-                </KebabModal.Item>
-              </>
-            ) : (
-              <>
-                <KebabModal.Item onClick={handleShare}>
-                  공유하기
-                </KebabModal.Item>
-              </>
-            )}
-          </>
-        </KebabModal>
-      </div>
+      <PlaylistHeaderActions
+        playlistId={id}
+        isOwner={userid == playlist.owner.userId}
+      />
       <div className="ju flex items-center gap-4">
         <Image
           src={playlist.image || defaultImg}
@@ -291,53 +193,7 @@ export default function PlaylistDetailView({
           onSeek={handleSeek}
         />
       )}
-      <div>
-        <h4 className="text-text-primary mb-2 text-xl font-bold">댓글</h4>
-        <ComentItemList comments={comments} userid={userid} />
-      </div>
-      <Modal isOpen={isOpen} onClose={handleCloseDeleteModal}>
-        <div className="p-5">
-          <Modal.Body>
-            <h2
-              id="login-required-modal-title"
-              className="text-text-primary text-center text-lg font-bold"
-            >
-              {errorMessage ? errorMessage : '정말로 삭제하시겠습니까?'}
-            </h2>
-          </Modal.Body>
-
-          <Modal.Footer>
-            <Button
-              type="button"
-              size="md"
-              variant="outline"
-              className="flex h-9 w-28 shrink-0 items-center justify-center rounded-full px-0 font-bold"
-              onClick={handleCloseDeleteModal}
-            >
-              취소
-            </Button>
-            <Button
-              type="button"
-              size="md"
-              variant="primary"
-              className="flex h-9 w-28 shrink-0 items-center justify-center rounded-full px-0 font-bold"
-              onClick={handleDelete}
-            >
-              삭제
-            </Button>
-          </Modal.Footer>
-        </div>
-      </Modal>
-      <InputField>
-        <InputField.Input
-          placeholder="댓글을 입력해 주세요."
-          onChange={(e) => sedtCommentContent(e.target.value)}
-          value={commentContent}
-        />
-        <InputField.Button onClick={() => submitComment()}>
-          작성하기
-        </InputField.Button>
-      </InputField>
+      <CommentsSection playlistId={id} userid={userid} />
     </div>
   );
 }
