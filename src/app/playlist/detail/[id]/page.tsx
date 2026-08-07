@@ -19,7 +19,7 @@ export default async function PlaylistDeatilPage() {
 }
 async function getCurrentUserId() {
   try {
-    const me = await serverFetch<{ id: number }>('/users/me', {
+    const me = await serverFetch<{ id: string }>('/users/me', {
       method: 'GET',
     });
     return me.id;
