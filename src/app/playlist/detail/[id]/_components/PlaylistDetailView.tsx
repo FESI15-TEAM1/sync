@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -17,13 +17,14 @@ import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import KebabModal from '@/components/domain/KebabModal';
 import TrackList from '@/components/domain/playlists/TrackList';
+import InputField from '@/components/InputField';
 import Modal from '@/components/Modal';
 import { clientFetch } from '@/lib/http/client-fetch';
 import { APIError } from '@/lib/http/error';
 import { usePlayerStore } from '@/providers/player-store-provider';
 import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 import { type PlaylistTrack } from '@/services/playlist/playlist';
-import { deletePlaylist } from '@/services/playlist/playlist.api';
+import { deletePlaylist, postComments } from '@/services/playlist/playlist.api';
 
 const RESTART_THRESHOLD_SECONDS = 3;
 
@@ -45,10 +46,11 @@ export default function PlaylistDetailView({
   const params = useParams();
   const [isOpen, setIsOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [commentContent, sedtCommentContent] = useState('');
 
   const id = params.id;
+  const queryClient = useQueryClient();
 
-  console.log('id: ', id);
   const {
     data: playlist,
     isPending: isPlaylistPending,
@@ -64,6 +66,19 @@ export default function PlaylistDetailView({
   } = useQuery({
     queryKey: ['playlists', id, 'comments'],
     queryFn: () => clientFetch<CommentItemsType>(`/playlists/${id}/comments`),
+  });
+
+  const { mutate: submitComment } = useMutation({
+    mutationFn: () => postComments(Number(id), { content: commentContent }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['playlists', id, 'comments'],
+      });
+      sedtCommentContent(''); // 입력창도 비워주기
+    },
+    onError: (error) => {
+      if (error instanceof APIError) alert(error.message);
+    },
   });
   const [trackIdForTime, setTrackIdForTime] = useState(currentTrack?.videoId);
   if (currentTrack?.videoId !== trackIdForTime) {
@@ -177,6 +192,7 @@ export default function PlaylistDetailView({
       );
     }
   };
+
   return (
     <div
       className={`flex max-w-7xl flex-col gap-10 p-2 ${currentTrack ? 'pb-24' : ''}`}
@@ -277,7 +293,7 @@ export default function PlaylistDetailView({
       )}
       <div>
         <h4 className="text-text-primary mb-2 text-xl font-bold">댓글</h4>
-        <ComentItemList comments={comments} />
+        <ComentItemList comments={comments} userid={userid} />
       </div>
       <Modal isOpen={isOpen} onClose={handleCloseDeleteModal}>
         <div className="p-5">
@@ -312,6 +328,16 @@ export default function PlaylistDetailView({
           </Modal.Footer>
         </div>
       </Modal>
+      <InputField>
+        <InputField.Input
+          placeholder="댓글을 입력해 주세요."
+          onChange={(e) => sedtCommentContent(e.target.value)}
+          value={commentContent}
+        />
+        <InputField.Button onClick={() => submitComment()}>
+          작성하기
+        </InputField.Button>
+      </InputField>
     </div>
   );
 }
