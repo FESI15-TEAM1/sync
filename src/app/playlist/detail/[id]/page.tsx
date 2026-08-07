@@ -2,7 +2,7 @@ import PlaylistDetailView from '@/app/playlist/detail/[id]/_components/PlaylistD
 
 export default function PlaylistDeatilPage() {
   return (
-    <div className="flex justify-center p-6">
+    <div className="flex justify-center">
       <PlaylistDetailView />
     </div>
   );
