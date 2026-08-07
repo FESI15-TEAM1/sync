@@ -3,7 +3,13 @@ import Image from 'next/image';
 import type { CommentItemType } from '@/app/playlist/detail/[id]/_components/CommentItemList';
 import defaultImage from '@/assets/images/default.png';
 
-export default function CommentItem({ comment }: { comment: CommentItemType }) {
+export default function CommentItem({
+  comment,
+  userid,
+}: {
+  comment: CommentItemType;
+  userid: string | number | null;
+}) {
   function formatTimeAgo(dateString: string) {
     const date = new Date(dateString);
     const now = new Date();
@@ -21,8 +27,10 @@ export default function CommentItem({ comment }: { comment: CommentItemType }) {
 
     return date.toLocaleDateString('ko-KR');
   }
+  console.log(userid);
+
   return (
-    <div className="text-text-primary flex items-center gap-3">
+    <div className="text-text-primary relative flex items-center gap-3">
       <div className="relative size-8 shrink-0 overflow-hidden rounded-full">
         <Image
           src={comment.author.image || defaultImage}
@@ -40,6 +48,11 @@ export default function CommentItem({ comment }: { comment: CommentItemType }) {
         </div>
         <span className="text-sm">{comment.content}</span>
       </div>
+      {userid === comment.author.userId && (
+        <button className="text-text-secondary absolute right-0 cursor-pointer text-[12px]">
+          수정
+        </button>
+      )}
     </div>
   );
 }
