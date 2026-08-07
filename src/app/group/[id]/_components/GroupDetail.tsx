@@ -109,7 +109,11 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
       if (error instanceof APIError) {
         console.error(error.message);
         alert(error.message);
+        return;
       }
+
+      console.error(error);
+      alert('그룹 탈퇴 중 오류가 발생했습니다.');
     }
   };
 
@@ -155,7 +159,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
               </KebabModal>
             </div>
             <p className="text-text-secondary mt-1 text-sm">
-              멤버 {group.memberCount}명 · 플레이리스트 {playlists.length}개
+              멤버 {group.memberCount}명 · 플레이리스트 {group.playlistCount}개
             </p>
             {group.inviteCode && (
               <p className="text-text-secondary mt-0.5 text-sm">
