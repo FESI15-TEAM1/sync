@@ -6,7 +6,9 @@ import { useState } from 'react';
 
 import KebabModal from '@/components/domain/KebabModal';
 import PlaylistCard from '@/components/domain/PlaylistCard';
+import { APIError } from '@/lib/http/error';
 import { useUserStore } from '@/providers/user-store-provider';
+import { leaveGroup } from '@/services/group/group.api';
 import type { GroupDetailResponse } from '@/services/group/group.types';
 
 import GroupLeaveModal from './GroupLeaveModal';
@@ -96,9 +98,19 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     setIsEditPlaylistsOpen(false);
   };
 
-  const handleConfirmLeave = () => {
-    console.log('Leave group', groupId);
-    setIsLeaveGroupOpen(false);
+  const handleConfirmLeave = async () => {
+    if (!currentUser) return;
+
+    try {
+      await leaveGroup(groupId, currentUser.id);
+      setIsLeaveGroupOpen(false);
+      router.push('/group');
+    } catch (error) {
+      if (error instanceof APIError) {
+        console.error(error.message);
+        alert(error.message);
+      }
+    }
   };
 
   return (

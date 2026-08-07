@@ -9,3 +9,10 @@ export function createGroup(data: CreateGroupRequest) {
     body: data,
   });
 }
+
+// 그룹 탈퇴 / 강퇴
+export function leaveGroup(groupId: number, userId: number) {
+  return clientFetch<null>(`/group/${groupId}/members/${userId}`, {
+    method: 'DELETE',
+  });
+}
