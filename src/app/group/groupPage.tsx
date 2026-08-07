@@ -1,12 +1,17 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 
 import Button from '@/components/Button';
 import { getGroups } from '@/services/group/group.api';
+
+const GROUP_PAGE_SIZE = 10;
+// 바닥에 닿기 전에 미리 다음 페이지를 불러와 스크롤이 끊기지 않게 합니다.
+const LOAD_MORE_ROOT_MARGIN = '200px';
 
 type GroupRequest = {
   id: number;
@@ -55,10 +60,40 @@ export default function GroupPage() {
     data: groupsData,
     isPending: isGroupsPending,
     isError: isGroupsError,
-  } = useQuery({
+    fetchNextPage,
+    hasNextPage,
+    isFetching: isGroupsFetching,
+    isFetchingNextPage,
+    isFetchNextPageError,
+  } = useInfiniteQuery({
     queryKey: ['groups'],
-    queryFn: () => getGroups(),
+    queryFn: ({ pageParam }) =>
+      getGroups({ cursor: pageParam, limit: GROUP_PAGE_SIZE }),
+    initialPageParam: undefined as string | undefined,
+    // nextCursor가 null이면 마지막 페이지입니다.
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
+
+  const groups = groupsData?.pages.flatMap((page) => page.items) ?? [];
+
+  // 목록 끝의 감지용 요소가 화면에 들어오면 다음 페이지를 이어서 불러옵니다.
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const target = loadMoreRef.current;
+    if (!target || !hasNextPage || isGroupsFetching || isFetchNextPageError)
+      return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isGroupsFetching) fetchNextPage();
+      },
+      { rootMargin: LOAD_MORE_ROOT_MARGIN },
+    );
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isGroupsFetching, isFetchNextPageError, fetchNextPage]);
 
   const handleReject = (id: number) => {
     // 요청 거절 API 연동
@@ -158,15 +193,15 @@ export default function GroupPage() {
           </p>
         )}
 
-        {groupsData && groupsData.items.length === 0 && (
+        {groupsData && groups.length === 0 && (
           <p className="text-text-secondary text-sm">
             아직 속한 그룹이 없습니다.
           </p>
         )}
 
-        {groupsData && groupsData.items.length > 0 && (
+        {groupsData && groups.length > 0 && (
           <div className="flex flex-col gap-3">
-            {groupsData.items.map((group) => (
+            {groups.map((group) => (
               <Link
                 key={group.id}
                 href={`/group/${group.id}`}
@@ -197,6 +232,36 @@ export default function GroupPage() {
                 </div>
               </Link>
             ))}
+          </div>
+        )}
+
+        {hasNextPage && (
+          <div
+            ref={loadMoreRef}
+            className="flex flex-col items-center justify-center gap-2 py-4"
+          >
+            {isFetchingNextPage && (
+              <p className="text-text-secondary text-sm">
+                그룹을 더 불러오는 중입니다...
+              </p>
+            )}
+
+            {isFetchNextPageError && (
+              <>
+                <p className="text-sm text-red-500" role="alert">
+                  그룹을 더 불러오는데 실패하였습니다.
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  isDisabled={false}
+                  type="button"
+                  onClick={() => fetchNextPage()}
+                >
+                  다시 시도
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>
