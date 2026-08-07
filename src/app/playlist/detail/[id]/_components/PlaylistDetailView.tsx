@@ -22,11 +22,7 @@ import { type PlaylistTrack } from '@/services/playlist/playlist';
 
 const RESTART_THRESHOLD_SECONDS = 3;
 
-export default function PlaylistDetailView({
-  userid,
-}: {
-  userid: number | null;
-}) {
+export default function PlaylistDetailView({ userid }: { userid: string }) {
   const currentTrack = usePlayerStore((state) => state.currentTrack);
   const isPlaying = usePlayerStore((state) => state.isPlaying);
   const playTrack = usePlayerStore((state) => state.playTrack);
@@ -35,9 +31,7 @@ export default function PlaylistDetailView({
   const playerRef = useRef<PlaylistPlayerHandle | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const params = useParams();
-
-  const id = params.id;
+  const { id } = useParams<{ id: string }>();
 
   const {
     data: playlist,
@@ -135,7 +129,7 @@ export default function PlaylistDetailView({
     >
       <PlaylistHeaderActions
         playlistId={id}
-        isOwner={userid == playlist.owner.userId}
+        isOwner={userid == String(playlist.owner.userId)}
       />
       <div className="ju flex items-center gap-4">
         <Image
