@@ -1,6 +1,8 @@
 import Section from '@/app/(main)/_components/Section';
+import GroupList from '@/components/domain/group/GroupList';
 import PlaylistCardList from '@/components/domain/playlists/PlaylistCardList';
 import PlayroomList from '@/components/domain/playroom/PlayroomList';
+import { type GroupSummary } from '@/services/group/group.types';
 import { type PlayroomCardData } from '@/services/playroom/playroom.types';
 
 export default function Main() {
@@ -31,6 +33,26 @@ export default function Main() {
       hashtags: ['Lo-fi', 'Ambient', 'Classical', 'Piano'],
       listenerCount: 15,
       host: { userId: 3, nickname: '이어폰붙박이', image: null },
+    },
+  ];
+
+  const groupDummy: GroupSummary[] = [
+    { id: 1, title: '또 나왔어', memberCount: 1, playlistCount: 1 },
+    { id: 2, title: '나도 너무 좋아', memberCount: 1, playlistCount: 1 },
+    { id: 3, title: '안녕안녕', memberCount: 1, playlistCount: 1 },
+    { id: 4, title: '안녕하세요', memberCount: 1, playlistCount: 1 },
+    {
+      id: 5,
+      title: '나도 여자랍니다',
+      image: 'https://picsum.photos/seed/group5/200/200',
+      memberCount: 1,
+      playlistCount: 1,
+    },
+    {
+      id: 6,
+      title: '반갑습니다',
+      memberCount: 1,
+      playlistCount: 1,
     },
   ];
 
@@ -90,6 +112,10 @@ export default function Main() {
       <Section
         headline="새로 생긴 플레이리스트!"
         list={<PlaylistCardList data={playlistDummy} />}
+      />
+      <Section
+        headline="최근 그룹 목록"
+        list={<GroupList data={groupDummy} />}
       />
     </div>
   );

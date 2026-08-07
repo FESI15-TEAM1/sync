@@ -1,12 +1,11 @@
 'use client';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
-import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
 import Button from '@/components/Button';
+import GroupList from '@/components/domain/group/GroupList';
 import { getGroups } from '@/services/group/group.api';
 
 const GROUP_PAGE_SIZE = 10;
@@ -21,18 +20,6 @@ type GroupRequest = {
   actionLabel: string;
   gradientClassName: string;
 };
-
-// 그룹 카드 배경은 API가 내려주지 않으므로 id 기반으로 고정 배정합니다.
-const GROUP_GRADIENTS = [
-  'from-[#6366f1] to-[#c084fc]',
-  'from-[#38bdf8] to-[#4f46e5]',
-  'from-[#34d399] to-[#a3e635]',
-  'from-[#d946ef] to-[#6366f1]',
-];
-
-function getGroupGradientClassName(id: number) {
-  return GROUP_GRADIENTS[id % GROUP_GRADIENTS.length];
-}
 
 const MOCK_REQUESTS: GroupRequest[] = [
   {
@@ -199,41 +186,7 @@ export default function GroupPage() {
           </p>
         )}
 
-        {groupsData && groups.length > 0 && (
-          <div className="flex flex-col gap-3">
-            {groups.map((group) => (
-              <Link
-                key={group.id}
-                href={`/group/${group.id}`}
-                className="bg-bg-card hover:bg-input flex items-center gap-4 rounded-2xl p-3 transition-colors"
-              >
-                {group.image ? (
-                  <Image
-                    src={group.image}
-                    alt="그룹 커버"
-                    width={56}
-                    height={56}
-                    className="size-14 shrink-0 rounded-xl object-cover"
-                  />
-                ) : (
-                  <div
-                    aria-hidden
-                    className={`size-14 shrink-0 rounded-xl bg-linear-to-br ${getGroupGradientClassName(group.id)}`}
-                  />
-                )}
-                <div className="min-w-0">
-                  <h3 className="text-text-primary truncate text-base font-semibold">
-                    {group.title}
-                  </h3>
-                  <p className="text-text-secondary mt-0.5 text-sm">
-                    멤버 {group.memberCount}명 · 플레이리스트{' '}
-                    {group.playlistCount}개
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+        {groupsData && groups.length > 0 && <GroupList data={groups} />}
 
         {hasNextPage && (
           <div
