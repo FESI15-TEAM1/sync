@@ -17,14 +17,21 @@ import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import KebabModal from '@/components/domain/KebabModal';
 import TrackList from '@/components/domain/playlists/TrackList';
+import Modal from '@/components/Modal';
 import { clientFetch } from '@/lib/http/client-fetch';
+import { APIError } from '@/lib/http/error';
 import { usePlayerStore } from '@/providers/player-store-provider';
 import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 import { type PlaylistTrack } from '@/services/playlist/playlist';
+import { deletePlaylist } from '@/services/playlist/playlist.api';
 
 const RESTART_THRESHOLD_SECONDS = 3;
 
-export default function PlaylistDetailView() {
+export default function PlaylistDetailView({
+  userid,
+}: {
+  userid: number | null;
+}) {
   const currentTrack = usePlayerStore((state) => state.currentTrack);
   const isPlaying = usePlayerStore((state) => state.isPlaying);
   const playTrack = usePlayerStore((state) => state.playTrack);
@@ -36,9 +43,12 @@ export default function PlaylistDetailView() {
   const [duration, setDuration] = useState(0);
   const router = useRouter();
   const params = useParams();
+  const [isOpen, setIsOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const id = params.id;
 
+  console.log('id: ', id);
   const {
     data: playlist,
     isPending: isPlaylistPending,
@@ -145,6 +155,28 @@ export default function PlaylistDetailView() {
     }, 2000);
   };
 
+  const handleOpenDeleteModal = () => {
+    setErrorMessage('');
+    setIsOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setErrorMessage('');
+    setIsOpen(false);
+  };
+  const handleDelete = async () => {
+    try {
+      await deletePlaylist(Number(id));
+      handleCloseDeleteModal();
+      router.push('/playlist');
+    } catch (error) {
+      setErrorMessage(
+        error instanceof APIError
+          ? error.message
+          : '플레이리스트를 삭제하는 중 오류가 발생했습니다.',
+      );
+    }
+  };
   return (
     <div
       className={`flex max-w-7xl flex-col gap-10 p-2 ${currentTrack ? 'pb-24' : ''}`}
@@ -158,15 +190,32 @@ export default function PlaylistDetailView() {
         <BackButton />
         <KebabModal>
           <>
-            {/* 아이디값 을 가져와서 분기처리 리스트 주인과 일반유저 */}
-            <KebabModal.Item onClick={handleShare}>공유하기</KebabModal.Item>
-            <KebabModal.Item
-              onClick={() => {
-                router.push(`/playlist/detail/${id}/edit`);
-              }}
-            >
-              수정하기
-            </KebabModal.Item>
+            {userid == playlist.owner.userId ? (
+              <>
+                <KebabModal.Item onClick={handleShare}>
+                  공유하기
+                </KebabModal.Item>
+                <KebabModal.Item
+                  onClick={() => {
+                    router.push(`/playlist/detail/${id}/edit`);
+                  }}
+                >
+                  수정하기
+                </KebabModal.Item>
+                <KebabModal.Item
+                  onClick={handleOpenDeleteModal}
+                  variant={'danger'}
+                >
+                  삭제하기
+                </KebabModal.Item>
+              </>
+            ) : (
+              <>
+                <KebabModal.Item onClick={handleShare}>
+                  공유하기
+                </KebabModal.Item>
+              </>
+            )}
           </>
         </KebabModal>
       </div>
@@ -230,6 +279,39 @@ export default function PlaylistDetailView() {
         <h4 className="text-text-primary mb-2 text-xl font-bold">댓글</h4>
         <ComentItemList comments={comments} />
       </div>
+      <Modal isOpen={isOpen} onClose={handleCloseDeleteModal}>
+        <div className="p-5">
+          <Modal.Body>
+            <h2
+              id="login-required-modal-title"
+              className="text-text-primary text-center text-lg font-bold"
+            >
+              {errorMessage ? errorMessage : '정말로 삭제하시겠습니까?'}
+            </h2>
+          </Modal.Body>
+
+          <Modal.Footer>
+            <Button
+              type="button"
+              size="md"
+              variant="outline"
+              className="flex h-9 w-28 shrink-0 items-center justify-center rounded-full px-0 font-bold"
+              onClick={handleCloseDeleteModal}
+            >
+              취소
+            </Button>
+            <Button
+              type="button"
+              size="md"
+              variant="primary"
+              className="flex h-9 w-28 shrink-0 items-center justify-center rounded-full px-0 font-bold"
+              onClick={handleDelete}
+            >
+              삭제
+            </Button>
+          </Modal.Footer>
+        </div>
+      </Modal>
     </div>
   );
 }
