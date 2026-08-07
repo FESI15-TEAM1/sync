@@ -21,3 +21,8 @@ export const updatePlaylist = (
     body: form,
   });
 };
+export const deletePlaylist = (id: number | string) => {
+  return clientFetch(`/playlists/${id}`, {
+    method: 'DELETE',
+  });
+};
