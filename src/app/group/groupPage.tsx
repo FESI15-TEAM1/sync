@@ -1,9 +1,17 @@
 'use client';
 
-import Link from 'next/link';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 
 import Button from '@/components/Button';
+import GroupList from '@/components/domain/group/GroupList';
+import { APIError } from '@/lib/http/error';
+import { getGroups } from '@/services/group/group.api';
+
+const GROUP_PAGE_SIZE = 10;
+// 바닥에 닿기 전에 미리 다음 페이지를 불러와 스크롤이 끊기지 않게 합니다.
+const LOAD_MORE_ROOT_MARGIN = '200px';
 
 type GroupRequest = {
   id: number;
@@ -12,15 +20,6 @@ type GroupRequest = {
   meta: string;
   actionLabel: string;
   gradientClassName: string;
-};
-
-type MyGroup = {
-  id: string;
-  name: string;
-  memberCount: number;
-  playlistCount: number;
-  gradientClassName: string;
-  isLeader: boolean;
 };
 
 const MOCK_REQUESTS: GroupRequest[] = [
@@ -42,43 +41,59 @@ const MOCK_REQUESTS: GroupRequest[] = [
   },
 ];
 
-const MOCK_GROUPS: MyGroup[] = [
-  {
-    id: '1',
-    name: '인디밴드 러버스',
-    memberCount: 32,
-    playlistCount: 14,
-    gradientClassName: 'from-[#6366f1] to-[#c084fc]',
-    isLeader: true,
-  },
-  {
-    id: '2',
-    name: '비 오는 날 감성 모임',
-    memberCount: 12,
-    playlistCount: 12,
-    gradientClassName: 'from-[#38bdf8] to-[#4f46e5]',
-    isLeader: false,
-  },
-  {
-    id: '3',
-    name: '헤비로테 클럽',
-    memberCount: 12,
-    playlistCount: 12,
-    gradientClassName: 'from-[#34d399] to-[#a3e635]',
-    isLeader: false,
-  },
-  {
-    id: '4',
-    name: '신스팝 러버스',
-    memberCount: 12,
-    playlistCount: 12,
-    gradientClassName: 'from-[#d946ef] to-[#6366f1]',
-    isLeader: false,
-  },
-];
-
 export default function GroupPage() {
   const router = useRouter();
+
+  const {
+    data: groupsData,
+    isPending: isGroupsPending,
+    isError: isGroupsError,
+    error: groupsError,
+    fetchNextPage,
+    hasNextPage,
+    isFetching: isGroupsFetching,
+    isFetchingNextPage,
+    isFetchNextPageError,
+  } = useInfiniteQuery({
+    queryKey: ['groups'],
+    queryFn: ({ pageParam }) =>
+      getGroups({ cursor: pageParam, limit: GROUP_PAGE_SIZE }),
+    initialPageParam: undefined as string | undefined,
+    // nextCursor가 null이면 마지막 페이지입니다.
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+  });
+
+  const groups = groupsData?.pages.flatMap((page) => page.items) ?? [];
+
+  const isGroupsAuthError =
+    isGroupsError &&
+    groupsError instanceof APIError &&
+    groupsError.status === 401;
+
+  useEffect(() => {
+    if (isGroupsAuthError) {
+      router.replace('/group/login-required');
+    }
+  }, [isGroupsAuthError, router]);
+
+  // 목록 끝의 감지용 요소가 화면에 들어오면 다음 페이지를 이어서 불러옵니다.
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const target = loadMoreRef.current;
+    if (!target || !hasNextPage || isGroupsFetching || isFetchNextPageError)
+      return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isGroupsFetching) fetchNextPage();
+      },
+      { rootMargin: LOAD_MORE_ROOT_MARGIN },
+    );
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isGroupsFetching, isFetchNextPageError, fetchNextPage]);
 
   const handleReject = (id: number) => {
     // 요청 거절 API 연동
@@ -96,30 +111,28 @@ export default function GroupPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-5 py-6">
+    <div className="mx-auto flex flex-col gap-8 px-5 py-6">
       {MOCK_REQUESTS.length > 0 && (
         <div className="flex flex-col gap-3">
           {MOCK_REQUESTS.map((request) => (
             <div
               key={request.id}
-              className="bg-bg-card flex flex-col gap-3 rounded-2xl p-4"
+              className="bg-bg-card flex items-center gap-3 rounded-2xl p-4"
             >
-              <div className="flex items-start gap-3">
-                <div
-                  aria-hidden
-                  className={`size-10 shrink-0 rounded-full bg-linear-to-br ${request.gradientClassName}`}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-text-primary text-sm leading-snug">
-                    <span className="font-semibold">{request.requester}</span>
-                    님이 {request.message}
-                  </p>
-                  <p className="text-text-secondary mt-1 text-xs">
-                    {request.meta}
-                  </p>
-                </div>
+              <div
+                aria-hidden
+                className={`size-14 shrink-0 rounded-full bg-linear-to-br ${request.gradientClassName}`}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-text-primary text-sm leading-snug">
+                  <span className="font-semibold">{request.requester}</span>
+                  님이 {request.message}
+                </p>
+                <p className="text-text-secondary mt-1 text-xs">
+                  {request.meta}
+                </p>
               </div>
-              <div className="flex justify-end gap-2">
+              <div className="flex shrink-0 gap-2">
                 <Button
                   variant="outline"
                   isDisabled={false}
@@ -167,30 +180,56 @@ export default function GroupPage() {
 
       <div className="flex flex-col gap-4">
         <h2 className="text-text-primary text-xl font-bold">내 그룹</h2>
-        <div className="flex flex-col gap-3">
-          {MOCK_GROUPS.map((group) => (
-            <Link
-              key={group.id}
-              href={`/group/${group.id}`}
-              // href={`/group/${group.id}${group.isLeader? '?role=leader' : ''}`}
-              className="bg-bg-card hover:bg-input flex items-center gap-4 rounded-2xl p-3 transition-colors"
-            >
-              <div
-                aria-hidden
-                className={`size-14 shrink-0 rounded-xl bg-linear-to-br ${group.gradientClassName}`}
-              />
-              <div className="min-w-0">
-                <h3 className="text-text-primary truncate text-base font-semibold">
-                  {group.name}
-                </h3>
-                <p className="text-text-secondary mt-0.5 text-sm">
-                  멤버 {group.memberCount}명 · 플레이리스트{' '}
-                  {group.playlistCount}개
+
+        {isGroupsPending && (
+          <p className="text-text-secondary text-sm">
+            그룹 목록을 불러오는 중입니다...
+          </p>
+        )}
+
+        {isGroupsError && !isGroupsAuthError && (
+          <p className="text-sm text-red-500" role="alert">
+            그룹 목록을 불러오는데 실패하였습니다.
+          </p>
+        )}
+
+        {groupsData && groups.length === 0 && (
+          <p className="text-text-secondary text-sm">
+            아직 속한 그룹이 없습니다.
+          </p>
+        )}
+
+        {groupsData && groups.length > 0 && <GroupList data={groups} />}
+
+        {hasNextPage && (
+          <div
+            ref={loadMoreRef}
+            className="flex flex-col items-center justify-center gap-2 py-4"
+          >
+            {isFetchingNextPage && (
+              <p className="text-text-secondary text-sm">
+                그룹을 더 불러오는 중입니다...
+              </p>
+            )}
+
+            {isFetchNextPageError && (
+              <>
+                <p className="text-sm text-red-500" role="alert">
+                  그룹을 더 불러오는데 실패하였습니다.
                 </p>
-              </div>
-            </Link>
-          ))}
-        </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  isDisabled={false}
+                  type="button"
+                  onClick={() => fetchNextPage()}
+                >
+                  다시 시도
+                </Button>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
