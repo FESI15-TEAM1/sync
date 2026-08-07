@@ -5,6 +5,8 @@ import type {
   CreateGroupResponse,
   GetGroupsParams,
   GetGroupsResponse,
+  GetPublicGroupsParams,
+  GetPublicGroupsResponse,
 } from './group.types';
 
 // 그룹 생성
@@ -23,6 +25,22 @@ export function getGroups({ cursor, limit }: GetGroupsParams = {}) {
   if (limit !== undefined) params.limit = String(limit);
 
   return clientFetch<GetGroupsResponse>('/group', {
+    method: 'GET',
+    params: Object.keys(params).length > 0 ? params : undefined,
+  });
+}
+
+// 공개 그룹 목록
+export function getPublicGroups({
+  cursor,
+  limit,
+}: GetPublicGroupsParams = {}) {
+  const params: Record<string, string> = {};
+
+  if (cursor) params.cursor = cursor;
+  if (limit !== undefined) params.limit = String(limit);
+
+  return clientFetch<GetPublicGroupsResponse>('/groups/public', {
     method: 'GET',
     params: Object.keys(params).length > 0 ? params : undefined,
   });

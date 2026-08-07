@@ -3,7 +3,6 @@ import Link from 'next/link';
 import type { GroupSummary } from '@/services/group/group.types';
 
 import GroupListItem from './GroupListItem';
-
 export default function GroupList({ data }: { data: GroupSummary[] }) {
   return (
     <ul className="flex flex-col gap-3">

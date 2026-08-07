@@ -31,3 +31,32 @@ export interface GetGroupsResponse {
   // null 이면 마지막 페이지입니다.
   nextCursor: string | null;
 }
+
+export interface PublicGroupOwner {
+  userId: number;
+  nickname: string;
+  image: string | null;
+}
+
+export interface PublicGroup {
+  id: number;
+  title: string;
+  description: string;
+  image?: string;
+  memberCount: number;
+  playlistCount: number;
+  owner: PublicGroupOwner;
+  isMember: boolean;
+  createdAt: string;
+}
+
+export interface GetPublicGroupsParams {
+  cursor?: string;
+  limit?: number;
+}
+
+export interface GetPublicGroupsResponse {
+  items: PublicGroup[];
+  // null 이면 마지막 페이지입니다.
+  nextCursor: string | null;
+}
