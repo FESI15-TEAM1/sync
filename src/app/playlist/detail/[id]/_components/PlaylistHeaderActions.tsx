@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -21,6 +22,7 @@ export default function PlaylistHeaderActions({
   const [showToast, setShowToast] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const queryClient = useQueryClient();
 
   const handleShare = async () => {
     await navigator.clipboard.writeText(window.location.href);
@@ -44,6 +46,8 @@ export default function PlaylistHeaderActions({
   const handleDelete = async () => {
     try {
       await deletePlaylist(Number(playlistId));
+      queryClient.removeQueries({ queryKey: ['playlists', playlistId] });
+      await queryClient.invalidateQueries({ queryKey: ['playlists'] });
       handleCloseDeleteModal();
       router.push('/playlist');
     } catch (error) {
