@@ -3,12 +3,13 @@
 import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { CommentItemsType } from '@/app/playlist/detail/[id]/_components/CommentItemList';
 import ComentItemList from '@/app/playlist/detail/[id]/_components/CommentItemList';
 import PlaylistPlayer from '@/app/playlist/detail/[id]/_components/PlaylistPlayer';
 import { type PlaylistPlayerHandle } from '@/app/playlist/detail/[id]/_components/PlaylistPlayer';
+import PlaylistPlayerBar from '@/app/playlist/detail/[id]/_components/PlaylistPlayerBar';
 import TrackHoverController from '@/app/playlist/detail/[id]/_components/TrackHoverController';
 import Heart from '@/assets/icons/heart.svg';
 import defaultImg from '@/assets/images/default.png';
@@ -24,6 +25,8 @@ import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 import { type PlaylistTrack } from '@/services/playlist/playlist';
 import { deletePlaylist } from '@/services/playlist/playlist.api';
 
+const RESTART_THRESHOLD_SECONDS = 3;
+
 export default function PlaylistDetailView({
   userid,
 }: {
@@ -33,8 +36,11 @@ export default function PlaylistDetailView({
   const isPlaying = usePlayerStore((state) => state.isPlaying);
   const playTrack = usePlayerStore((state) => state.playTrack);
   const stop = usePlayerStore((state) => state.stop);
+  const setIsPlaying = usePlayerStore((state) => state.setIsPlaying);
   const playerRef = useRef<PlaylistPlayerHandle | null>(null);
   const [showToast, setShowToast] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const router = useRouter();
   const params = useParams();
   const [isOpen, setIsOpen] = useState(false);
@@ -59,16 +65,46 @@ export default function PlaylistDetailView({
     queryKey: ['playlists', id, 'comments'],
     queryFn: () => clientFetch<CommentItemsType>(`/playlists/${id}/comments`),
   });
+  const [trackIdForTime, setTrackIdForTime] = useState(currentTrack?.videoId);
+  if (currentTrack?.videoId !== trackIdForTime) {
+    setTrackIdForTime(currentTrack?.videoId);
+    setCurrentTime(0);
+    setDuration(0);
+  }
+
+  const [lastTrack, setLastTrack] = useState(currentTrack);
+  if (currentTrack && currentTrack !== lastTrack) {
+    setLastTrack(currentTrack);
+  }
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      setCurrentTime(playerRef.current?.getCurrentTime() ?? 0);
+      setDuration(playerRef.current?.getDuration() ?? 0);
+    }, 500);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  useEffect(() => {
+    return () => setIsPlaying(false);
+  }, [setIsPlaying]);
+
   if (isCommentsPending || isPlaylistPending)
     return <div className="text-text-primary font-bold">로딩중...</div>;
   if (commentsError || playlistError) return <div>에러남</div>;
 
+  const handleTogglePlay = () => {
+    if (isPlaying) playerRef.current?.pause();
+    else playerRef.current?.play();
+  };
+
   const handleTrackClick = (track: PlaylistTrack) => {
     if (currentTrack?.videoId === track.videoId) {
-      if (isPlaying) playerRef.current?.pause();
-      else playerRef.current?.play();
+      handleTogglePlay();
       return;
     }
+    playerRef.current?.loadVideo(track.videoId);
     playTrack(track);
   };
 
@@ -77,9 +113,39 @@ export default function PlaylistDetailView({
       (track) => track.videoId === currentTrack?.videoId,
     );
     const nextTrack = playlist.tracks[currentIndex + 1];
-    if (nextTrack) playTrack(nextTrack);
-    else stop();
+    if (nextTrack) {
+      playerRef.current?.loadVideo(nextTrack.videoId);
+      playTrack(nextTrack);
+    } else {
+      stop();
+    }
   };
+
+  const handlePrevious = () => {
+    const elapsed = playerRef.current?.getCurrentTime() ?? 0;
+    if (elapsed > RESTART_THRESHOLD_SECONDS) {
+      playerRef.current?.seekTo(0);
+      setCurrentTime(0);
+      return;
+    }
+    const currentIndex = playlist.tracks.findIndex(
+      (track) => track.videoId === currentTrack?.videoId,
+    );
+    const prevTrack = playlist.tracks[currentIndex - 1];
+    if (prevTrack) {
+      playerRef.current?.loadVideo(prevTrack.videoId);
+      playTrack(prevTrack);
+    } else {
+      playerRef.current?.seekTo(0);
+      setCurrentTime(0);
+    }
+  };
+
+  const handleSeek = (time: number) => {
+    playerRef.current?.seekTo(time);
+    setCurrentTime(time);
+  };
+
   const handleShare = async () => {
     await navigator.clipboard.writeText(window.location.href);
     setShowToast(true);
@@ -112,7 +178,9 @@ export default function PlaylistDetailView({
     }
   };
   return (
-    <div className="flex max-w-3xl flex-col gap-10 p-2 lg:min-w-3xl">
+    <div
+      className={`flex max-w-7xl flex-col gap-10 p-2 ${currentTrack ? 'pb-24' : ''}`}
+    >
       <div
         className={`bg-bg-card fixed top-25 left-1/2 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white transition-all duration-300 ${showToast ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0'} `}
       >
@@ -189,7 +257,22 @@ export default function PlaylistDetailView({
         <PlaylistPlayer
           ref={playerRef}
           videoId={currentTrack.videoId}
+          autoPlay={isPlaying}
           onEnded={handleEnd}
+        />
+      )}
+      {lastTrack && (
+        <PlaylistPlayerBar
+          track={lastTrack}
+          isVisible={!!currentTrack}
+          isPlaying={isPlaying}
+          currentTime={currentTime}
+          duration={duration}
+          onTogglePlay={handleTogglePlay}
+          onPrevious={handlePrevious}
+          onNext={handleEnd}
+          onStop={stop}
+          onSeek={handleSeek}
         />
       )}
       <div>
