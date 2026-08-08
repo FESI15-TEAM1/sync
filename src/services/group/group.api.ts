@@ -3,6 +3,10 @@ import { clientFetch } from '@/lib/http/client-fetch';
 import type {
   CreateGroupRequest,
   CreateGroupResponse,
+  EditGroupPlaylistsRequest,
+  EditGroupPlaylistsResponse,
+  GetGroupPlaylistsParams,
+  GetGroupPlaylistsResponse,
   GetGroupsParams,
   GetGroupsResponse,
   GetPublicGroupsParams,
@@ -44,4 +48,37 @@ export function getPublicGroups({
     method: 'GET',
     params: Object.keys(params).length > 0 ? params : undefined,
   });
+}
+
+// 그룹 플레이리스트 목록
+export function getGroupPlaylists(
+  groupId: number,
+  { cursor, limit }: GetGroupPlaylistsParams = {},
+) {
+  const params: Record<string, string> = {};
+
+  if (cursor) params.cursor = cursor;
+  if (limit !== undefined) params.limit = String(limit);
+
+  return clientFetch<GetGroupPlaylistsResponse>(
+    `/groups/${groupId}/playlists`,
+    {
+      method: 'GET',
+      params: Object.keys(params).length > 0 ? params : undefined,
+    },
+  );
+}
+
+// 그룹 플레이리스트 일괄 편집
+export function editGroupPlaylists(
+  groupId: number,
+  data: EditGroupPlaylistsRequest,
+) {
+  return clientFetch<EditGroupPlaylistsResponse>(
+    `/groups/${groupId}/playlists`,
+    {
+      method: 'PUT',
+      body: data,
+    },
+  );
 }

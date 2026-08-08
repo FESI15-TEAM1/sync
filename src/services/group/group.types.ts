@@ -60,3 +60,31 @@ export interface GetPublicGroupsResponse {
   // null 이면 마지막 페이지입니다.
   nextCursor: string | null;
 }
+
+export interface GroupPlaylistResponse {
+  id: number;
+  title: string;
+  image?: string;
+  trackCount: number;
+  isHighlighted: boolean;
+  // 플레이리스트 소유자(= 그룹에 담은 사람)
+  owner: PublicGroupOwner;
+}
+
+export interface GetGroupPlaylistsParams {
+  cursor?: string;
+  limit?: number;
+}
+
+export interface GetGroupPlaylistsResponse {
+  items: GroupPlaylistResponse[];
+  // null 이면 마지막 페이지입니다.
+  nextCursor: string | null;
+}
+
+export interface EditGroupPlaylistsRequest {
+  // 이 스코프의 최종 플레이리스트 id 목록(참여자=내 것 / 그룹장=그룹 전체). 빈 배열 허용
+  playlistIds: number[];
+}
+
+export type EditGroupPlaylistsResponse = GroupPlaylistResponse[];

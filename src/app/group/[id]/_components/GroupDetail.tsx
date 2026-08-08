@@ -1,10 +1,13 @@
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import KebabModal from '@/components/domain/KebabModal';
 import PlaylistCard from '@/components/domain/PlaylistCard';
+import { APIError } from '@/lib/http/error';
+import { editGroupPlaylists } from '@/services/group/group.api';
 
 import GroupLeaveModal from './GroupLeaveModal';
 import PlaylistEditModal, { type EditablePlaylist } from './PlaylistEditModal';
@@ -13,6 +16,8 @@ type GroupDetailProps = {
   groupId: number;
   isLeader: boolean;
   isJoined: boolean;
+  addedPlaylists: EditablePlaylist[];
+  availablePlaylists: EditablePlaylist[];
 };
 
 export type EditableGroupInfo = {
@@ -34,35 +39,12 @@ const MOCK_GROUP_META = {
   inviteCode: 'IN9X2K',
 };
 
-const MOCK_ADDED_PLAYLISTS: EditablePlaylist[] = [
-  {
-    id: 1,
-    title: '비 오는 날 감성',
-    artist: 'ㄹㅇ좋음',
-    trackCount: 18,
-  },
-  {
-    id: 2,
-    title: 'Midnight Rain',
-    artist: 'Aria Chen',
-    trackCount: 12,
-  },
-];
-
-const MOCK_AVAILABLE_PLAYLISTS: EditablePlaylist[] = [
-  { id: 3, title: 'jpop', artist: 'ㄹㅇ좋음', trackCount: 20 },
-  {
-    id: 4,
-    title: '습할때 듣는노래',
-    artist: 'Aria Chen',
-    trackCount: 15,
-  },
-];
-
 export default function GroupDetail({
   groupId,
   isLeader,
   isJoined,
+  addedPlaylists,
+  availablePlaylists: initialAvailablePlaylists,
 }: GroupDetailProps) {
   const router = useRouter();
 
@@ -70,11 +52,15 @@ export default function GroupDetail({
   const [isLeaveGroupOpen, setIsLeaveGroupOpen] = useState(false);
 
   const [groupInfo] = useState<EditableGroupInfo>(MOCK_GROUP_INFO);
-  const [playlists, setPlaylists] =
-    useState<EditablePlaylist[]>(MOCK_ADDED_PLAYLISTS);
+  const [playlists, setPlaylists] = useState<EditablePlaylist[]>(
+    addedPlaylists,
+  );
   const [availablePlaylists, setAvailablePlaylists] = useState<
     EditablePlaylist[]
-  >(MOCK_AVAILABLE_PLAYLISTS);
+  >(initialAvailablePlaylists);
+  const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(
+    null,
+  );
 
   //그룹 정보 수정
   const handleEditGroupInfo = () => {
@@ -82,6 +68,9 @@ export default function GroupDetail({
   };
   //플레이리스트 편집
   const handleEditPlaylists = () => {
+    if (isSavingPlaylists) return;
+
+    setSaveErrorMessage(null);
     setIsEditPlaylistsOpen(true);
   };
 
@@ -90,16 +79,44 @@ export default function GroupDetail({
     setIsLeaveGroupOpen(true);
   };
 
-  const handleSavePlaylists = (nextPlaylists: EditablePlaylist[]) => {
-    const nextIds = new Set(nextPlaylists.map((item) => item.id));
-    const removed = playlists.filter((item) => !nextIds.has(item.id));
-    const keptAvailable = availablePlaylists.filter(
-      (item) => !nextIds.has(item.id),
-    );
+  const { mutate: savePlaylists, isPending: isSavingPlaylists } = useMutation(
+    {
+      mutationFn: (nextPlaylists: EditablePlaylist[]) =>
+        editGroupPlaylists(groupId, {
+          playlistIds: nextPlaylists.map((item) => item.id),
+        }),
+      onSuccess: (updated, nextPlaylists) => {
+        const updatedIds = new Set(updated.map((item) => item.id));
+        const keptAvailable = availablePlaylists.filter(
+          (item) => !updatedIds.has(item.id),
+        );
+        const removed = nextPlaylists.filter(
+          (item) => !updatedIds.has(item.id),
+        );
 
-    setPlaylists(nextPlaylists);
-    setAvailablePlaylists([...keptAvailable, ...removed]);
-    setIsEditPlaylistsOpen(false);
+        setPlaylists(
+          updated.map((item) => ({
+            id: item.id,
+            title: item.title,
+            trackCount: item.trackCount,
+            artist: item.owner.nickname,
+          })),
+        );
+        setAvailablePlaylists([...keptAvailable, ...removed]);
+        setIsEditPlaylistsOpen(false);
+      },
+      onError: (error) => {
+        setSaveErrorMessage(
+          error instanceof APIError
+            ? error.message
+            : '플레이리스트 저장에 실패했습니다. 잠시 후 다시 시도해주세요.',
+        );
+      },
+    },
+  );
+
+  const handleSavePlaylists = (nextPlaylists: EditablePlaylist[]) => {
+    savePlaylists(nextPlaylists);
   };
 
   const handleConfirmLeave = () => {
@@ -144,6 +161,12 @@ export default function GroupDetail({
             </p>
           </div>
         </div>
+
+        {saveErrorMessage && (
+          <p role="alert" className="text-sm text-red-500">
+            {saveErrorMessage}
+          </p>
+        )}
 
         {/* 플레이리스트 편집 모달 */}
         {isEditPlaylistsOpen && (
