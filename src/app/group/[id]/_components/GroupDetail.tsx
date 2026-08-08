@@ -1,18 +1,22 @@
 'use client';
 
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import KebabModal from '@/components/domain/KebabModal';
 import PlaylistCard from '@/components/domain/PlaylistCard';
+import { APIError } from '@/lib/http/error';
+import { useUserStore } from '@/providers/user-store-provider';
+import { leaveGroup } from '@/services/group/group.api';
+import type { GroupDetailResponse } from '@/services/group/group.types';
 
 import GroupLeaveModal from './GroupLeaveModal';
 import PlaylistEditModal, { type EditablePlaylist } from './PlaylistEditModal';
 
 type GroupDetailProps = {
   groupId: number;
-  isLeader: boolean;
-  isJoined: boolean;
+  group: GroupDetailResponse;
 };
 
 export type EditableGroupInfo = {
@@ -20,18 +24,6 @@ export type EditableGroupInfo = {
   description: string;
   isPublic: boolean;
   coverImage: string | null;
-};
-
-const MOCK_GROUP_INFO: EditableGroupInfo = {
-  name: '인디밴드 러버스',
-  description: '인디 음악을 좋아하는 사람들의 모임',
-  isPublic: false,
-  coverImage: null,
-};
-
-const MOCK_GROUP_META = {
-  memberCount: 32,
-  inviteCode: 'IN9X2K',
 };
 
 const MOCK_ADDED_PLAYLISTS: EditablePlaylist[] = [
@@ -59,17 +51,21 @@ const MOCK_AVAILABLE_PLAYLISTS: EditablePlaylist[] = [
   },
 ];
 
-export default function GroupDetail({
-  groupId,
-  isLeader,
-  isJoined,
-}: GroupDetailProps) {
+export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   const router = useRouter();
+  const currentUser = useUserStore((state) => state.user);
+
+  const isLeader = currentUser?.id === group.owner.userId;
 
   const [isEditPlaylistsOpen, setIsEditPlaylistsOpen] = useState(false);
   const [isLeaveGroupOpen, setIsLeaveGroupOpen] = useState(false);
 
-  const [groupInfo] = useState<EditableGroupInfo>(MOCK_GROUP_INFO);
+  const groupInfo: EditableGroupInfo = {
+    name: group.title,
+    description: group.description,
+    isPublic: group.isPublic,
+    coverImage: group.image,
+  };
   const [playlists, setPlaylists] =
     useState<EditablePlaylist[]>(MOCK_ADDED_PLAYLISTS);
   const [availablePlaylists, setAvailablePlaylists] = useState<
@@ -102,16 +98,43 @@ export default function GroupDetail({
     setIsEditPlaylistsOpen(false);
   };
 
-  const handleConfirmLeave = () => {
-    console.log('Leave group', groupId);
-    setIsLeaveGroupOpen(false);
+  const handleConfirmLeave = async () => {
+    if (!currentUser) return;
+
+    try {
+      await leaveGroup(groupId, currentUser.id);
+      setIsLeaveGroupOpen(false);
+      router.push('/group');
+    } catch (error) {
+      if (error instanceof APIError) {
+        console.error(error.message);
+        alert(error.message);
+        return;
+      }
+
+      console.error(error);
+      alert('그룹 탈퇴 중 오류가 발생했습니다.');
+    }
   };
 
   return (
     <>
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-5 py-6">
         <div className="flex items-start gap-4">
-          <div className="bg-input size-20 shrink-0 rounded-2xl" aria-hidden />
+          {groupInfo.coverImage ? (
+            <Image
+              src={groupInfo.coverImage}
+              alt={groupInfo.name}
+              width={80}
+              height={80}
+              className="size-20 shrink-0 rounded-2xl object-cover"
+            />
+          ) : (
+            <div
+              className="bg-input size-20 shrink-0 rounded-2xl"
+              aria-hidden
+            />
+          )}
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <h1 className="text-text-primary text-xl font-bold">
@@ -119,7 +142,7 @@ export default function GroupDetail({
               </h1>
               {/* 케밥 메뉴 */}
               <KebabModal>
-                {isLeader || !isJoined ? (
+                {isLeader ? (
                   <>
                     <KebabModal.Item onClick={handleEditGroupInfo}>
                       그룹 정보 수정
@@ -136,12 +159,13 @@ export default function GroupDetail({
               </KebabModal>
             </div>
             <p className="text-text-secondary mt-1 text-sm">
-              멤버 {MOCK_GROUP_META.memberCount}명 · 플레이리스트{' '}
-              {playlists.length}개
+              멤버 {group.memberCount}명 · 플레이리스트 {group.playlistCount}개
             </p>
-            <p className="text-text-secondary mt-0.5 text-sm">
-              초대코드 {MOCK_GROUP_META.inviteCode}
-            </p>
+            {group.inviteCode && (
+              <p className="text-text-secondary mt-0.5 text-sm">
+                초대코드 {group.inviteCode}
+              </p>
+            )}
           </div>
         </div>
 

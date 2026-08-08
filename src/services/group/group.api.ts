@@ -17,6 +17,13 @@ export function createGroup(data: CreateGroupRequest) {
   });
 }
 
+// 그룹 탈퇴 / 강퇴
+export function leaveGroup(groupId: number, userId: number) {
+  return clientFetch<null>(`/group/${groupId}/members/${userId}`, {
+    method: 'DELETE',
+  });
+}
+
 // 내 그룹 목록
 export function getGroups({ cursor, limit }: GetGroupsParams = {}) {
   const params: Record<string, string> = {};
