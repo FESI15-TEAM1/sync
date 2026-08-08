@@ -1,4 +1,5 @@
 import Section from '@/app/(main)/_components/Section';
+import PublicGroupList from '@/components/domain/group/PublicGroupList';
 import PlaylistCardList from '@/components/domain/playlists/PlaylistCardList';
 import PlayroomList from '@/components/domain/playroom/PlayroomList';
 import { type PlayroomCardData } from '@/services/playroom/playroom.types';
@@ -91,6 +92,7 @@ export default function Main() {
         headline="새로 생긴 플레이리스트!"
         list={<PlaylistCardList data={playlistDummy} />}
       />
+      <Section headline="최근 그룹 목록" list={<PublicGroupList />} />
     </div>
   );
 }
