@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { type ChangeEvent, type SubmitEvent, useState } from 'react';
@@ -54,7 +55,6 @@ export default function EditPage({ groupId, initialGroup }: EditPageProps) {
   );
   const [isPublic, setIsPublic] = useState(initialGroup.isPublic);
   const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>(['1']);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const trimmedName = groupName.trim();
@@ -79,16 +79,8 @@ export default function EditPage({ groupId, initialGroup }: EditPageProps) {
     );
   };
 
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (!trimmedName || !trimmedDescription || selectedPlaylists.length === 0)
-      return;
-
-    setIsSubmitting(true);
-    setErrorMessage(null);
-
-    try {
+  const { mutate: submitGroup, isPending: isSubmitting } = useMutation({
+    mutationFn: async () => {
       let image: string | undefined;
 
       if (coverFile) {
@@ -109,19 +101,31 @@ export default function EditPage({ groupId, initialGroup }: EditPageProps) {
         image = fileUrl;
       }
 
-      await updateGroup(groupId, {
+      return updateGroup(groupId, {
         title: trimmedName,
         description: trimmedDescription,
         isPublic,
         ...(image ? { image } : {}),
       });
+    },
+    onSuccess: () => {
       router.push(`/group/${groupId}`);
-    } catch (error) {
-      setIsSubmitting(false);
+    },
+    onError: (error) => {
       setErrorMessage(
         error instanceof APIError ? error.message : SUBMIT_ERROR_MESSAGE,
       );
-    }
+    },
+  });
+
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!trimmedName || !trimmedDescription || selectedPlaylists.length === 0)
+      return;
+
+    setErrorMessage(null);
+    submitGroup();
   };
 
   return (
@@ -243,6 +247,7 @@ export default function EditPage({ groupId, initialGroup }: EditPageProps) {
           </p>
 
           <Button
+            type="submit"
             className="mt-4 w-full"
             isDisabled={
               !trimmedName ||
