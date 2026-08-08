@@ -3,7 +3,7 @@
 import { useMutation } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { type ChangeEvent, type SubmitEvent, useState } from 'react';
+import { type ChangeEvent, type SubmitEvent, useEffect, useState } from 'react';
 
 import defaultCover from '@/assets/images/default.png';
 import Button from '@/components/Button';
@@ -19,6 +19,24 @@ import type { UploadUrlRequest } from '@/services/upload/upload.types';
 
 const SUBMIT_ERROR_MESSAGE =
   '그룹 수정에 실패했습니다. 잠시 후 다시 시도해주세요.';
+
+const ALLOWED_COVER_IMAGE_TYPES: UploadUrlRequest['contentType'][] = [
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'image/gif',
+];
+
+const UNSUPPORTED_IMAGE_TYPE_MESSAGE =
+  'PNG, JPEG, WEBP, GIF 형식의 이미지만 업로드할 수 있습니다.';
+
+function isAllowedCoverImageType(
+  type: string,
+): type is UploadUrlRequest['contentType'] {
+  return ALLOWED_COVER_IMAGE_TYPES.includes(
+    type as UploadUrlRequest['contentType'],
+  );
+}
 
 type EditPageProps = {
   groupId: string;
@@ -46,6 +64,12 @@ export default function EditPage({
 
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (coverPreview) URL.revokeObjectURL(coverPreview);
+    };
+  }, [coverPreview]);
   const [groupName, setGroupName] = useState(initialGroup.title);
   const [groupDescription, setGroupDescription] = useState(
     initialGroup.description,
@@ -58,18 +82,22 @@ export default function EditPage({
 
   const trimmedName = groupName.trim();
   const trimmedDescription = groupDescription.trim();
+  const hasNoPlaylists =
+    selectedPlaylists.length === 0 && lockedPlaylistIds.length === 0;
 
   const handleCoverChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setCoverFile(file);
+    if (!isAllowedCoverImageType(file.type)) {
+      setErrorMessage(UNSUPPORTED_IMAGE_TYPE_MESSAGE);
+      e.target.value = '';
+      return;
+    }
 
-    const url = URL.createObjectURL(file);
-    setCoverPreview((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return url;
-    });
+    setErrorMessage(null);
+    setCoverFile(file);
+    setCoverPreview(URL.createObjectURL(file));
   };
 
   const togglePlaylist = (id: number) => {
@@ -82,10 +110,10 @@ export default function EditPage({
     mutationFn: async () => {
       let image: string | undefined;
 
-      if (coverFile) {
+      if (coverFile && isAllowedCoverImageType(coverFile.type)) {
         const { uploadUrl, fileUrl } = await requestUploadUrl({
           domain: 'group',
-          contentType: coverFile.type as UploadUrlRequest['contentType'],
+          contentType: coverFile.type,
         });
 
         const putResponse = await fetch(uploadUrl, {
@@ -125,8 +153,7 @@ export default function EditPage({
   const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!trimmedName || !trimmedDescription || selectedPlaylists.length === 0)
-      return;
+    if (!trimmedName || !trimmedDescription || hasNoPlaylists) return;
 
     setErrorMessage(null);
     submitGroup();
@@ -229,9 +256,7 @@ export default function EditPage({
               <div className="w-full scrollbar-none overflow-x-scroll">
                 <div className="flex w-max gap-4">
                   {playlists.map((playlist) => {
-                    const isSelected = selectedPlaylists.includes(
-                      playlist.id,
-                    );
+                    const isSelected = selectedPlaylists.includes(playlist.id);
 
                     return (
                       <button
@@ -267,7 +292,7 @@ export default function EditPage({
             isDisabled={
               !trimmedName ||
               !trimmedDescription ||
-              selectedPlaylists.length === 0 ||
+              hasNoPlaylists ||
               isSubmitting
             }
           >
