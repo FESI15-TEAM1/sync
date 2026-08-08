@@ -21,6 +21,9 @@ export function createGroup(data: CreateGroupRequest) {
 export function leaveGroup(groupId: number, userId: number) {
   return clientFetch<null>(`/group/${groupId}/members/${userId}`, {
     method: 'DELETE',
+  });
+}
+
 // 내 그룹 목록
 export function getGroups({ cursor, limit }: GetGroupsParams = {}) {
   const params: Record<string, string> = {};
