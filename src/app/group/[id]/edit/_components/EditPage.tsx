@@ -1,7 +1,9 @@
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
 import Image from 'next/image';
-import { type ChangeEvent, type SubmitEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { type ChangeEvent, type SubmitEvent, useEffect, useState } from 'react';
 
 import defaultCover from '@/assets/images/default.png';
 import Button from '@/components/Button';
@@ -9,59 +11,152 @@ import BackButton from '@/components/common/BackButton';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
+import { APIError } from '@/lib/http/error';
+import { editGroupPlaylists, updateGroup } from '@/services/group/group.api';
+import type { MyPlaylistItem } from '@/services/playlist/playlistCard.type';
+import { requestUploadUrl } from '@/services/upload/upload.api';
+import type { UploadUrlRequest } from '@/services/upload/upload.types';
 
-type Playlist = {
-  id: string;
-  title: string;
-  songCount: number;
-};
+const SUBMIT_ERROR_MESSAGE =
+  '그룹 수정에 실패했습니다. 잠시 후 다시 시도해주세요.';
 
-const MOCK_PLAYLISTS: Playlist[] = [
-  { id: '1', title: '비 오는 날 감성', songCount: 10 },
-  { id: '2', title: '헤비로터', songCount: 20 },
-  { id: '3', title: '새벽 드라이브', songCount: 30 },
+const ALLOWED_COVER_IMAGE_TYPES: UploadUrlRequest['contentType'][] = [
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'image/gif',
 ];
+
+const UNSUPPORTED_IMAGE_TYPE_MESSAGE =
+  'PNG, JPEG, WEBP, GIF 형식의 이미지만 업로드할 수 있습니다.';
+
+function isAllowedCoverImageType(
+  type: string,
+): type is UploadUrlRequest['contentType'] {
+  return ALLOWED_COVER_IMAGE_TYPES.includes(
+    type as UploadUrlRequest['contentType'],
+  );
+}
 
 type EditPageProps = {
   groupId: string;
+  initialGroup: {
+    title: string;
+    description: string;
+    image: string | null;
+    isPublic: boolean;
+  };
+  playlists: MyPlaylistItem[];
+  initialSelectedPlaylistIds: number[];
+  // 그룹장 편집 시 다른 멤버가 담은 항목. 선택 UI에는 노출하지 않지만
+  // 제출 시 최종 목록에 그대로 포함해 제거되지 않게 한다.
+  lockedPlaylistIds: number[];
 };
 
-export default function EditPage({ groupId }: EditPageProps) {
+export default function EditPage({
+  groupId,
+  initialGroup,
+  playlists,
+  initialSelectedPlaylistIds,
+  lockedPlaylistIds,
+}: EditPageProps) {
+  const router = useRouter();
+
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
-  const [groupName, setGroupName] = useState('인디밴드 러버스');
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (coverPreview) URL.revokeObjectURL(coverPreview);
+    };
+  }, [coverPreview]);
+  const [groupName, setGroupName] = useState(initialGroup.title);
   const [groupDescription, setGroupDescription] = useState(
-    '인디 음악을 좋아하는 사람들의 모임',
+    initialGroup.description,
   );
-  const [isPublic, setIsPublic] = useState(false);
-  const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>(['1']);
+  const [isPublic, setIsPublic] = useState(initialGroup.isPublic);
+  const [selectedPlaylists, setSelectedPlaylists] = useState<number[]>(
+    initialSelectedPlaylistIds,
+  );
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const trimmedName = groupName.trim();
+  const trimmedDescription = groupDescription.trim();
+  const hasNoPlaylists =
+    selectedPlaylists.length === 0 && lockedPlaylistIds.length === 0;
 
   const handleCoverChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const url = URL.createObjectURL(file);
-    setCoverPreview((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return url;
-    });
+    if (!isAllowedCoverImageType(file.type)) {
+      setErrorMessage(UNSUPPORTED_IMAGE_TYPE_MESSAGE);
+      e.target.value = '';
+      return;
+    }
+
+    setErrorMessage(null);
+    setCoverFile(file);
+    setCoverPreview(URL.createObjectURL(file));
   };
 
-  const togglePlaylist = (id: string) => {
+  const togglePlaylist = (id: number) => {
     setSelectedPlaylists((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   };
 
+  const { mutate: submitGroup, isPending: isSubmitting } = useMutation({
+    mutationFn: async () => {
+      let image: string | undefined;
+
+      if (coverFile && isAllowedCoverImageType(coverFile.type)) {
+        const { uploadUrl, fileUrl } = await requestUploadUrl({
+          domain: 'group',
+          contentType: coverFile.type,
+        });
+
+        const putResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': coverFile.type },
+          body: coverFile,
+        });
+        if (!putResponse.ok) {
+          throw new Error('이미지 업로드에 실패했습니다.');
+        }
+
+        image = fileUrl;
+      }
+
+      await Promise.all([
+        updateGroup(groupId, {
+          title: trimmedName,
+          description: trimmedDescription,
+          isPublic,
+          ...(image ? { image } : {}),
+        }),
+        editGroupPlaylists(groupId, {
+          playlistIds: [...selectedPlaylists, ...lockedPlaylistIds],
+        }),
+      ]);
+    },
+    onSuccess: () => {
+      router.push(`/group/${groupId}`);
+    },
+    onError: (error) => {
+      setErrorMessage(
+        error instanceof APIError ? error.message : SUBMIT_ERROR_MESSAGE,
+      );
+    },
+  });
+
   const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log({
-      groupId,
-      groupName,
-      groupDescription,
-      isPublic,
-      selectedPlaylists,
-      coverPreview: coverPreview ?? defaultCover.src,
-    });
+
+    if (!trimmedName || !trimmedDescription || hasNoPlaylists) return;
+
+    setErrorMessage(null);
+    submitGroup();
   };
 
   return (
@@ -74,7 +169,7 @@ export default function EditPage({ groupId }: EditPageProps) {
             className="flex cursor-pointer items-center gap-3"
           >
             <Image
-              src={coverPreview ?? defaultCover}
+              src={coverPreview ?? initialGroup.image ?? defaultCover}
               alt="그룹 커버"
               width={72}
               height={72}
@@ -152,38 +247,56 @@ export default function EditPage({ groupId }: EditPageProps) {
           <h2 className="text-md ml-2 font-bold text-white">
             플레이리스트 추가
           </h2>
-          <ul>
-            <div className="w-full scrollbar-none overflow-x-scroll">
-              <div className="flex w-max gap-4">
-                {MOCK_PLAYLISTS.map((playlist) => {
-                  const isSelected = selectedPlaylists.includes(playlist.id);
+          {playlists.length === 0 ? (
+            <p className="text-text-secondary py-4 text-sm">
+              생성된 플레이리스트가 없습니다.
+            </p>
+          ) : (
+            <ul>
+              <div className="w-full scrollbar-none overflow-x-scroll">
+                <div className="flex w-max gap-4">
+                  {playlists.map((playlist) => {
+                    const isSelected = selectedPlaylists.includes(playlist.id);
 
-                  return (
-                    <div
-                      className="relative cursor-pointer"
-                      key={playlist.id}
-                      onClick={() => togglePlaylist(playlist.id)}
-                    >
-                      <PlaylistCard
-                        title={playlist.title}
-                        trackCount={playlist.songCount}
-                      />
-                      {isSelected && (
-                        <div className='absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-2xl bg-[rgba(0,0,0,50%)] after:block after:text-white after:content-["selected"]' />
-                      )}
-                    </div>
-                  );
-                })}
+                    return (
+                      <button
+                        type="button"
+                        aria-pressed={isSelected}
+                        className="relative w-fit cursor-pointer appearance-none border-0 bg-transparent p-0 text-left"
+                        key={playlist.id}
+                        onClick={() => togglePlaylist(playlist.id)}
+                      >
+                        <PlaylistCard
+                          img={playlist.image}
+                          title={playlist.title}
+                          trackCount={playlist.trackCount}
+                        />
+                        {isSelected && (
+                          <div className='absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-2xl bg-[rgba(0,0,0,50%)] after:block after:text-white after:content-["선택됨"]' />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </ul>
+            </ul>
+          )}
+
+          <p role="alert" className="min-h-5 text-sm text-red-500">
+            {errorMessage}
+          </p>
+
           <Button
+            type="submit"
             className="mt-4 w-full"
             isDisabled={
-              !groupName || !groupDescription || selectedPlaylists.length === 0
+              !trimmedName ||
+              !trimmedDescription ||
+              hasNoPlaylists ||
+              isSubmitting
             }
           >
-            수정하기
+            {isSubmitting ? '수정 중...' : '수정하기'}
           </Button>
         </div>
       </form>
