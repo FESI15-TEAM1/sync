@@ -1,6 +1,7 @@
 import Image from 'next/image';
 
 import type { CommentItemType } from '@/app/playlist/detail/[id]/_components/CommentItemList';
+import defaultImage from '@/assets/images/default.png';
 
 export default function CommentItem({ comment }: { comment: CommentItemType }) {
   function formatTimeAgo(dateString: string) {
@@ -24,7 +25,7 @@ export default function CommentItem({ comment }: { comment: CommentItemType }) {
     <div className="text-text-primary flex items-center gap-3">
       <div className="relative size-8 shrink-0 overflow-hidden rounded-full">
         <Image
-          src={comment.author.image}
+          src={comment.author.image || defaultImage}
           alt="프로필"
           fill
           className="rounded-full object-cover"

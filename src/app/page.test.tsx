@@ -1,14 +1,18 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 
+import { QueryProvider } from '@/providers/query-provider';
 import { SidebarStoreProvider } from '@/providers/sidebar-store-provider';
 
 import Main from './(main)/main';
 
 test('main 페이지 렌더링 테스트', () => {
   render(
-    <SidebarStoreProvider>
-      <Main />
-    </SidebarStoreProvider>,
+    <QueryProvider>
+      <SidebarStoreProvider>
+        <Main />
+      </SidebarStoreProvider>
+    </QueryProvider>,
   );
 
   const heading = screen.getByRole('heading', {
