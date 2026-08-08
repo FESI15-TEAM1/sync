@@ -3,11 +3,13 @@ import { clientFetch } from '@/lib/http/client-fetch';
 import type {
   CreateGroupRequest,
   CreateGroupResponse,
+  EditGroupPlaylistsRequest,
   GetGroupsParams,
   GetGroupsResponse,
   GetPublicGroupsParams,
   GetPublicGroupsResponse,
   GroupDetailResponse,
+  GroupPlaylistItem,
   UpdateGroupRequest,
 } from './group.types';
 
@@ -23,6 +25,17 @@ export function createGroup(data: CreateGroupRequest) {
 export function updateGroup(groupId: string, data: UpdateGroupRequest) {
   return clientFetch<GroupDetailResponse>(`/group/${groupId}`, {
     method: 'PATCH',
+    body: data,
+  });
+}
+
+// 그룹 플레이리스트 일괄 편집(참여자=내 것 최종 목록 / 그룹장=그룹 전체 최종 목록)
+export function editGroupPlaylists(
+  groupId: string,
+  data: EditGroupPlaylistsRequest,
+) {
+  return clientFetch<GroupPlaylistItem[]>(`/group/${groupId}`, {
+    method: 'PUT',
     body: data,
   });
 }

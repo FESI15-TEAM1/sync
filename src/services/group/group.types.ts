@@ -19,6 +19,38 @@ export interface UpdateGroupRequest {
   isPublic?: boolean;
 }
 
+export interface GroupPlaylistOwner {
+  userId: number;
+  nickname: string;
+  image: string | null;
+}
+
+// GET /groups/{groupId}/playlists, PUT /groups/{groupId}/playlists 응답 항목
+export interface GroupPlaylistItem {
+  id: number;
+  title: string;
+  image?: string;
+  trackCount: number;
+  isHighlighted: boolean;
+  owner: GroupPlaylistOwner;
+}
+
+export interface GetGroupPlaylistsParams {
+  cursor?: string;
+  limit?: number;
+}
+
+export interface GetGroupPlaylistsResponse {
+  items: GroupPlaylistItem[];
+  // null 이면 마지막 페이지입니다.
+  nextCursor: string | null;
+}
+
+// PUT /groups/{groupId}/playlists — 배열은 이 스코프의 최종 상태(참여자=내 것 / 그룹장=그룹 전체)
+export interface EditGroupPlaylistsRequest {
+  playlistIds: number[];
+}
+
 export interface GetGroupsParams {
   // 이전 응답의 nextCursor. 첫 페이지는 생략합니다.
   cursor?: string;
