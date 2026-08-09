@@ -3,7 +3,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CommentItemsType } from '@/app/playlist/detail/[id]/_components/CommentItemList';
 import { clientFetch } from '@/lib/http/client-fetch';
 import { APIError } from '@/lib/http/error';
-import { postComments, updateComment } from '@/services/playlist/playlist.api';
+import {
+  deleteComment,
+  postComments,
+  updateComment,
+} from '@/services/playlist/playlist.api';
 
 export const commentsQueryKey = (playlistId: string) =>
   ['playlists', playlistId, 'comments'] as const;
@@ -61,6 +65,49 @@ export function useEditCommentMutation(playlistId: string) {
                 ...old,
                 items: old.items.map((item) =>
                   item.id === commentId ? { ...item, content } : item,
+                ),
+              }
+            : old,
+      );
+
+      return { previousComments };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousComments) {
+        queryClient.setQueryData(
+          commentsQueryKey(playlistId),
+          context.previousComments,
+        );
+      }
+      if (error instanceof APIError) alert(error.message);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: commentsQueryKey(playlistId) });
+    },
+  });
+}
+export function useDeleteCommentMutation(playlistId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (commentId: number) =>
+      deleteComment(Number(playlistId), commentId),
+    onMutate: async (commentId) => {
+      await queryClient.cancelQueries({
+        queryKey: commentsQueryKey(playlistId),
+      });
+      const previousComments = queryClient.getQueryData<CommentItemsType>(
+        commentsQueryKey(playlistId),
+      );
+
+      queryClient.setQueryData<CommentItemsType>(
+        commentsQueryKey(playlistId),
+        (old) =>
+          old
+            ? {
+                ...old,
+                items: old.items.map((item) =>
+                  item.id === commentId ? { ...item } : item,
                 ),
               }
             : old,
