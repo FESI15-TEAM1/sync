@@ -13,6 +13,7 @@ import {
   useEditCommentMutation,
 } from '@/hooks/useCommentsQuery';
 import {} from '@/lib/http/client-fetch';
+import { APIError } from '@/lib/http/error';
 
 export default function CommentsSection({
   playlistId,
@@ -34,8 +35,11 @@ export default function CommentsSection({
 
   const { mutateAsync: editComment, isPending: isEditingComment } =
     useEditCommentMutation(playlistId);
-  const { mutate: deleteComment, isPending: isDeleteComment } =
-    useDeleteCommentMutation(playlistId);
+  const {
+    mutate: deleteComment,
+    isPending: isDeleteComment,
+    error: deleteError,
+  } = useDeleteCommentMutation(playlistId);
 
   if (isCommentsPending)
     return <div className="text-text-primary font-bold">로딩중...</div>;
@@ -87,11 +91,14 @@ export default function CommentsSection({
               >
                 댓글을 삭제하시겠습니까?
               </h2>
-              {/* {errorMessage && (
-              <p role="alert" className="mt-3 text-center text-sm text-red-500">
-                {errorMessage}
-              </p>
-            )} */}
+              {deleteError instanceof APIError && (
+                <p
+                  role="alert"
+                  className="mt-3 text-center text-sm text-red-500"
+                >
+                  {deleteError.message}
+                </p>
+              )}
             </Modal.Body>
 
             <Modal.Footer>
@@ -101,6 +108,7 @@ export default function CommentsSection({
                 variant="outline"
                 className="flex h-9 w-28 shrink-0 items-center justify-center rounded-full px-0 font-bold"
                 onClick={() => setDeleteTargetId(null)}
+                isDisabled={isDeleteComment}
               >
                 취소
               </Button>
@@ -110,8 +118,9 @@ export default function CommentsSection({
                 variant="primary"
                 className="flex h-9 w-28 shrink-0 items-center justify-center rounded-full px-0 font-bold"
                 onClick={handleDeleteComment}
+                isDisabled={isDeleteComment}
               >
-                삭제
+                {isDeleteComment ? '삭제 중...' : '삭제'}
               </Button>
             </Modal.Footer>
           </div>
