@@ -103,11 +103,16 @@ export default function PlaylistHeaderActions({
         <div className="p-5">
           <Modal.Body>
             <h2
-              id="login-required-modal-title"
+              id="delete-playlist-modal-title"
               className="text-text-primary text-center text-lg font-bold"
             >
-              {errorMessage ? errorMessage : '정말로 삭제하시겠습니까?'}
+              정말로 삭제하시겠습니까?
             </h2>
+            {errorMessage && (
+              <p role="alert" className="mt-3 text-center text-sm text-red-500">
+                {errorMessage}
+              </p>
+            )}
           </Modal.Body>
 
           <Modal.Footer>
