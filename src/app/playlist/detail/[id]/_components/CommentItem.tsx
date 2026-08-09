@@ -84,7 +84,7 @@ export default function CommentItem({
           <span className="text-sm">{comment.content}</span>
         )}
       </div>
-      {Number(userid) == comment.author.userId && (
+      {Number(userid) === comment.author.userId && (
         <div className="text-text-secondary absolute right-0 flex gap-4 text-[12px]">
           {isEdit ? (
             <>
