@@ -106,9 +106,7 @@ export function useDeleteCommentMutation(playlistId: string) {
           old
             ? {
                 ...old,
-                items: old.items.map((item) =>
-                  item.id === commentId ? { ...item } : item,
-                ),
+                items: old.items.filter((item) => item.id !== commentId),
               }
             : old,
       );

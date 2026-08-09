@@ -24,7 +24,7 @@ export default function CommentItemList({
   onDeleteRequest,
 }: {
   comments: CommentItemsType;
-  userid: string | number | null;
+  userid: string | null;
   onEditSave: (commentId: number, content: string) => Promise<unknown>;
   onDeleteRequest: (commentId: number) => void;
   isSaving: boolean;

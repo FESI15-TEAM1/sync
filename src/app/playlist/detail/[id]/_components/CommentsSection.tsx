@@ -82,11 +82,16 @@ export default function CommentsSection({
         </InputField.Button>
       </InputField>
       {deleteTargetId && (
-        <Modal isOpen={true} onClose={() => deleteTargetId}>
+        <Modal
+          isOpen={true}
+          onClose={() => setDeleteTargetId(null)}
+          closeOnBackdropClick={!isDeleteComment}
+          ariaLabelledBy="delete-comment-modal-title"
+        >
           <div className="p-5">
             <Modal.Body>
               <h2
-                id="delete-playlist-modal-title"
+                id="delete-comment-modal-title"
                 className="text-text-primary text-center text-lg font-bold"
               >
                 댓글을 삭제하시겠습니까?
