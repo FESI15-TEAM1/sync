@@ -6,7 +6,7 @@ import { type ReactNode, useEffect, useRef } from 'react';
 import Button from '@/components/Button';
 import PlayroomList from '@/components/domain/playroom/PlayroomList';
 import { getPlayrooms } from '@/services/playroom/playroom.api';
-import { type PlayroomSummary } from '@/services/playroom/playroom.types';
+import { type PlayroomListItemResponse } from '@/services/playroom/playroom.types';
 
 const PAGE_SIZE = 15;
 const STALE_TIME = 30_000;
@@ -122,7 +122,7 @@ export default function PlayroomListView() {
  * 라이브 목록은 방송이 끝난 방이 실시간으로 빠지면서 커서 경계가 밀릴 수 있어,
  * 페이지 사이에 같은 방이 중복으로 들어오는 경우를 걸러냅니다.
  */
-function dedupeById(playrooms: PlayroomSummary[]) {
+function dedupeById(playrooms: PlayroomListItemResponse[]) {
   return Array.from(
     new Map(playrooms.map((playroom) => [playroom.id, playroom])).values(),
   );
@@ -136,7 +136,7 @@ function StatusMessage({
   children: ReactNode;
 }) {
   return (
-    <div className="flex h-[calc(100vh_-_var(--global-header-height)_-_2rem)] items-center justify-center">
+    <div className="flex h-[var(--main-content-full-height)] items-center justify-center">
       <p className={className}>{children}</p>
     </div>
   );
