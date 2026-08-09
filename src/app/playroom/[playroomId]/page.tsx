@@ -1,15 +1,11 @@
-import Stream from './playroom';
+import Playroom from './_components/Playroom';
 
-export default async function page({
+export default async function Page({
   params,
 }: {
-  params: { playroomId: number };
+  params: Promise<{ playroomId: string }>;
 }) {
   const { playroomId } = await params;
 
-  return (
-    <>
-      <Stream playroomId={playroomId} />
-    </>
-  );
+  return <Playroom playroomId={Number(playroomId)} />;
 }

@@ -3,15 +3,17 @@ import Link from 'next/link';
 
 import mookImage from '@/assets/images/mook.jpg';
 
-export default function Member({
-  userId,
-  username,
-  userImage,
-}: {
+export interface MemberType {
   userId: number;
   username: string;
   userImage?: string;
-}) {
+}
+
+export default function MemberItem({
+  userId,
+  username,
+  userImage,
+}: MemberType) {
   return (
     <>
       <Link href={`/profile/${userId}`}>
