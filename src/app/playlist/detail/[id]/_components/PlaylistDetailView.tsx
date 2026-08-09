@@ -22,7 +22,7 @@ import { type PlaylistTrack } from '@/services/playlist/playlist';
 
 const RESTART_THRESHOLD_SECONDS = 3;
 
-export default function PlaylistDetailView({ userid }: { userid: string }) {
+export default function PlaylistDetailView({ userid }: { userid: string  | null}) {
   const currentTrack = usePlayerStore((state) => state.currentTrack);
   const isPlaying = usePlayerStore((state) => state.isPlaying);
   const playTrack = usePlayerStore((state) => state.playTrack);

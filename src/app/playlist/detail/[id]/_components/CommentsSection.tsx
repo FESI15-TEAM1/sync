@@ -16,7 +16,7 @@ export default function CommentsSection({
   userid,
 }: {
   playlistId: string;
-  userid: string;
+  userid: string | null;
 }) {
   const [commentContent, setCommentContent] = useState('');
 
@@ -39,7 +39,9 @@ export default function CommentsSection({
 
   const handleSubmitComment = () => {
     if (!commentContent.trim() || isSubmittingComment) return;
-    submitComment(commentContent);
+    submitComment(commentContent, {
+      onSuccess: () => setCommentContent(''),
+    });
   };
   return (
     <div className="flex flex-col gap-4">
