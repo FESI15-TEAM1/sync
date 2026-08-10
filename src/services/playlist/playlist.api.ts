@@ -45,3 +45,11 @@ export const updateComment = (
     body: content,
   });
 };
+export const deleteComment = (
+  id: number | string,
+  commentId: number | string,
+) => {
+  return clientFetch(`/playlists/${id}/comments/${commentId}`, {
+    method: 'DELETE',
+  });
+};

@@ -3,13 +3,17 @@
 import { useState } from 'react';
 
 import CommentItemList from '@/app/playlist/detail/[id]/_components/CommentItemList';
+import Button from '@/components/Button';
 import InputField from '@/components/InputField';
+import Modal from '@/components/Modal';
 import {
   useAddCommentMutation,
   useCommentsQuery,
+  useDeleteCommentMutation,
   useEditCommentMutation,
 } from '@/hooks/useCommentsQuery';
 import {} from '@/lib/http/client-fetch';
+import { APIError } from '@/lib/http/error';
 
 export default function CommentsSection({
   playlistId,
@@ -19,7 +23,7 @@ export default function CommentsSection({
   userid: string | null;
 }) {
   const [commentContent, setCommentContent] = useState('');
-
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
   const {
     data: comments,
     isPending: isCommentsPending,
@@ -31,6 +35,11 @@ export default function CommentsSection({
 
   const { mutateAsync: editComment, isPending: isEditingComment } =
     useEditCommentMutation(playlistId);
+  const {
+    mutate: deleteComment,
+    isPending: isDeleteComment,
+    error: deleteError,
+  } = useDeleteCommentMutation(playlistId);
 
   if (isCommentsPending)
     return <div className="text-text-primary font-bold">로딩중...</div>;
@@ -43,6 +52,12 @@ export default function CommentsSection({
       onSuccess: () => setCommentContent(''),
     });
   };
+  const handleDeleteComment = () => {
+    if (!deleteTargetId) return;
+    deleteComment(deleteTargetId, {
+      onSuccess: () => setDeleteTargetId(null),
+    });
+  };
   return (
     <div className="flex flex-col gap-4">
       <h4 className="text-text-primary text-xl font-bold">댓글</h4>
@@ -51,6 +66,7 @@ export default function CommentsSection({
         userid={userid}
         onEditSave={(commentId, content) => editComment({ commentId, content })}
         isSaving={isEditingComment}
+        onDeleteRequest={setDeleteTargetId}
       />
       <InputField>
         <InputField.Input
@@ -65,6 +81,56 @@ export default function CommentsSection({
           작성하기
         </InputField.Button>
       </InputField>
+      {deleteTargetId && (
+        <Modal
+          isOpen={true}
+          onClose={() => setDeleteTargetId(null)}
+          closeOnBackdropClick={!isDeleteComment}
+          ariaLabelledBy="delete-comment-modal-title"
+        >
+          <div className="p-5">
+            <Modal.Body>
+              <h2
+                id="delete-comment-modal-title"
+                className="text-text-primary text-center text-lg font-bold"
+              >
+                댓글을 삭제하시겠습니까?
+              </h2>
+              {deleteError instanceof APIError && (
+                <p
+                  role="alert"
+                  className="mt-3 text-center text-sm text-red-500"
+                >
+                  {deleteError.message}
+                </p>
+              )}
+            </Modal.Body>
+
+            <Modal.Footer>
+              <Button
+                type="button"
+                size="md"
+                variant="outline"
+                className="flex h-9 w-28 shrink-0 items-center justify-center rounded-full px-0 font-bold"
+                onClick={() => setDeleteTargetId(null)}
+                isDisabled={isDeleteComment}
+              >
+                취소
+              </Button>
+              <Button
+                type="button"
+                size="md"
+                variant="primary"
+                className="flex h-9 w-28 shrink-0 items-center justify-center rounded-full px-0 font-bold"
+                onClick={handleDeleteComment}
+                isDisabled={isDeleteComment}
+              >
+                {isDeleteComment ? '삭제 중...' : '삭제'}
+              </Button>
+            </Modal.Footer>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

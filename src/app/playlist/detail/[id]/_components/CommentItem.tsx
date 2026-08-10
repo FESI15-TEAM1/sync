@@ -12,11 +12,13 @@ export default function CommentItem({
   comment,
   userid,
   onEditSave,
+  onDeleteRequest,
   isSaving,
 }: {
   comment: CommentItemType;
-  userid: string | number | null;
+  userid: string | null;
   onEditSave: (commentId: number, content: string) => Promise<unknown>;
+  onDeleteRequest: (commentId: number) => void;
   isSaving: boolean;
 }) {
   const [isEdit, setIsEdit] = useState<boolean>(false);
@@ -82,8 +84,8 @@ export default function CommentItem({
           <span className="text-sm">{comment.content}</span>
         )}
       </div>
-      {userid === comment.author.userId && (
-        <div className="text-text-secondary absolute right-0 flex gap-2 text-[12px]">
+      {Number(userid) === comment.author.userId && (
+        <div className="text-text-secondary absolute right-0 flex gap-4 text-[12px]">
           {isEdit ? (
             <>
               <button
@@ -99,6 +101,13 @@ export default function CommentItem({
                 disabled={isSaving}
               >
                 취소
+              </button>
+              <button
+                className="cursor-pointer text-red-900 disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={() => onDeleteRequest(comment.id)}
+                disabled={isSaving}
+              >
+                삭제
               </button>
             </>
           ) : (
