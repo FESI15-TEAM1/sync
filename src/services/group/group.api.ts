@@ -21,6 +21,13 @@ export function createGroup(data: CreateGroupRequest) {
   });
 }
 
+// 그룹 탈퇴 / 강퇴
+export function leaveGroup(groupId: number, userId: number) {
+  return clientFetch<null>(`/group/${groupId}/members/${userId}`, {
+    method: 'DELETE',
+  });
+}
+
 // 그룹 수정(부분 수정, 그룹장만 가능)
 export function updateGroup(groupId: string, data: UpdateGroupRequest) {
   return clientFetch<GroupDetailResponse>(`/group/${groupId}`, {
