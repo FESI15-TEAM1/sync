@@ -5,6 +5,10 @@ import type {
   UpdatePlaylistRequest,
 } from '@/services/playlist/playlist';
 import type { LikePlaylistResponse } from '@/services/playlist/playlistCard.type';
+import type {
+  GetUserPlaylistsParams,
+  MyplaylistResponse,
+} from '@/services/playlist/playlistCard.type';
 
 export const postPlaylist = (form: CreatePlaylistRequest) => {
   return clientFetch('/playlists', {
