@@ -13,6 +13,7 @@ export type EditablePlaylist = {
   title: string;
   artist: string;
   trackCount: number;
+  image?: string;
 };
 
 type PlaylistEditModalProps = {
@@ -33,6 +34,7 @@ function PlaylistRow({
   return (
     <li>
       <Track
+        img={playlist.image}
         videoId={String(playlist.id)}
         title={playlist.title}
         artist={playlist.artist}
@@ -149,6 +151,7 @@ function PlaylistEditModalContent({
               {filteredAvailable.map((playlist) => (
                 <Track
                   key={playlist.id}
+                  img={playlist.image}
                   videoId={String(playlist.id)}
                   title={playlist.title}
                   artist={playlist.artist}

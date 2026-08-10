@@ -1,6 +1,7 @@
 import { clientFetch } from '@/lib/http/client-fetch';
 
 import type {
+  CreateGroupJoinRequestPayload,
   CreateGroupRequest,
   CreateGroupResponse,
   EditGroupPlaylistsRequest,
@@ -12,6 +13,7 @@ import type {
   GetPublicGroupsParams,
   GetPublicGroupsResponse,
   GroupDetailResponse,
+  GroupRequestResponse,
   UpdateGroupRequest,
 } from './group.types';
 
@@ -30,11 +32,30 @@ export function leaveGroup(groupId: number, userId: number) {
   });
 }
 
+// 공개 그룹 참여 요청(승인제, 그룹장에게 전달됨)
+export function requestJoinGroup(groupId: number) {
+  return clientFetch<GroupRequestResponse>('/group-requests', {
+    method: 'POST',
+    body: {
+      sourceType: 'group',
+      sourceId: groupId,
+    } satisfies CreateGroupJoinRequestPayload,
+    //이 값이 이 타입의 조건을 만족하는지 검사하되, 값의 구체적인 타입 정보는 유지해줘.
+  });
+}
+
 // 그룹 수정(부분 수정, 그룹장만 가능)
 export function updateGroup(groupId: string, data: UpdateGroupRequest) {
   return clientFetch<GroupDetailResponse>(`/group/${groupId}`, {
     method: 'PATCH',
     body: data,
+  });
+}
+
+// 그룹 삭제(그룹장만 가능)
+export function deleteGroup(groupId: number) {
+  return clientFetch<null>(`/group/${groupId}`, {
+    method: 'DELETE',
   });
 }
 

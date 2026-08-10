@@ -13,6 +13,22 @@ export const postPlaylist = (form: CreatePlaylistRequest) => {
   });
 };
 
+// 유저의 플레이리스트 목록
+export const getUserPlaylists = (
+  userId: number,
+  { cursor, limit }: GetUserPlaylistsParams = {},
+) => {
+  const params: Record<string, string> = {};
+
+  if (cursor) params.cursor = cursor;
+  if (limit !== undefined) params.limit = String(limit);
+
+  return clientFetch<MyplaylistResponse>(`/users/${userId}/playlists`, {
+    method: 'GET',
+    params: Object.keys(params).length > 0 ? params : undefined,
+  });
+};
+
 export const updatePlaylist = (
   id: number | string,
   form: UpdatePlaylistRequest,

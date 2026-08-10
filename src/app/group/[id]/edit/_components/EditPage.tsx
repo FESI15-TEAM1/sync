@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { type ChangeEvent, type SubmitEvent, useEffect, useState } from 'react';
@@ -12,10 +12,16 @@ import PlaylistCard from '@/components/domain/PlaylistCard';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
 import { APIError } from '@/lib/http/error';
-import { editGroupPlaylists, updateGroup } from '@/services/group/group.api';
+import {
+  deleteGroup,
+  editGroupPlaylists,
+  updateGroup,
+} from '@/services/group/group.api';
 import type { MyPlaylistItem } from '@/services/playlist/playlistCard.type';
 import { requestUploadUrl } from '@/services/upload/upload.api';
 import type { UploadUrlRequest } from '@/services/upload/upload.types';
+
+import GroupDeleteModal from '../../_components/GroupDeleteModal';
 
 const SUBMIT_ERROR_MESSAGE =
   '그룹 수정에 실패했습니다. 잠시 후 다시 시도해주세요.';
@@ -61,9 +67,11 @@ export default function EditPage({
   lockedPlaylistIds,
 }: EditPageProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [isDeleteGroupOpen, setIsDeleteGroupOpen] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -149,6 +157,27 @@ export default function EditPage({
       );
     },
   });
+
+  const deleteGroupMutation = useMutation({
+    mutationFn: () => deleteGroup(Number(groupId)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      router.push('/group');
+    },
+    onError: (error) => {
+      setIsDeleteGroupOpen(false);
+      setErrorMessage(
+        error instanceof APIError
+          ? error.message
+          : '그룹 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.',
+      );
+    },
+  });
+
+  const handleConfirmDelete = () => {
+    if (isSubmitting || deleteGroupMutation.isPending) return;
+    deleteGroupMutation.mutate();
+  };
 
   const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -286,20 +315,38 @@ export default function EditPage({
             {errorMessage}
           </p>
 
-          <Button
-            type="submit"
-            className="mt-4 w-full"
-            isDisabled={
-              !trimmedName ||
-              !trimmedDescription ||
-              hasNoPlaylists ||
-              isSubmitting
-            }
-          >
-            {isSubmitting ? '수정 중...' : '수정하기'}
-          </Button>
+          <div className="mt-4 flex gap-2">
+            <Button
+              type="submit"
+              className="flex-1"
+              isDisabled={
+                !trimmedName ||
+                !trimmedDescription ||
+                hasNoPlaylists ||
+                isSubmitting
+              }
+            >
+              {isSubmitting ? '수정 중...' : '수정하기'}
+            </Button>
+            <Button
+              type="button"
+              isDisabled={deleteGroupMutation.isPending}
+              onClick={() => setIsDeleteGroupOpen(true)}
+              className="flex-1 bg-red-500 text-white enabled:hover:bg-red-600"
+            >
+              그룹 삭제
+            </Button>
+          </div>
         </div>
       </form>
+
+      {/* 그룹 삭제 모달 */}
+      <GroupDeleteModal
+        isOpen={isDeleteGroupOpen}
+        groupName={initialGroup.title}
+        onClose={() => setIsDeleteGroupOpen(false)}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }
