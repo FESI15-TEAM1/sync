@@ -79,9 +79,15 @@ export async function PUT(
       );
     }
 
-    const payload: EditGroupPlaylistsRequest = {
-      playlistIds: playlistIds.filter((id) => typeof id === 'number'),
-    };
+    if (playlistIds.some((id) => typeof id !== 'number')) {
+      return errorResponse(
+        400,
+        'VALIDATION_ERROR',
+        'playlistIds는 숫자 배열이어야 합니다.',
+      );
+    }
+
+    const payload: EditGroupPlaylistsRequest = { playlistIds };
 
     const data = await serverFetch<EditGroupPlaylistsResponse>(
       `/groups/${groupId}/playlists`,

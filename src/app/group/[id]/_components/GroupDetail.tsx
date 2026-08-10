@@ -85,12 +85,12 @@ export default function GroupDetail({
         editGroupPlaylists(groupId, {
           playlistIds: nextPlaylists.map((item) => item.id),
         }),
-      onSuccess: (updated, nextPlaylists) => {
+      onSuccess: (updated) => {
         const updatedIds = new Set(updated.map((item) => item.id));
         const keptAvailable = availablePlaylists.filter(
           (item) => !updatedIds.has(item.id),
         );
-        const removed = nextPlaylists.filter(
+        const removed = playlists.filter(
           (item) => !updatedIds.has(item.id),
         );
 
