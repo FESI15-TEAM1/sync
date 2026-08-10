@@ -97,7 +97,7 @@ export default async function EditGroupPage({
 
   // 그룹장은 편집 범위가 그룹 전체라 다른 멤버가 담은 항목까지 최종 목록에 포함해야
   // 유지된다(빠지면 제거됨). 참여자는 본인 것만 다루므로 잠글 필요가 없다.
-  const isOwner = group.publicGroupOwner.userId === user.id;
+  const isOwner = group.owner.userId === user.id;
   const myGroupPlaylistIds = groupPlaylists
     .filter((playlist) => playlist.owner.userId === user.id)
     .map((playlist) => playlist.id);
