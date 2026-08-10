@@ -12,7 +12,7 @@ export async function PUT(
       method: 'PUT',
     });
 
-    return NextResponse.json({ status: 204 });
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     if (error instanceof APIError) {
       return NextResponse.json(
@@ -45,7 +45,7 @@ export async function DELETE(
       method: 'DELETE',
     });
 
-    return NextResponse.json({ status: 204 });
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     if (error instanceof APIError) {
       return NextResponse.json(
