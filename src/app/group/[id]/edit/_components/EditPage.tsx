@@ -175,6 +175,7 @@ export default function EditPage({
   });
 
   const handleConfirmDelete = () => {
+    if (isSubmitting || deleteGroupMutation.isPending) return;
     deleteGroupMutation.mutate();
   };
 

@@ -18,12 +18,34 @@ import {
 } from '@/services/group/group.api';
 import type { GroupDetailResponse } from '@/services/group/group.types';
 import { getUserPlaylists } from '@/services/playlist/playlist.api';
+import type { MyPlaylistItem } from '@/services/playlist/playlistCard.type';
 
 import GroupLeaveModal from './GroupLeaveModal';
 import PlaylistEditModal, { type EditablePlaylist } from './PlaylistEditModal';
 
 // 그룹 상세 화면에서 한 번에 다룰 플레이리스트 최대 개수(스펙상 페이지 최대치)
 const PLAYLIST_QUERY_LIMIT = 50;
+// 커서로 끝까지 모아 전체 목록을 확보하기 위한 최대 페이지 수
+const MAX_PLAYLIST_PAGES = 10;
+
+async function fetchAllUserPlaylists(userId: number) {
+  const items: MyPlaylistItem[] = [];
+  let cursor: string | undefined;
+
+  for (let page = 0; page < MAX_PLAYLIST_PAGES; page++) {
+    const data = await getUserPlaylists(userId, {
+      cursor,
+      limit: PLAYLIST_QUERY_LIMIT,
+    });
+
+    items.push(...data.items);
+
+    if (!data.nextCursor) break;
+    cursor = data.nextCursor;
+  }
+
+  return items;
+}
 
 type GroupDetailProps = {
   groupId: number;
@@ -74,15 +96,12 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   // 내가 그룹에 추가할 수 있는 플레이리스트(내 플레이리스트 중 아직 추가되지 않은 것)
   const myPlaylistsQuery = useQuery({
     queryKey: ['user', currentUser?.id, 'playlists'],
-    queryFn: () =>
-      getUserPlaylists(currentUser!.id, { limit: PLAYLIST_QUERY_LIMIT }),
+    queryFn: () => fetchAllUserPlaylists(currentUser!.id),
     enabled: isLeader && currentUser !== null,
   });
 
   const addedPlaylistIds = new Set(playlists.map((item) => item.id));
-  const availablePlaylists: EditablePlaylist[] = (
-    myPlaylistsQuery.data?.items ?? []
-  )
+  const availablePlaylists: EditablePlaylist[] = (myPlaylistsQuery.data ?? [])
     .filter((item) => !addedPlaylistIds.has(item.id))
     .map((item) => ({
       id: item.id,
@@ -245,7 +264,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
         </div>
 
         {/* 비가입 유저: 참여 요청 버튼 */}
-        {!isLeader && !group.isMember && (
+        {group.isPublic && !isLeader && !group.isMember && (
           <div className="flex flex-col gap-2">
             <Button
               type="button"
