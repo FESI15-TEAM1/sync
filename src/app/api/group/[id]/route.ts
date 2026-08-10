@@ -61,6 +61,29 @@ export async function PATCH(
   }
 }
 
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+
+    await serverFetch(`/groups/${id}`, { method: 'DELETE' });
+
+    return new Response(null, { status: 204 });
+  } catch (error) {
+    if (error instanceof APIError) {
+      return errorResponse(error.status, error.code, error.message);
+    }
+
+    return errorResponse(
+      500,
+      'INTERNAL_SERVER_ERROR',
+      '서버 오류가 발생했습니다.',
+    );
+  }
+}
+
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -80,8 +103,7 @@ export async function PUT(
       );
     }
 
-    const { playlistIds } = (body ??
-      {}) as Partial<EditGroupPlaylistsRequest>;
+    const { playlistIds } = (body ?? {}) as Partial<EditGroupPlaylistsRequest>;
 
     if (!Array.isArray(playlistIds)) {
       return errorResponse(

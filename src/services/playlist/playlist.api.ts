@@ -5,11 +5,31 @@ import type {
   UpdatePlaylistRequest,
 } from '@/services/playlist/playlist';
 import type { LikePlaylistResponse } from '@/services/playlist/playlistCard.type';
+import type {
+  GetUserPlaylistsParams,
+  MyplaylistResponse,
+} from '@/services/playlist/playlistCard.type';
 
 export const postPlaylist = (form: CreatePlaylistRequest) => {
   return clientFetch('/playlists', {
     method: 'POST',
     body: form,
+  });
+};
+
+// 유저의 플레이리스트 목록
+export const getUserPlaylists = (
+  userId: number,
+  { cursor, limit }: GetUserPlaylistsParams = {},
+) => {
+  const params: Record<string, string> = {};
+
+  if (cursor) params.cursor = cursor;
+  if (limit !== undefined) params.limit = String(limit);
+
+  return clientFetch<MyplaylistResponse>(`/users/${userId}/playlists`, {
+    method: 'GET',
+    params: Object.keys(params).length > 0 ? params : undefined,
   });
 };
 

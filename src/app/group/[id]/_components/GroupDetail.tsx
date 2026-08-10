@@ -1,19 +1,51 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import Button from '@/components/Button';
 import KebabModal from '@/components/domain/KebabModal';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import { APIError } from '@/lib/http/error';
 import { useUserStore } from '@/providers/user-store-provider';
-import { editGroupPlaylists, leaveGroup } from '@/services/group/group.api';
+import {
+  editGroupPlaylists,
+  getGroupPlaylists,
+  leaveGroup,
+  requestJoinGroup,
+} from '@/services/group/group.api';
 import type { GroupDetailResponse } from '@/services/group/group.types';
+import { getUserPlaylists } from '@/services/playlist/playlist.api';
+import type { MyPlaylistItem } from '@/services/playlist/playlistCard.type';
 
 import GroupLeaveModal from './GroupLeaveModal';
 import PlaylistEditModal, { type EditablePlaylist } from './PlaylistEditModal';
+
+// 그룹 상세 화면에서 한 번에 다룰 플레이리스트 최대 개수(스펙상 페이지 최대치)
+const PLAYLIST_QUERY_LIMIT = 50;
+// 커서로 끝까지 모아 전체 목록을 확보하기 위한 최대 페이지 수
+const MAX_PLAYLIST_PAGES = 10;
+
+async function fetchAllUserPlaylists(userId: number) {
+  const items: MyPlaylistItem[] = [];
+  let cursor: string | undefined;
+
+  for (let page = 0; page < MAX_PLAYLIST_PAGES; page++) {
+    const data = await getUserPlaylists(userId, {
+      cursor,
+      limit: PLAYLIST_QUERY_LIMIT,
+    });
+
+    items.push(...data.items);
+
+    if (!data.nextCursor) break;
+    cursor = data.nextCursor;
+  }
+
+  return items;
+}
 
 type GroupDetailProps = {
   groupId: number;
@@ -26,31 +58,6 @@ export type EditableGroupInfo = {
   isPublic: boolean;
   coverImage: string | null;
 };
-
-const MOCK_ADDED_PLAYLISTS: EditablePlaylist[] = [
-  {
-    id: 1,
-    title: '비 오는 날 감성',
-    artist: 'ㄹㅇ좋음',
-    trackCount: 18,
-  },
-  {
-    id: 2,
-    title: 'Midnight Rain',
-    artist: 'Aria Chen',
-    trackCount: 12,
-  },
-];
-
-const MOCK_AVAILABLE_PLAYLISTS: EditablePlaylist[] = [
-  { id: 3, title: 'jpop', artist: 'ㄹㅇ좋음', trackCount: 20 },
-  {
-    id: 4,
-    title: '습할때 듣는노래',
-    artist: 'Aria Chen',
-    trackCount: 15,
-  },
-];
 
 export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   const router = useRouter();
@@ -68,12 +75,44 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     isPublic: group.isPublic,
     coverImage: group.image,
   };
-  const [playlists, setPlaylists] =
-    useState<EditablePlaylist[]>(MOCK_ADDED_PLAYLISTS);
-  const [availablePlaylists, setAvailablePlaylists] = useState<
-    EditablePlaylist[]
-  >(MOCK_AVAILABLE_PLAYLISTS);
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
+
+  // 그룹에 추가된 플레이리스트
+  const groupPlaylistsQuery = useQuery({
+    queryKey: ['group', groupId, 'playlists'],
+    queryFn: () => getGroupPlaylists(groupId, { limit: PLAYLIST_QUERY_LIMIT }),
+  });
+
+  const playlists: EditablePlaylist[] = (
+    groupPlaylistsQuery.data?.items ?? []
+  ).map((item) => ({
+    id: item.id,
+    title: item.title,
+    trackCount: item.trackCount,
+    artist: item.owner.nickname,
+    image: item.image,
+  }));
+
+  // 내가 그룹에 추가할 수 있는 플레이리스트(내 플레이리스트 중 아직 추가되지 않은 것)
+  const myPlaylistsQuery = useQuery({
+    queryKey: ['user', currentUser?.id, 'playlists'],
+    queryFn: () => fetchAllUserPlaylists(currentUser!.id),
+    enabled: isLeader && currentUser !== null,
+  });
+
+  const addedPlaylistIds = new Set(playlists.map((item) => item.id));
+  const availablePlaylists: EditablePlaylist[] = (myPlaylistsQuery.data ?? [])
+    .filter((item) => !addedPlaylistIds.has(item.id))
+    .map((item) => ({
+      id: item.id,
+      title: item.title,
+      trackCount: item.trackCount,
+      artist: currentUser?.nickname ?? '',
+      image: item.image,
+    }));
+
+  const isPlaylistsLoading =
+    groupPlaylistsQuery.isPending || myPlaylistsQuery.isPending;
 
   //그룹 정보 수정
   const handleEditGroupInfo = () => {
@@ -81,7 +120,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   };
   //플레이리스트 편집
   const handleEditPlaylists = () => {
-    if (isSavingPlaylists) return;
+    if (isSavingPlaylists || isPlaylistsLoading) return;
 
     setSaveErrorMessage(null);
     setIsEditPlaylistsOpen(true);
@@ -97,22 +136,13 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
       editGroupPlaylists(groupId, {
         playlistIds: nextPlaylists.map((item) => item.id),
       }),
-    onSuccess: (updated) => {
-      const updatedIds = new Set(updated.map((item) => item.id));
-      const keptAvailable = availablePlaylists.filter(
-        (item) => !updatedIds.has(item.id),
-      );
-      const removed = playlists.filter((item) => !updatedIds.has(item.id));
-
-      setPlaylists(
-        updated.map((item) => ({
-          id: item.id,
-          title: item.title,
-          trackCount: item.trackCount,
-          artist: item.owner.nickname,
-        })),
-      );
-      setAvailablePlaylists([...keptAvailable, ...removed]);
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['group', groupId, 'playlists'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['user', currentUser?.id, 'playlists'],
+      });
       setIsEditPlaylistsOpen(false);
     },
     onError: (error) => {
@@ -155,6 +185,27 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     leaveGroupMutation.mutate();
   };
 
+  const [joinErrorMessage, setJoinErrorMessage] = useState<string | null>(null);
+
+  const joinGroupMutation = useMutation({
+    mutationFn: () => requestJoinGroup(groupId),
+    onSuccess: () => {
+      setJoinErrorMessage(null);
+    },
+    onError: (error) => {
+      setJoinErrorMessage(
+        error instanceof APIError
+          ? error.message
+          : '참여 요청에 실패했습니다. 잠시 후 다시 시도해주세요.',
+      );
+    },
+  });
+
+  const handleJoinGroup = () => {
+    if (joinGroupMutation.isPending) return;
+    joinGroupMutation.mutate();
+  };
+
   return (
     <>
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-5 py-6">
@@ -178,23 +229,28 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
               <h1 className="text-text-primary text-xl font-bold">
                 {groupInfo.name}
               </h1>
-              {/* 케밥 메뉴 */}
-              <KebabModal>
-                {isLeader ? (
-                  <>
-                    <KebabModal.Item onClick={handleEditGroupInfo}>
-                      그룹 정보 수정
+              {/* 케밥 메뉴: 가입한 그룹(멤버/그룹장)일 때만 노출 */}
+              {(isLeader || group.isMember) && (
+                <KebabModal>
+                  {isLeader ? (
+                    <>
+                      <KebabModal.Item onClick={handleEditGroupInfo}>
+                        그룹 정보 수정
+                      </KebabModal.Item>
+                      <KebabModal.Item onClick={handleEditPlaylists}>
+                        플레이리스트 편집
+                      </KebabModal.Item>
+                    </>
+                  ) : (
+                    <KebabModal.Item
+                      variant="danger"
+                      onClick={handleLeaveGroup}
+                    >
+                      그룹 탈퇴하기
                     </KebabModal.Item>
-                    <KebabModal.Item onClick={handleEditPlaylists}>
-                      플레이리스트 편집
-                    </KebabModal.Item>
-                  </>
-                ) : (
-                  <KebabModal.Item variant="danger" onClick={handleLeaveGroup}>
-                    그룹 탈퇴하기
-                  </KebabModal.Item>
-                )}
-              </KebabModal>
+                  )}
+                </KebabModal>
+              )}
             </div>
             <p className="text-text-secondary mt-1 text-sm">
               멤버 {group.memberCount}명 · 플레이리스트 {group.playlistCount}개
@@ -206,6 +262,29 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
             )}
           </div>
         </div>
+
+        {/* 비가입 유저: 참여 요청 버튼 */}
+        {group.isPublic && !isLeader && !group.isMember && (
+          <div className="flex flex-col gap-2">
+            <Button
+              type="button"
+              variant="primary"
+              size="lg"
+              isDisabled={
+                joinGroupMutation.isPending || joinGroupMutation.isSuccess
+              }
+              onClick={handleJoinGroup}
+              className="w-full rounded-full"
+            >
+              {joinGroupMutation.isSuccess ? '참여 요청 완료' : '참여하기'}
+            </Button>
+            {joinErrorMessage && (
+              <p role="alert" className="text-sm text-red-500">
+                {joinErrorMessage}
+              </p>
+            )}
+          </div>
+        )}
 
         {saveErrorMessage && (
           <p role="alert" className="text-sm text-red-500">
@@ -233,15 +312,26 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
         />
       </div>
       <div className="mx-auto w-full max-w-md px-5">
-        <div className="flex flex-row flex-wrap gap-3">
-          {playlists.map((playlist) => (
-            <PlaylistCard
-              key={playlist.id}
-              title={playlist.title}
-              trackCount={playlist.trackCount}
-            />
-          ))}
-        </div>
+        {groupPlaylistsQuery.isPending ? (
+          <p className="text-text-secondary text-sm">
+            플레이리스트를 불러오는 중입니다...
+          </p>
+        ) : groupPlaylistsQuery.isError ? (
+          <p role="alert" className="text-sm text-red-500">
+            플레이리스트를 불러오는데 실패했습니다.
+          </p>
+        ) : (
+          <div className="flex flex-row flex-wrap gap-3">
+            {playlists.map((playlist) => (
+              <PlaylistCard
+                key={playlist.id}
+                img={playlist.image}
+                title={playlist.title}
+                trackCount={playlist.trackCount}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </>
   );
