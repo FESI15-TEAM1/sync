@@ -160,6 +160,7 @@ export default function PlaylistDetailView({
           <LikedButton
             isLiked={!!playlist.isLiked}
             onClick={handleLikedClick}
+            disabled={!userid}
           />
         </div>
       </div>
