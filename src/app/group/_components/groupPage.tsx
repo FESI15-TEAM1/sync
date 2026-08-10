@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import Button from '@/components/Button';
 import GroupList from '@/components/domain/group/GroupList';
 import { useGroupRequestsQuery } from '@/hooks/useGroupRequestsQuery';
+import { useProcessGroupRequest } from '@/hooks/useProcessGroupRequest';
 import { formatTimeAgo } from '@/lib/formatITimeAgo';
 import { APIError } from '@/lib/http/error';
 import { getGroups } from '@/services/group/group.api';
@@ -47,7 +48,11 @@ export default function GroupPage() {
   const groups = groupsData?.pages.flatMap((page) => page.items) ?? [];
 
   const { data, isPending, error } = useGroupRequestsQuery({ limit: 20 });
-  const groupRequests = data?.items ?? [];
+  const groupRequests = (data?.items ?? []).filter(
+    (request) => request.status === 'pending',
+  );
+
+  const { mutate: processGroupRequest } = useProcessGroupRequest();
 
   const isGroupsAuthError =
     isGroupsError &&
@@ -80,18 +85,18 @@ export default function GroupPage() {
   }, [hasNextPage, isGroupsFetching, isFetchNextPageError, fetchNextPage]);
 
   const handleReject = (id: number) => {
-    // 요청 거절 API 연동
-    console.log('요청 거절', id);
+    processGroupRequest({ requestId: id, payload: { status: 'rejected' } });
   };
 
   const handleAccept = (id: number) => {
-    // 요청 수락 API 연동
-    console.log('요청 수락', id);
+    processGroupRequest({ requestId: id, payload: { status: 'accepted' } });
   };
 
   const handleGroupSelect = (requestId: number, groupId: number) => {
-    // 그룹 선택 확정(초대) API 연동
-    console.log('그룹 선택', requestId, groupId);
+    processGroupRequest({
+      requestId,
+      payload: { status: 'accepted', targetGroupId: groupId },
+    });
   };
 
   const handleJoinByCode = () => {
