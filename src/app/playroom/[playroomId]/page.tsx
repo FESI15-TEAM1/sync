@@ -1,15 +1,18 @@
-import Stream from './playroom';
+import { notFound } from 'next/navigation';
 
-export default async function page({
+import Playroom from './_components/Playroom';
+
+export default async function Page({
   params,
 }: {
-  params: { playroomId: number };
+  params: Promise<{ playroomId: string }>;
 }) {
   const { playroomId } = await params;
 
-  return (
-    <>
-      <Stream playroomId={playroomId} />
-    </>
-  );
+  const parsedPlayroomId = Number(playroomId);
+  if (!Number.isSafeInteger(parsedPlayroomId) || parsedPlayroomId <= 0) {
+    notFound();
+  }
+
+  return <Playroom playroomId={parsedPlayroomId} />;
 }

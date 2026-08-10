@@ -34,21 +34,21 @@ export default function Player({
   const handlePlayNextTrack = () => {};
 
   return (
-    <div className="bg-bg-card border-border flex flex-col items-center rounded-xl border-1 py-10">
+    <div className="bg-bg-card border-border box-border flex flex-col items-center gap-2 rounded-xl border py-4 lg:gap-4 lg:py-8">
       {/* thumbnail image */}
       <Image
         src={mookImage.src}
         alt=""
-        width={100}
-        height={100}
-        className="rounded-2xl"
+        width={250}
+        height={250}
+        className="aspect-square max-w-[100px] rounded-2xl lg:max-w-none"
       />
 
       {/* song title */}
-      <h2 className="mt-2 text-base font-bold text-white">{musicTitle}</h2>
+      <h2 className="text-base font-bold text-white">{musicTitle}</h2>
 
       {/* song artist */}
-      <p className="text-text-secondary mt-1 text-xs">{artist}</p>
+      <p className="text-text-secondary text-xs">{artist}</p>
 
       {/* play progress bar */}
       <PlayProgressBar currentTime={136} durations={'PT3M33S'} />
