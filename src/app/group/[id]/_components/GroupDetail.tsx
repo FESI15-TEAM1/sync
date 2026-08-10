@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -53,6 +54,7 @@ const MOCK_AVAILABLE_PLAYLISTS: EditablePlaylist[] = [
 
 export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const currentUser = useUserStore((state) => state.user);
 
   const isLeader = currentUser?.id === group.owner.userId;
@@ -98,14 +100,17 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     setIsEditPlaylistsOpen(false);
   };
 
-  const handleConfirmLeave = async () => {
-    if (!currentUser) return;
-
-    try {
-      await leaveGroup(groupId, currentUser.id);
+  const leaveGroupMutation = useMutation({
+    mutationFn: () => {
+      if (!currentUser) throw new Error('로그인이 필요합니다.');
+      return leaveGroup(groupId, currentUser.id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
       setIsLeaveGroupOpen(false);
       router.push('/group');
-    } catch (error) {
+    },
+    onError: (error) => {
       if (error instanceof APIError) {
         console.error(error.message);
         alert(error.message);
@@ -114,7 +119,12 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
 
       console.error(error);
       alert('그룹 탈퇴 중 오류가 발생했습니다.');
-    }
+    },
+  });
+
+  const handleConfirmLeave = () => {
+    if (!currentUser) return;
+    leaveGroupMutation.mutate();
   };
 
   return (
