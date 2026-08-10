@@ -18,13 +18,27 @@ export interface CommentItemType {
 
 export default function CommentItemList({
   comments,
+  userid,
+  onEditSave,
+  isSaving,
 }: {
   comments: CommentItemsType;
+  userid: string | number | null;
+  onEditSave: (commentId: number, content: string) => Promise<unknown>;
+  isSaving: boolean;
 }) {
   return (
     <div className="flex flex-col gap-3">
-      {comments.items.map((item) => {
-        return <CommentItem key={item.id} comment={item} />;
+      {[...comments.items].reverse().map((item) => {
+        return (
+          <CommentItem
+            key={item.id}
+            comment={item}
+            userid={userid}
+            onEditSave={onEditSave}
+            isSaving={isSaving}
+          />
+        );
       })}
     </div>
   );

@@ -35,3 +35,33 @@ export async function GET(
     );
   }
 }
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const body = await req.json();
+    const data = await serverFetch(`/playlists/${(await params).id}/comments`, {
+      method: 'POST',
+      body,
+    });
+
+    return NextResponse.json(data, { status: 201 });
+  } catch (error) {
+    if (error instanceof APIError) {
+      return NextResponse.json(
+        {
+          error: {
+            code: error.code,
+            message: error.message,
+          },
+        },
+        { status: error.status },
+      );
+    }
+    return NextResponse.json(
+      { error: '유효하지 않은 json body 입니다' },
+      { status: 400 },
+    );
+  }
+}
