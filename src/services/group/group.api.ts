@@ -1,6 +1,7 @@
 import { clientFetch } from '@/lib/http/client-fetch';
 
 import type {
+  CreateGroupJoinRequestPayload,
   CreateGroupRequest,
   CreateGroupResponse,
   EditGroupPlaylistsRequest,
@@ -12,6 +13,7 @@ import type {
   GetPublicGroupsParams,
   GetPublicGroupsResponse,
   GroupDetailResponse,
+  GroupRequestResponse,
   UpdateGroupRequest,
 } from './group.types';
 
@@ -27,6 +29,17 @@ export function createGroup(data: CreateGroupRequest) {
 export function leaveGroup(groupId: number, userId: number) {
   return clientFetch<null>(`/group/${groupId}/members/${userId}`, {
     method: 'DELETE',
+  });
+}
+
+// 공개 그룹 참여 요청(승인제, 그룹장에게 전달됨)
+export function requestJoinGroup(groupId: number) {
+  return clientFetch<GroupRequestResponse>('/group-requests', {
+    method: 'POST',
+    body: {
+      sourceType: 'group',
+      sourceId: groupId,
+    } satisfies CreateGroupJoinRequestPayload,
   });
 }
 

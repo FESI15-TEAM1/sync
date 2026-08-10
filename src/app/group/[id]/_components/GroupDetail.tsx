@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import Button from '@/components/Button';
 import KebabModal from '@/components/domain/KebabModal';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import { APIError } from '@/lib/http/error';
@@ -13,6 +14,7 @@ import {
   editGroupPlaylists,
   getGroupPlaylists,
   leaveGroup,
+  requestJoinGroup,
 } from '@/services/group/group.api';
 import type { GroupDetailResponse } from '@/services/group/group.types';
 import { getUserPlaylists } from '@/services/playlist/playlist.api';
@@ -164,6 +166,27 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     leaveGroupMutation.mutate();
   };
 
+  const [joinErrorMessage, setJoinErrorMessage] = useState<string | null>(null);
+
+  const joinGroupMutation = useMutation({
+    mutationFn: () => requestJoinGroup(groupId),
+    onSuccess: () => {
+      setJoinErrorMessage(null);
+    },
+    onError: (error) => {
+      setJoinErrorMessage(
+        error instanceof APIError
+          ? error.message
+          : '참여 요청에 실패했습니다. 잠시 후 다시 시도해주세요.',
+      );
+    },
+  });
+
+  const handleJoinGroup = () => {
+    if (joinGroupMutation.isPending) return;
+    joinGroupMutation.mutate();
+  };
+
   return (
     <>
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-5 py-6">
@@ -187,23 +210,28 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
               <h1 className="text-text-primary text-xl font-bold">
                 {groupInfo.name}
               </h1>
-              {/* 케밥 메뉴 */}
-              <KebabModal>
-                {isLeader ? (
-                  <>
-                    <KebabModal.Item onClick={handleEditGroupInfo}>
-                      그룹 정보 수정
+              {/* 케밥 메뉴: 가입한 그룹(멤버/그룹장)일 때만 노출 */}
+              {(isLeader || group.isMember) && (
+                <KebabModal>
+                  {isLeader ? (
+                    <>
+                      <KebabModal.Item onClick={handleEditGroupInfo}>
+                        그룹 정보 수정
+                      </KebabModal.Item>
+                      <KebabModal.Item onClick={handleEditPlaylists}>
+                        플레이리스트 편집
+                      </KebabModal.Item>
+                    </>
+                  ) : (
+                    <KebabModal.Item
+                      variant="danger"
+                      onClick={handleLeaveGroup}
+                    >
+                      그룹 탈퇴하기
                     </KebabModal.Item>
-                    <KebabModal.Item onClick={handleEditPlaylists}>
-                      플레이리스트 편집
-                    </KebabModal.Item>
-                  </>
-                ) : (
-                  <KebabModal.Item variant="danger" onClick={handleLeaveGroup}>
-                    그룹 탈퇴하기
-                  </KebabModal.Item>
-                )}
-              </KebabModal>
+                  )}
+                </KebabModal>
+              )}
             </div>
             <p className="text-text-secondary mt-1 text-sm">
               멤버 {group.memberCount}명 · 플레이리스트 {group.playlistCount}개
@@ -215,6 +243,29 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
             )}
           </div>
         </div>
+
+        {/* 비가입 유저: 참여 요청 버튼 */}
+        {!isLeader && !group.isMember && (
+          <div className="flex flex-col gap-2">
+            <Button
+              type="button"
+              variant="primary"
+              size="lg"
+              isDisabled={
+                joinGroupMutation.isPending || joinGroupMutation.isSuccess
+              }
+              onClick={handleJoinGroup}
+              className="w-full rounded-full"
+            >
+              {joinGroupMutation.isSuccess ? '참여 요청 완료' : '참여하기'}
+            </Button>
+            {joinErrorMessage && (
+              <p role="alert" className="text-sm text-red-500">
+                {joinErrorMessage}
+              </p>
+            )}
+          </div>
+        )}
 
         {saveErrorMessage && (
           <p role="alert" className="text-sm text-red-500">
