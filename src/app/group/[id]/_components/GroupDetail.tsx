@@ -57,7 +57,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   const queryClient = useQueryClient();
   const currentUser = useUserStore((state) => state.user);
 
-  const isLeader = currentUser?.id === group.owner.userId;
+  const isLeader = currentUser?.id === group.publicGroupOwner.userId;
 
   const [isEditPlaylistsOpen, setIsEditPlaylistsOpen] = useState(false);
   const [isLeaveGroupOpen, setIsLeaveGroupOpen] = useState(false);

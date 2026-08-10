@@ -96,7 +96,7 @@ export interface GroupDetailResponse {
   inviteCode: string | null;
   memberCount: number;
   playlistCount: number;
-  owner: GroupOwnerSummary;
+  publicGroupOwner: GroupOwnerSummary;
   createdAt: string;
 }
 export interface PublicGroup {
