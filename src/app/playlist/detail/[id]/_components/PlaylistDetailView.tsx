@@ -64,6 +64,7 @@ export default function PlaylistDetailView({
   );
 
   const handleLikedClick = () => {
+    if (isPending) return;
     toggleLiked(!playlist?.isLiked);
   };
 
