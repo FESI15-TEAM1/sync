@@ -84,10 +84,7 @@ export interface PublicGroupOwner {
   image: string | null;
 }
 
-<<<<<<< HEAD
 // GET /groups/{groupId} — 그룹 상세 조회
-=======
->>>>>>> e18bc94045b131aeb8045cc0358ec34c749a733c
 export interface GroupDetailResponse {
   id: number;
   title: string;
@@ -98,11 +95,7 @@ export interface GroupDetailResponse {
   inviteCode: string | null;
   memberCount: number;
   playlistCount: number;
-<<<<<<< HEAD
-  owner: GroupOwner;
-=======
   owner: GroupOwnerSummary;
->>>>>>> e18bc94045b131aeb8045cc0358ec34c749a733c
   createdAt: string;
 }
 export interface PublicGroup {
