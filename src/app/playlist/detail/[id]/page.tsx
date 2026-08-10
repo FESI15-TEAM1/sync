@@ -1,15 +1,9 @@
-import { redirect } from 'next/navigation';
-
 import PlaylistDetailView from '@/app/playlist/detail/[id]/_components/PlaylistDetailView';
 import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
 
 export default async function PlaylistDeatilPage() {
   const userId = await getCurrentUserId();
-
-  if (userId === null) {
-    redirect('/login');
-  }
 
   return (
     <div className="flex justify-center p-6">
@@ -19,7 +13,7 @@ export default async function PlaylistDeatilPage() {
 }
 async function getCurrentUserId() {
   try {
-    const me = await serverFetch<{ id: number }>('/users/me', {
+    const me = await serverFetch<{ id: string }>('/users/me', {
       method: 'GET',
     });
     return me.id;
