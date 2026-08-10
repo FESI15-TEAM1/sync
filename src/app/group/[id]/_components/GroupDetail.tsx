@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -9,11 +9,19 @@ import KebabModal from '@/components/domain/KebabModal';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import { APIError } from '@/lib/http/error';
 import { useUserStore } from '@/providers/user-store-provider';
-import { editGroupPlaylists, leaveGroup } from '@/services/group/group.api';
+import {
+  editGroupPlaylists,
+  getGroupPlaylists,
+  leaveGroup,
+} from '@/services/group/group.api';
 import type { GroupDetailResponse } from '@/services/group/group.types';
+import { getUserPlaylists } from '@/services/playlist/playlist.api';
 
 import GroupLeaveModal from './GroupLeaveModal';
 import PlaylistEditModal, { type EditablePlaylist } from './PlaylistEditModal';
+
+// 그룹 상세 화면에서 한 번에 다룰 플레이리스트 최대 개수(스펙상 페이지 최대치)
+const PLAYLIST_QUERY_LIMIT = 50;
 
 type GroupDetailProps = {
   groupId: number;
@@ -26,31 +34,6 @@ export type EditableGroupInfo = {
   isPublic: boolean;
   coverImage: string | null;
 };
-
-const MOCK_ADDED_PLAYLISTS: EditablePlaylist[] = [
-  {
-    id: 1,
-    title: '비 오는 날 감성',
-    artist: 'ㄹㅇ좋음',
-    trackCount: 18,
-  },
-  {
-    id: 2,
-    title: 'Midnight Rain',
-    artist: 'Aria Chen',
-    trackCount: 12,
-  },
-];
-
-const MOCK_AVAILABLE_PLAYLISTS: EditablePlaylist[] = [
-  { id: 3, title: 'jpop', artist: 'ㄹㅇ좋음', trackCount: 20 },
-  {
-    id: 4,
-    title: '습할때 듣는노래',
-    artist: 'Aria Chen',
-    trackCount: 15,
-  },
-];
 
 export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   const router = useRouter();
@@ -68,12 +51,45 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     isPublic: group.isPublic,
     coverImage: group.image,
   };
-  const [playlists, setPlaylists] =
-    useState<EditablePlaylist[]>(MOCK_ADDED_PLAYLISTS);
-  const [availablePlaylists, setAvailablePlaylists] = useState<
-    EditablePlaylist[]
-  >(MOCK_AVAILABLE_PLAYLISTS);
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
+
+  // 그룹에 추가된 플레이리스트
+  const groupPlaylistsQuery = useQuery({
+    queryKey: ['group', groupId, 'playlists'],
+    queryFn: () => getGroupPlaylists(groupId, { limit: PLAYLIST_QUERY_LIMIT }),
+  });
+
+  const playlists: EditablePlaylist[] = (
+    groupPlaylistsQuery.data?.items ?? []
+  ).map((item) => ({
+    id: item.id,
+    title: item.title,
+    trackCount: item.trackCount,
+    artist: item.owner.nickname,
+  }));
+
+  // 내가 그룹에 추가할 수 있는 플레이리스트(내 플레이리스트 중 아직 추가되지 않은 것)
+  const myPlaylistsQuery = useQuery({
+    queryKey: ['user', currentUser?.id, 'playlists'],
+    queryFn: () =>
+      getUserPlaylists(currentUser!.id, { limit: PLAYLIST_QUERY_LIMIT }),
+    enabled: isLeader && currentUser !== null,
+  });
+
+  const addedPlaylistIds = new Set(playlists.map((item) => item.id));
+  const availablePlaylists: EditablePlaylist[] = (
+    myPlaylistsQuery.data?.items ?? []
+  )
+    .filter((item) => !addedPlaylistIds.has(item.id))
+    .map((item) => ({
+      id: item.id,
+      title: item.title,
+      trackCount: item.trackCount,
+      artist: currentUser?.nickname ?? '',
+    }));
+
+  const isPlaylistsLoading =
+    groupPlaylistsQuery.isPending || myPlaylistsQuery.isPending;
 
   //그룹 정보 수정
   const handleEditGroupInfo = () => {
@@ -81,7 +97,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   };
   //플레이리스트 편집
   const handleEditPlaylists = () => {
-    if (isSavingPlaylists) return;
+    if (isSavingPlaylists || isPlaylistsLoading) return;
 
     setSaveErrorMessage(null);
     setIsEditPlaylistsOpen(true);
@@ -97,22 +113,13 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
       editGroupPlaylists(groupId, {
         playlistIds: nextPlaylists.map((item) => item.id),
       }),
-    onSuccess: (updated) => {
-      const updatedIds = new Set(updated.map((item) => item.id));
-      const keptAvailable = availablePlaylists.filter(
-        (item) => !updatedIds.has(item.id),
-      );
-      const removed = playlists.filter((item) => !updatedIds.has(item.id));
-
-      setPlaylists(
-        updated.map((item) => ({
-          id: item.id,
-          title: item.title,
-          trackCount: item.trackCount,
-          artist: item.owner.nickname,
-        })),
-      );
-      setAvailablePlaylists([...keptAvailable, ...removed]);
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['group', groupId, 'playlists'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['user', currentUser?.id, 'playlists'],
+      });
       setIsEditPlaylistsOpen(false);
     },
     onError: (error) => {
@@ -233,15 +240,25 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
         />
       </div>
       <div className="mx-auto w-full max-w-md px-5">
-        <div className="flex flex-row flex-wrap gap-3">
-          {playlists.map((playlist) => (
-            <PlaylistCard
-              key={playlist.id}
-              title={playlist.title}
-              trackCount={playlist.trackCount}
-            />
-          ))}
-        </div>
+        {groupPlaylistsQuery.isPending ? (
+          <p className="text-text-secondary text-sm">
+            플레이리스트를 불러오는 중입니다...
+          </p>
+        ) : groupPlaylistsQuery.isError ? (
+          <p role="alert" className="text-sm text-red-500">
+            플레이리스트를 불러오는데 실패했습니다.
+          </p>
+        ) : (
+          <div className="flex flex-row flex-wrap gap-3">
+            {playlists.map((playlist) => (
+              <PlaylistCard
+                key={playlist.id}
+                title={playlist.title}
+                trackCount={playlist.trackCount}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </>
   );
