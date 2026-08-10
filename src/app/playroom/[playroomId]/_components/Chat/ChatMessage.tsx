@@ -2,7 +2,7 @@ import Image from 'next/image';
 
 import mookImage from '@/assets/images/mook.jpg';
 
-export default function ChatBox({
+export default function ChatMessage({
   username,
   message,
 }: {

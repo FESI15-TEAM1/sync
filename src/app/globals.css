@@ -2,6 +2,7 @@
 
 :root {
   --global-header-height: 77px; /* 페이지 첫 로드 시 사이드바 세로 길이 레이아웃 쉬프팅 방지를 위해 초기값 지정 */
+  --main-content-full-height: calc(100vh - var(--global-header-height) - 2rem);
 }
 
 body {

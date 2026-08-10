@@ -1,5 +1,3 @@
-import clsx from 'clsx';
-
 export default function PlayProgressBar({
   currentTime,
   durations,
@@ -32,37 +30,29 @@ export default function PlayProgressBar({
     const currentTimeInSeconds = toSeconds(ct);
     const durationInSeconds = toSeconds(d);
 
-    const percentage = (
-      (currentTimeInSeconds / durationInSeconds) *
-      100
-    ).toFixed(0);
+    if (!durationInSeconds) return 0;
 
-    console.log(percentage);
-
-    return percentage;
+    return Math.min(
+      100,
+      Math.max(0, (currentTimeInSeconds / durationInSeconds) * 100),
+    );
   };
 
-  const progressBarWidth = clsx(
-    `w-[${progressPercentage(
-      formatCurrentTime(currentTime),
-      formatDuration(durations),
-    )}%]`,
-  );
+  const fullDuration = formatDuration(durations);
+  const currentPlayTime = formatCurrentTime(currentTime);
+  const progressBarWidth = progressPercentage(currentPlayTime, fullDuration);
 
   return (
-    <div className="mt-3 w-full max-w-[60%]">
+    <div className="-mt-2 w-full max-w-[60%] lg:max-w-[80%]">
       <div className="bg-bg-primary h-1 w-full rounded-full">
         <div
-          className={`bg-primary h-1 rounded-full transition-all duration-300 ${progressBarWidth}`}
+          className="bg-primary h-1 rounded-full transition-all duration-300"
+          style={{ width: `${progressBarWidth}%` }}
         ></div>
       </div>
       <div className="flex justify-between">
-        <span className="text-text-secondary text-xs">
-          {formatCurrentTime(currentTime)}
-        </span>
-        <span className="text-text-secondary text-xs">
-          {formatDuration(durations)}
-        </span>
+        <span className="text-text-secondary text-xs">{currentPlayTime}</span>
+        <span className="text-text-secondary text-xs">{fullDuration}</span>
       </div>
     </div>
   );

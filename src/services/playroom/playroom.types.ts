@@ -1,11 +1,11 @@
-export interface CreatePlayroomRequest {
+export interface PlayroomCreateRequest {
   title: string;
   description: string;
   playlistId: number;
   hashtags: string[];
 }
 
-export interface CreatePlayroomResponse {
+export interface PlayroomCreateResponse {
   id: number;
 }
 
@@ -16,20 +16,20 @@ export interface PlayroomHost {
   image: string | null;
 }
 
-export interface PlayroomSummary {
+export interface PlayroomListItemResponse {
   id: number;
   title: string;
   description: string;
-  host: PlayroomHost;
   hashtags: string[];
   isLive: boolean;
   listenerCount: number;
+  host: PlayroomHost;
   createdAt: string;
 }
 
-/** 목록 카드가 실제로 사용하는 필드만 추린 타입. API 응답(PlayroomSummary)을 그대로 넘길 수 있습니다. */
+/** 목록 카드가 실제로 사용하는 필드만 추린 타입. API 응답(PlayroomListItemResponse)을 그대로 넘길 수 있습니다. */
 export type PlayroomCardData = Pick<
-  PlayroomSummary,
+  PlayroomListItemResponse,
   'id' | 'title' | 'description' | 'hashtags' | 'listenerCount' | 'host'
 >;
 
@@ -45,7 +45,7 @@ export interface GetPlayroomsParams {
 }
 
 export interface GetPlayroomsResponse {
-  items: PlayroomSummary[];
+  items: PlayroomListItemResponse[];
   // null 이면 마지막 페이지입니다.
   nextCursor: string | null;
 }

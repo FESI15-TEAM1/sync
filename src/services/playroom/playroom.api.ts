@@ -1,14 +1,14 @@
 import { clientFetch } from '@/lib/http/client-fetch';
 
 import type {
-  CreatePlayroomRequest,
-  CreatePlayroomResponse,
   GetPlayroomsParams,
   GetPlayroomsResponse,
+  PlayroomCreateRequest,
+  PlayroomCreateResponse,
 } from './playroom.types';
 
-export const postPlayroom = (form: CreatePlayroomRequest) => {
-  return clientFetch<CreatePlayroomResponse>('/playrooms', {
+export const postPlayroom = (form: PlayroomCreateRequest) => {
+  return clientFetch<PlayroomCreateResponse>('/playrooms', {
     method: 'POST',
     body: form,
   });

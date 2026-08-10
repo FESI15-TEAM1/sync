@@ -3,11 +3,11 @@ import type { NextRequest } from 'next/server';
 import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
 import {
-  type CreatePlayroomRequest,
-  type CreatePlayroomResponse,
   type GetPlayroomsResponse,
   PLAYROOM_LIMIT_MAX,
   PLAYROOM_LIMIT_MIN,
+  type PlayroomCreateRequest,
+  type PlayroomCreateResponse,
 } from '@/services/playroom/playroom.types';
 
 function errorResponse(status: number, code: string, message: string) {
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { title, description, playlistId, hashtags } = (body ??
-      {}) as Partial<CreatePlayroomRequest>;
+      {}) as Partial<PlayroomCreateRequest>;
 
     const trimmedTitle = typeof title === 'string' ? title.trim() : '';
 
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const payload: CreatePlayroomRequest = {
+    const payload: PlayroomCreateRequest = {
       title: trimmedTitle,
       description: typeof description === 'string' ? description : '',
       playlistId,
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
         : [],
     };
 
-    const data = await serverFetch<CreatePlayroomResponse>('/playrooms', {
+    const data = await serverFetch<PlayroomCreateResponse>('/playrooms', {
       method: 'POST',
       body: payload,
     });
