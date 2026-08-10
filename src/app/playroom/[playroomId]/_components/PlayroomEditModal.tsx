@@ -24,30 +24,27 @@ type PlayroomEditModalProps = {
   onClose: () => void;
 };
 
+// 닫혀 있는 동안에는 내용을 언마운트합니다.
+// 다시 열 때 입력값과 이전 에러가 초기 상태로 되돌아가므로 별도 초기화 로직이 필요 없습니다.
 export default function PlayroomEditModal({
   isOpen,
+  ...contentProps
+}: PlayroomEditModalProps) {
+  if (!isOpen) return null;
+
+  return <PlayroomEditModalContent {...contentProps} />;
+}
+
+function PlayroomEditModalContent({
   playroomId,
   initialTitle,
   initialDescription,
   onClose,
-}: PlayroomEditModalProps) {
+}: Omit<PlayroomEditModalProps, 'isOpen'>) {
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(initialDescription);
-  const [wasOpen, setWasOpen] = useState(isOpen);
 
-  const { editPlayroom, isEditing, errorMessage, reset } =
-    useEditPlayroom(playroomId);
-
-  // 모달을 열 때마다 현재 방 정보와 이전 에러를 초기화합니다.
-  if (isOpen !== wasOpen) {
-    setWasOpen(isOpen);
-
-    if (isOpen) {
-      setTitle(initialTitle);
-      setDescription(initialDescription);
-      reset();
-    }
-  }
+  const { editPlayroom, isEditing, errorMessage } = useEditPlayroom(playroomId);
 
   const isSubmitDisabled = !title.trim() || isEditing;
 
@@ -76,7 +73,7 @@ export default function PlayroomEditModal({
 
   return (
     <Modal
-      isOpen={isOpen}
+      isOpen
       onClose={handleClose}
       // 수정 요청 중에는 배경 클릭으로 닫히지 않게 합니다.
       closeOnBackdropClick={!isEditing}

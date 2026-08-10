@@ -1,3 +1,5 @@
+import { notFound } from 'next/navigation';
+
 import Playroom from './_components/Playroom';
 
 export default async function Page({
@@ -7,5 +9,10 @@ export default async function Page({
 }) {
   const { playroomId } = await params;
 
-  return <Playroom playroomId={Number(playroomId)} />;
+  const parsedPlayroomId = Number(playroomId);
+  if (!Number.isSafeInteger(parsedPlayroomId) || parsedPlayroomId <= 0) {
+    notFound();
+  }
+
+  return <Playroom playroomId={parsedPlayroomId} />;
 }

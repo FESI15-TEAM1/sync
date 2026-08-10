@@ -18,19 +18,21 @@ export function TabButton({
   onClick: () => void;
 }) {
   const tabButtonStyles =
-    'text-xs text-text-secondary hover:text-text-primary cursor-pointer transition-all duration-300 ease-in-out border-b-1 border-border py-2 box-border';
+    'text-xs text-text-secondary hover:text-text-primary cursor-pointer border-b-1 border-border py-2 box-border';
   const tabButtonActiveStyles =
     'font-bold text-text-primary border-b-2 border-primary';
 
   return (
-    <div
+    <button
+      type="button"
+      aria-pressed={isActive}
       className={twMerge(
         `${tabButtonStyles} ${isActive ? tabButtonActiveStyles : ''}`,
       )}
       onClick={onClick}
     >
       {tabname}
-    </div>
+    </button>
   );
 }
 
@@ -54,8 +56,13 @@ export default function ChatMembers({
     const message = chat.trim();
     if (!message) return;
 
-    setChat('');
-    sendMessage(message);
+    try {
+      sendMessage(message);
+      setChat('');
+    } catch (error) {
+      alert('메시지 전송에 실패했습니다. 다시 시도해주세요.');
+      console.error('메시지 전송 실패:', error);
+    }
   };
 
   return (

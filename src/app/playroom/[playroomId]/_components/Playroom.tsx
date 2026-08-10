@@ -37,7 +37,7 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
           </p>
         </div>
       ) : errorMessage ? (
-        <div className="items center flex h-full w-full justify-center">
+        <div className="flex h-full w-full items-center justify-center">
           <p role="alert" className="text-red-500">
             {errorMessage}
           </p>
