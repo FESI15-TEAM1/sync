@@ -85,6 +85,7 @@ export interface PublicGroupOwner {
 }
 
 // GET /groups/{groupId} — 그룹 상세 조회
+
 export interface GroupDetailResponse {
   id: number;
   title: string;
