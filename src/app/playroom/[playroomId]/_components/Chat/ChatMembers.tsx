@@ -1,12 +1,25 @@
 'use client';
 
+import { cva } from 'class-variance-authority';
 import { type SubmitEvent, useState } from 'react';
-import { twMerge } from 'tailwind-merge';
 
 import { type ChatMessage } from '../Playroom';
 import Chatting from './Chatting';
 import type { MemberType } from './MemberItem';
 import Members from './Members';
+
+const tabButtonVariants = cva('box-border cursor-pointer py-2 text-xs', {
+  variants: {
+    isActive: {
+      true: 'border-primary text-text-primary border-b-2 font-bold',
+      false:
+        'border-border text-text-secondary hover:text-text-primary border-b-1',
+    },
+  },
+  defaultVariants: {
+    isActive: false,
+  },
+});
 
 export function TabButton({
   tabname,
@@ -17,18 +30,11 @@ export function TabButton({
   isActive: boolean;
   onClick: () => void;
 }) {
-  const tabButtonStyles =
-    'text-xs text-text-secondary hover:text-text-primary cursor-pointer border-b-1 border-border py-2 box-border';
-  const tabButtonActiveStyles =
-    'font-bold text-text-primary border-b-2 border-primary';
-
   return (
     <button
       type="button"
       aria-pressed={isActive}
-      className={twMerge(
-        `${tabButtonStyles} ${isActive ? tabButtonActiveStyles : ''}`,
-      )}
+      className={tabButtonVariants({ isActive })}
       onClick={onClick}
     >
       {tabname}
