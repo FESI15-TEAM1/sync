@@ -14,6 +14,7 @@ import { APIError } from '@/lib/http/error';
 import { getGroups } from '@/services/group/group.api';
 
 import InviteSelectModal from './InviteSelectModal';
+import PlaylistRequestName from './PlaylistRequestName';
 
 const GROUP_PAGE_SIZE = 10;
 // 바닥에 닿기 전에 미리 다음 페이지를 불러와 스크롤이 끊기지 않게 합니다.
@@ -144,9 +145,14 @@ export default function GroupPage() {
                     {request.requester.nickname}
                   </span>
                   님이{' '}
-                  {request.sourceType === 'playlist'
-                    ? '플레이리스트에서 그룹 생성 요청을 했습니다.'
-                    : '그룹에 참여 요청을 했습니다.'}
+                  {request.sourceType === 'playlist' ? (
+                    <>
+                      <PlaylistRequestName playlistId={request.sourceId} />{' '}
+                      플레이리스트에서 그룹 생성 요청을 했습니다.
+                    </>
+                  ) : (
+                    '그룹에 참여 요청을 했습니다.'
+                  )}
                 </p>
                 <p className="text-text-secondary mt-1 text-xs">
                   {formatTimeAgo(request.createdAt)}
@@ -261,9 +267,7 @@ export default function GroupPage() {
         <InviteSelectModal
           isOpen
           onClose={() => setSelectedRequestId(null)}
-          onSelect={(groupId) =>
-            handleGroupSelect(selectedRequestId, groupId)
-          }
+          onSelect={(groupId) => handleGroupSelect(selectedRequestId, groupId)}
         />
       )}
     </div>
