@@ -41,6 +41,7 @@ export default function GroupPage() {
   const groups = groupsData?.pages.flatMap((page) => page.items) ?? [];
 
   const { data, isPending, error } = useGroupRequestsQuery({ limit: 20 });
+  const groupRequests = data?.items ?? [];
 
   const isGroupsAuthError =
     isGroupsError &&
@@ -72,9 +73,6 @@ export default function GroupPage() {
     return () => observer.disconnect();
   }, [hasNextPage, isGroupsFetching, isFetchNextPageError, fetchNextPage]);
 
-  if (isPending) return <div>로딩중..</div>;
-  if (error) return <div>err..</div>;
-
   const handleReject = (id: number) => {
     // 요청 거절 API 연동
     console.log('요청 거절', id);
@@ -92,9 +90,20 @@ export default function GroupPage() {
 
   return (
     <div className="mx-auto flex flex-col gap-8 px-5 py-6">
-      {data.items.length > 0 && (
+      {isPending && (
+        <p className="text-text-secondary text-sm">
+          그룹 요청을 불러오는 중입니다...
+        </p>
+      )}
+      {error && (
+        <p className="text-sm text-red-500" role="alert">
+          그룹 요청을 불러오지 못했습니다.
+        </p>
+      )}
+
+      {groupRequests.length > 0 && (
         <div className="flex flex-col gap-3">
-          {data.items.map((request) => (
+          {groupRequests.map((request) => (
             <div
               key={request.id}
               className="bg-bg-card flex items-center gap-3 rounded-2xl p-4"

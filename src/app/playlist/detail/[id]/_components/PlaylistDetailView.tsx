@@ -176,7 +176,7 @@ export default function PlaylistDetailView({
       ) : (
         <Button
           className="w-full"
-          disabled={isRequesting}
+          isDisabled={isRequesting}
           onClick={() => createGroupRequest(playlist?.id)}
         >
           그룹생성 요청

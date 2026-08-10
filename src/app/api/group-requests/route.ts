@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { type NextRequest } from 'next/server';
 
 import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
