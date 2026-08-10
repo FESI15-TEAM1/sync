@@ -66,6 +66,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     title: item.title,
     trackCount: item.trackCount,
     artist: item.owner.nickname,
+    image: item.image,
   }));
 
   // 내가 그룹에 추가할 수 있는 플레이리스트(내 플레이리스트 중 아직 추가되지 않은 것)
@@ -86,6 +87,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
       title: item.title,
       trackCount: item.trackCount,
       artist: currentUser?.nickname ?? '',
+      image: item.image,
     }));
 
   const isPlaylistsLoading =
@@ -253,6 +255,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
             {playlists.map((playlist) => (
               <PlaylistCard
                 key={playlist.id}
+                img={playlist.image}
                 title={playlist.title}
                 trackCount={playlist.trackCount}
               />
