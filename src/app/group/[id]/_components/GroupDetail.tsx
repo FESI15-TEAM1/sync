@@ -47,6 +47,10 @@ export default function GroupDetail({
   availablePlaylists: initialAvailablePlaylists,
 }: GroupDetailProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const currentUser = useUserStore((state) => state.user);
+
+  const isLeader = currentUser?.id === group.publicGroupOwner.userId;
 
   const [isEditPlaylistsOpen, setIsEditPlaylistsOpen] = useState(false);
   const [isLeaveGroupOpen, setIsLeaveGroupOpen] = useState(false);
@@ -119,16 +123,51 @@ export default function GroupDetail({
     savePlaylists(nextPlaylists);
   };
 
+  const leaveGroupMutation = useMutation({
+    mutationFn: () => {
+      if (!currentUser) throw new Error('로그인이 필요합니다.');
+      return leaveGroup(groupId, currentUser.id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      setIsLeaveGroupOpen(false);
+      router.push('/group');
+    },
+    onError: (error) => {
+      if (error instanceof APIError) {
+        console.error(error.message);
+        alert(error.message);
+        return;
+      }
+
+      console.error(error);
+      alert('그룹 탈퇴 중 오류가 발생했습니다.');
+    },
+  });
+
   const handleConfirmLeave = () => {
-    console.log('Leave group', groupId);
-    setIsLeaveGroupOpen(false);
+    if (!currentUser) return;
+    leaveGroupMutation.mutate();
   };
 
   return (
     <>
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-5 py-6">
         <div className="flex items-start gap-4">
-          <div className="bg-input size-20 shrink-0 rounded-2xl" aria-hidden />
+          {groupInfo.coverImage ? (
+            <Image
+              src={groupInfo.coverImage}
+              alt={groupInfo.name}
+              width={80}
+              height={80}
+              className="size-20 shrink-0 rounded-2xl object-cover"
+            />
+          ) : (
+            <div
+              className="bg-input size-20 shrink-0 rounded-2xl"
+              aria-hidden
+            />
+          )}
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <h1 className="text-text-primary text-xl font-bold">
@@ -136,7 +175,7 @@ export default function GroupDetail({
               </h1>
               {/* 케밥 메뉴 */}
               <KebabModal>
-                {isLeader || !isJoined ? (
+                {isLeader ? (
                   <>
                     <KebabModal.Item onClick={handleEditGroupInfo}>
                       그룹 정보 수정
@@ -153,12 +192,13 @@ export default function GroupDetail({
               </KebabModal>
             </div>
             <p className="text-text-secondary mt-1 text-sm">
-              멤버 {MOCK_GROUP_META.memberCount}명 · 플레이리스트{' '}
-              {playlists.length}개
+              멤버 {group.memberCount}명 · 플레이리스트 {group.playlistCount}개
             </p>
-            <p className="text-text-secondary mt-0.5 text-sm">
-              초대코드 {MOCK_GROUP_META.inviteCode}
-            </p>
+            {group.inviteCode && (
+              <p className="text-text-secondary mt-0.5 text-sm">
+                초대코드 {group.inviteCode}
+              </p>
+            )}
           </div>
         </div>
 

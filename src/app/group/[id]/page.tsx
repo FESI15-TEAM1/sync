@@ -11,24 +11,13 @@ import type { MyProfile } from '@/services/user/user.types';
 
 import GroupDetail from './_components/GroupDetail';
 import type { EditablePlaylist } from './_components/PlaylistEditModal';
+import { notFound, redirect } from 'next/navigation';
 
-// TODO: 실제 API 연동 시 로그인 세션(쿠키/토큰)과 groupId로 서버에서 멤버십을
-// 조회하는 호출로 교체한다. isLeader/isJoined는 클라이언트가 보낸 값(쿼리 등)을
-// 절대 신뢰하지 말고, 매 요청마다 서버에서 재검증해야 한다.
-async function getViewerMembership(
-  groupId: number,
-  devOverride?: { role?: string; joined?: string },
-) {
-  if (process.env.NODE_ENV !== 'production' && devOverride) {
-    return {
-      isLeader: devOverride.role === 'leader',
-      isJoined: devOverride.joined !== 'false',
-    };
-  }
+import { APIError } from '@/lib/http/error';
+import { serverFetch } from '@/lib/http/server-fetch';
+import type { GroupDetailResponse } from '@/services/group/group.types';
 
-  // mock: 실제로는 그룹 상세 조회 응답에서 파생되어야 한다.
-  return { isLeader: false, isJoined: true };
-}
+import GroupDetail from './_components/GroupDetail';
 
 // 스펙상 한 페이지 최대 개수. 커서로 끝까지 모아 전체 목록을 확보한다.
 const PLAYLIST_PAGE_SIZE = '50';
@@ -86,19 +75,35 @@ async function getAllMyPlaylists(userId: number) {
 
 export default async function GroupDetailPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ role?: string; joined?: string }>;
 }) {
   const { id } = await params;
   const groupId = Number(id);
-  const devOverride = await searchParams;
 
-  const { isLeader, isJoined } = await getViewerMembership(
-    groupId,
-    devOverride,
-  );
+  if (!Number.isInteger(groupId)) {
+    notFound();
+  }
+
+  let group: GroupDetailResponse;
+  try {
+    group = await serverFetch<GroupDetailResponse>(`/groups/${groupId}`, {
+      method: 'GET',
+    });
+  } catch (error) {
+    if (error instanceof APIError) {
+      if (error.status === 401) redirect('/login');
+      if (error.status === 404) notFound();
+      if (error.status === 403) {
+        return (
+          <p className="text-text-secondary mx-auto max-w-md px-5 py-10 text-center text-sm">
+            비공개 그룹입니다.
+          </p>
+        );
+      }
+    }
+    throw error;
+  }
 
   let user: MyProfile;
 
