@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { type ChangeEvent, type SubmitEvent, useState } from 'react';
@@ -32,7 +33,6 @@ export default function AddPage({
   const [groupDescription, setGroupDescription] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [selectedPlaylists, setSelectedPlaylists] = useState<number[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const trimmedName = groupName.trim();
@@ -61,54 +61,64 @@ export default function AddPage({
     );
   };
 
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
+  const { mutate: submitGroup, isPending: isSubmitting } = useMutation({
+    mutationFn: async () => {
+      try {
+        let image: string | undefined;
+
+        if (coverFile) {
+          const { uploadUrl, fileUrl } = await requestUploadUrl({
+            domain: 'group',
+            contentType: coverFile.type as UploadUrlRequest['contentType'],
+          });
+
+          const putResponse = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': coverFile.type },
+            body: coverFile,
+          });
+          if (!putResponse.ok) {
+            throw new Error('이미지 업로드에 실패했습니다.');
+          }
+
+          image = fileUrl;
+        }
+
+        return await createGroup({
+          title: trimmedName,
+          description: trimmedDescription,
+          image,
+          isPublic,
+          playlistIds: selectedPlaylists,
+        });
+      } catch (error) {
+        if (error instanceof APIError) throw error;
+        throw new Error(SUBMIT_ERROR_MESSAGE);
+      }
+    },
+    onSuccess: ({ id }) => {
+      router.push(`/group/${id}`);
+    },
+    onError: (error) => {
+      setErrorMessage(
+        error instanceof APIError ? error.message : SUBMIT_ERROR_MESSAGE,
+      );
+    },
+  });
+
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (
+      isSubmitting ||
       !trimmedName ||
       !trimmedDescription ||
       selectedPlaylists.length === 0
     )
       return;
 
-    setIsSubmitting(true);
     setErrorMessage(null);
-
-    try {
-      let image: string | undefined;
-
-      if (coverFile) {
-        const { uploadUrl, fileUrl } = await requestUploadUrl({
-          domain: 'group',
-          contentType: coverFile.type as UploadUrlRequest['contentType'],
-        });
-
-        const putResponse = await fetch(uploadUrl, {
-          method: 'PUT',
-          headers: { 'Content-Type': coverFile.type },
-          body: coverFile,
-        });
-        if (!putResponse.ok) {
-          throw new Error('이미지 업로드에 실패했습니다.');
-        }
-
-        image = fileUrl;
-      }
-
-      const { id } = await createGroup({
-        title: trimmedName,
-        description: trimmedDescription,
-        image,
-        isPublic,
-        playlistIds: selectedPlaylists,
-      });
-      router.push(`/group/${id}`);
-    } catch (error) {
-      setIsSubmitting(false);
-      setErrorMessage(
-        error instanceof APIError ? error.message : SUBMIT_ERROR_MESSAGE,
-      );
-    }
+    submitGroup();
   };
 
   return (

@@ -135,7 +135,7 @@ export default function EditPage({
           isPublic,
           ...(image ? { image } : {}),
         }),
-        editGroupPlaylists(groupId, {
+        editGroupPlaylists(Number(groupId), {
           playlistIds: [...selectedPlaylists, ...lockedPlaylistIds],
         }),
       ]);

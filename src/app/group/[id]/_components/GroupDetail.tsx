@@ -9,7 +9,7 @@ import KebabModal from '@/components/domain/KebabModal';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import { APIError } from '@/lib/http/error';
 import { useUserStore } from '@/providers/user-store-provider';
-import { leaveGroup } from '@/services/group/group.api';
+import { editGroupPlaylists, leaveGroup } from '@/services/group/group.api';
 import type { GroupDetailResponse } from '@/services/group/group.types';
 
 import GroupLeaveModal from './GroupLeaveModal';
@@ -57,7 +57,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   const queryClient = useQueryClient();
   const currentUser = useUserStore((state) => state.user);
 
-  const isLeader = currentUser?.id === group.publicGroupOwner.userId;
+  const isLeader = currentUser?.id === group.owner.userId;
 
   const [isEditPlaylistsOpen, setIsEditPlaylistsOpen] = useState(false);
   const [isLeaveGroupOpen, setIsLeaveGroupOpen] = useState(false);
@@ -73,6 +73,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   const [availablePlaylists, setAvailablePlaylists] = useState<
     EditablePlaylist[]
   >(MOCK_AVAILABLE_PLAYLISTS);
+  const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
 
   //그룹 정보 수정
   const handleEditGroupInfo = () => {
@@ -80,6 +81,9 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   };
   //플레이리스트 편집
   const handleEditPlaylists = () => {
+    if (isSavingPlaylists) return;
+
+    setSaveErrorMessage(null);
     setIsEditPlaylistsOpen(true);
   };
 
@@ -88,16 +92,40 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     setIsLeaveGroupOpen(true);
   };
 
-  const handleSavePlaylists = (nextPlaylists: EditablePlaylist[]) => {
-    const nextIds = new Set(nextPlaylists.map((item) => item.id));
-    const removed = playlists.filter((item) => !nextIds.has(item.id));
-    const keptAvailable = availablePlaylists.filter(
-      (item) => !nextIds.has(item.id),
-    );
+  const { mutate: savePlaylists, isPending: isSavingPlaylists } = useMutation({
+    mutationFn: (nextPlaylists: EditablePlaylist[]) =>
+      editGroupPlaylists(groupId, {
+        playlistIds: nextPlaylists.map((item) => item.id),
+      }),
+    onSuccess: (updated) => {
+      const updatedIds = new Set(updated.map((item) => item.id));
+      const keptAvailable = availablePlaylists.filter(
+        (item) => !updatedIds.has(item.id),
+      );
+      const removed = playlists.filter((item) => !updatedIds.has(item.id));
 
-    setPlaylists(nextPlaylists);
-    setAvailablePlaylists([...keptAvailable, ...removed]);
-    setIsEditPlaylistsOpen(false);
+      setPlaylists(
+        updated.map((item) => ({
+          id: item.id,
+          title: item.title,
+          trackCount: item.trackCount,
+          artist: item.owner.nickname,
+        })),
+      );
+      setAvailablePlaylists([...keptAvailable, ...removed]);
+      setIsEditPlaylistsOpen(false);
+    },
+    onError: (error) => {
+      setSaveErrorMessage(
+        error instanceof APIError
+          ? error.message
+          : '플레이리스트 저장에 실패했습니다. 잠시 후 다시 시도해주세요.',
+      );
+    },
+  });
+
+  const handleSavePlaylists = (nextPlaylists: EditablePlaylist[]) => {
+    savePlaylists(nextPlaylists);
   };
 
   const leaveGroupMutation = useMutation({
@@ -178,6 +206,12 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
             )}
           </div>
         </div>
+
+        {saveErrorMessage && (
+          <p role="alert" className="text-sm text-red-500">
+            {saveErrorMessage}
+          </p>
+        )}
 
         {/* 플레이리스트 편집 모달 */}
         {isEditPlaylistsOpen && (
