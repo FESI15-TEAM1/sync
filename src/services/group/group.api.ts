@@ -40,6 +40,7 @@ export function requestJoinGroup(groupId: number) {
       sourceType: 'group',
       sourceId: groupId,
     } satisfies CreateGroupJoinRequestPayload,
+    //이 값이 이 타입의 조건을 만족하는지 검사하되, 값의 구체적인 타입 정보는 유지해줘.
   });
 }
 
@@ -48,6 +49,13 @@ export function updateGroup(groupId: string, data: UpdateGroupRequest) {
   return clientFetch<GroupDetailResponse>(`/group/${groupId}`, {
     method: 'PATCH',
     body: data,
+  });
+}
+
+// 그룹 삭제(그룹장만 가능)
+export function deleteGroup(groupId: number) {
+  return clientFetch<null>(`/group/${groupId}`, {
+    method: 'DELETE',
   });
 }
 
