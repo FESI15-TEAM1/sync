@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { useLikedPlaylistsQuery } from '@/app/playlist/detail/[id]/hooks/useLikedQuery';
 import BackButton from '@/components/common/BackButton';
 import PlaylistCardList from '@/components/domain/playlists/PlaylistCardList';
 import IconButton from '@/components/IconButton';
@@ -28,8 +29,13 @@ export default function PlaylistView({
   const [tab, setTab] = useState<Tab>('mine');
   const router = useRouter();
 
+  const { data: likedPlaylists } = useLikedPlaylistsQuery(
+    { items: likedData, nextCursor: null },
+    isOwner,
+  );
+
   const activeTab = isOwner ? tab : 'mine';
-  const items = activeTab === 'mine' ? myData : likedData;
+  const items = activeTab === 'mine' ? myData : likedPlaylists.items;
 
   return (
     <div className="text-text-primary relative flex flex-col items-center justify-center p-2">
