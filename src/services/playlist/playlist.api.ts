@@ -4,6 +4,7 @@ import type {
   CreatePlaylistRequest,
   UpdatePlaylistRequest,
 } from '@/services/playlist/playlist';
+import type { LikePlaylistResponse } from '@/services/playlist/playlistCard.type';
 
 export const postPlaylist = (form: CreatePlaylistRequest) => {
   return clientFetch('/playlists', {
@@ -52,4 +53,17 @@ export const deleteComment = (
   return clientFetch(`/playlists/${id}/comments/${commentId}`, {
     method: 'DELETE',
   });
+};
+export const putLiked = (playlistId: string) => {
+  return clientFetch(`/playlists/${playlistId}/like`, {
+    method: 'PUT',
+  });
+};
+export const deleteLiked = (playlistId: string) => {
+  return clientFetch(`/playlists/${playlistId}/like`, {
+    method: 'DELETE',
+  });
+};
+export const getLikedPlaylist = () => {
+  return clientFetch<LikePlaylistResponse>('/users/me/liked-playlists');
 };
