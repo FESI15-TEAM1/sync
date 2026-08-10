@@ -21,6 +21,7 @@ export default function LikedButton({
       disabled={disabled}
       whileTap={disabled ? undefined : { scale: 0.8 }}
       className={`w-0 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+      aria-label={isLiked ? '좋아요 취소 ' : '좋아요'}
     >
       <motion.span
         key={isLiked ? 'liked' : 'unliked'}
