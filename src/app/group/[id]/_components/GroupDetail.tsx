@@ -73,9 +73,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   const [availablePlaylists, setAvailablePlaylists] = useState<
     EditablePlaylist[]
   >(MOCK_AVAILABLE_PLAYLISTS);
-  const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(
-    null,
-  );
+  const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
 
   //그룹 정보 수정
   const handleEditGroupInfo = () => {
@@ -94,41 +92,37 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     setIsLeaveGroupOpen(true);
   };
 
-  const { mutate: savePlaylists, isPending: isSavingPlaylists } = useMutation(
-    {
-      mutationFn: (nextPlaylists: EditablePlaylist[]) =>
-        editGroupPlaylists(groupId, {
-          playlistIds: nextPlaylists.map((item) => item.id),
-        }),
-      onSuccess: (updated) => {
-        const updatedIds = new Set(updated.map((item) => item.id));
-        const keptAvailable = availablePlaylists.filter(
-          (item) => !updatedIds.has(item.id),
-        );
-        const removed = playlists.filter(
-          (item) => !updatedIds.has(item.id),
-        );
+  const { mutate: savePlaylists, isPending: isSavingPlaylists } = useMutation({
+    mutationFn: (nextPlaylists: EditablePlaylist[]) =>
+      editGroupPlaylists(groupId, {
+        playlistIds: nextPlaylists.map((item) => item.id),
+      }),
+    onSuccess: (updated) => {
+      const updatedIds = new Set(updated.map((item) => item.id));
+      const keptAvailable = availablePlaylists.filter(
+        (item) => !updatedIds.has(item.id),
+      );
+      const removed = playlists.filter((item) => !updatedIds.has(item.id));
 
-        setPlaylists(
-          updated.map((item) => ({
-            id: item.id,
-            title: item.title,
-            trackCount: item.trackCount,
-            artist: item.owner.nickname,
-          })),
-        );
-        setAvailablePlaylists([...keptAvailable, ...removed]);
-        setIsEditPlaylistsOpen(false);
-      },
-      onError: (error) => {
-        setSaveErrorMessage(
-          error instanceof APIError
-            ? error.message
-            : '플레이리스트 저장에 실패했습니다. 잠시 후 다시 시도해주세요.',
-        );
-      },
+      setPlaylists(
+        updated.map((item) => ({
+          id: item.id,
+          title: item.title,
+          trackCount: item.trackCount,
+          artist: item.owner.nickname,
+        })),
+      );
+      setAvailablePlaylists([...keptAvailable, ...removed]);
+      setIsEditPlaylistsOpen(false);
     },
-  );
+    onError: (error) => {
+      setSaveErrorMessage(
+        error instanceof APIError
+          ? error.message
+          : '플레이리스트 저장에 실패했습니다. 잠시 후 다시 시도해주세요.',
+      );
+    },
+  });
 
   const handleSavePlaylists = (nextPlaylists: EditablePlaylist[]) => {
     savePlaylists(nextPlaylists);
