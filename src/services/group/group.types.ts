@@ -149,3 +149,20 @@ export interface EditGroupPlaylistsRequest {
 }
 
 export type EditGroupPlaylistsResponse = GroupPlaylistResponse[];
+
+export type GroupRequestStatus = 'pending' | 'accepted' | 'rejected';
+
+// POST /group-requests — 공개 그룹 참여 요청(승인제, sourceType=group)
+export interface CreateGroupJoinRequestPayload {
+  sourceType: 'group';
+  sourceId: number;
+}
+
+export interface GroupRequestResponse {
+  id: number;
+  sourceType: 'group' | 'playlist';
+  sourceId: number;
+  status: GroupRequestStatus;
+  requester: GroupOwnerSummary;
+  createdAt: string;
+}

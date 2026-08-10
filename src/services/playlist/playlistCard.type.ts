@@ -8,6 +8,11 @@ export interface MyplaylistResponse {
   nextCursor: string | null;
 }
 
+export interface GetUserPlaylistsParams {
+  cursor?: string;
+  limit?: number;
+}
+
 export interface Playlist {
   id: number;
   title: string;
