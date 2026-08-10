@@ -21,3 +21,35 @@ export const updatePlaylist = (
     body: form,
   });
 };
+export const deletePlaylist = (id: number | string) => {
+  return clientFetch(`/playlists/${id}`, {
+    method: 'DELETE',
+  });
+};
+export const postComments = (
+  id: number | string,
+  content: { content: string },
+) => {
+  return clientFetch(`/playlists/${id}/comments`, {
+    method: 'POST',
+    body: content,
+  });
+};
+export const updateComment = (
+  id: number | string,
+  commentId: number | string,
+  content: { content: string },
+) => {
+  return clientFetch(`/playlists/${id}/comments/${commentId}`, {
+    method: 'PATCH',
+    body: content,
+  });
+};
+export const deleteComment = (
+  id: number | string,
+  commentId: number | string,
+) => {
+  return clientFetch(`/playlists/${id}/comments/${commentId}`, {
+    method: 'DELETE',
+  });
+};

@@ -11,12 +11,29 @@ import type {
   GetGroupsResponse,
   GetPublicGroupsParams,
   GetPublicGroupsResponse,
+  GroupDetailResponse,
+  UpdateGroupRequest,
 } from './group.types';
 
 // 그룹 생성
 export function createGroup(data: CreateGroupRequest) {
   return clientFetch<CreateGroupResponse>('/group', {
     method: 'POST',
+    body: data,
+  });
+}
+
+// 그룹 탈퇴 / 강퇴
+export function leaveGroup(groupId: number, userId: number) {
+  return clientFetch<null>(`/group/${groupId}/members/${userId}`, {
+    method: 'DELETE',
+  });
+}
+
+// 그룹 수정(부분 수정, 그룹장만 가능)
+export function updateGroup(groupId: string, data: UpdateGroupRequest) {
+  return clientFetch<GroupDetailResponse>(`/group/${groupId}`, {
+    method: 'PATCH',
     body: data,
   });
 }
@@ -35,10 +52,7 @@ export function getGroups({ cursor, limit }: GetGroupsParams = {}) {
 }
 
 // 공개 그룹 목록
-export function getPublicGroups({
-  cursor,
-  limit,
-}: GetPublicGroupsParams = {}) {
+export function getPublicGroups({ cursor, limit }: GetPublicGroupsParams = {}) {
   const params: Record<string, string> = {};
 
   if (cursor) params.cursor = cursor;
