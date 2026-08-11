@@ -19,7 +19,7 @@ import type {
 
 // 그룹 생성
 export function createGroup(data: CreateGroupRequest) {
-  return clientFetch<CreateGroupResponse>('/group', {
+  return clientFetch<CreateGroupResponse>('/groups', {
     method: 'POST',
     body: data,
   });
@@ -27,7 +27,7 @@ export function createGroup(data: CreateGroupRequest) {
 
 // 그룹 탈퇴 / 강퇴
 export function leaveGroup(groupId: number, userId: number) {
-  return clientFetch<null>(`/group/${groupId}/members/${userId}`, {
+  return clientFetch<null>(`/groups/${groupId}/members/${userId}`, {
     method: 'DELETE',
   });
 }
@@ -46,7 +46,7 @@ export function requestJoinGroup(groupId: number) {
 
 // 그룹 수정(부분 수정, 그룹장만 가능)
 export function updateGroup(groupId: string, data: UpdateGroupRequest) {
-  return clientFetch<GroupDetailResponse>(`/group/${groupId}`, {
+  return clientFetch<GroupDetailResponse>(`/groups/${groupId}`, {
     method: 'PATCH',
     body: data,
   });
@@ -54,7 +54,7 @@ export function updateGroup(groupId: string, data: UpdateGroupRequest) {
 
 // 그룹 삭제(그룹장만 가능)
 export function deleteGroup(groupId: number) {
-  return clientFetch<null>(`/group/${groupId}`, {
+  return clientFetch<null>(`/groups/${groupId}`, {
     method: 'DELETE',
   });
 }
@@ -66,7 +66,7 @@ export function getGroups({ cursor, limit }: GetGroupsParams = {}) {
   if (cursor) params.cursor = cursor;
   if (limit !== undefined) params.limit = String(limit);
 
-  return clientFetch<GetGroupsResponse>('/group', {
+  return clientFetch<GetGroupsResponse>('/groups', {
     method: 'GET',
     params: Object.keys(params).length > 0 ? params : undefined,
   });

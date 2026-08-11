@@ -5,10 +5,10 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import { useProcessGroupRequest } from '@/app/group/_hooks/useProcessGroupRequest';
 import Button from '@/components/Button';
 import GroupList from '@/components/domain/group/GroupList';
 import { useGroupRequestsQuery } from '@/hooks/useGroupRequestsQuery';
-import { useProcessGroupRequest } from '@/hooks/useProcessGroupRequest';
 import { formatTimeAgo } from '@/lib/formatITimeAgo';
 import { APIError } from '@/lib/http/error';
 import { getGroups } from '@/services/group/group.api';

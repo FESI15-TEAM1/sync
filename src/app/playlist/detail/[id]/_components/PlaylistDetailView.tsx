@@ -20,8 +20,8 @@ import { usePlayerStore } from '@/providers/player-store-provider';
 import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 import { type PlaylistTrack } from '@/services/playlist/playlist';
 
-import { useCreateGroupRequest } from '../hooks/useCreateGroupRequest';
-import { useLikedMutation } from '../hooks/useLikedQuery';
+import { useCreateGroupRequest } from '../_hooks/useCreateGroupRequest';
+import { useLikedMutation } from '../_hooks/useLikedQuery';
 
 const RESTART_THRESHOLD_SECONDS = 3;
 
