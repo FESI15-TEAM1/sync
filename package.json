@@ -23,7 +23,6 @@
   "scripts": {
     "dev": "next dev",
     "dev:https": "next dev --experimental-https",
-    "dev:ws": "node scripts/mock-stomp-server.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -70,8 +69,7 @@
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5",
-    "typescript-eslint": "^8.65.0",
-    "ws": "^8.21.1"
+    "typescript-eslint": "^8.65.0"
   },
   "engines": {
     "node": ">=24"

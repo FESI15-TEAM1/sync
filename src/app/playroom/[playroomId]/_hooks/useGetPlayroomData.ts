@@ -3,13 +3,17 @@ import { useQuery } from '@tanstack/react-query';
 import { APIError } from '@/lib/http/error';
 import { getPlayroomDetail } from '@/services/playroom/playroomDetail.api';
 
+/** 참가자 입퇴장처럼 WebSocket 으로 알게 된 변화를 이 쿼리에 반영하려면 이 키를 무효화합니다. */
+export const playroomQueryKey = (playroomId: number) =>
+  ['playrooms', playroomId] as const;
+
 export function useGetPlayroomData(playroomId: number) {
   const {
     data: playroomData,
     error,
     isPending,
   } = useQuery({
-    queryKey: ['playrooms', playroomId],
+    queryKey: playroomQueryKey(playroomId),
     queryFn: () => getPlayroomDetail(playroomId),
   });
 

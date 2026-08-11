@@ -6,7 +6,8 @@ import mookImage from '@/assets/images/mook.jpg';
 export interface MemberType {
   userId: number;
   username: string;
-  userImage?: string;
+  // 프로필 이미지가 없거나 탈퇴한 유저면 null 입니다.
+  userImage?: string | null;
 }
 
 export default function MemberItem({
