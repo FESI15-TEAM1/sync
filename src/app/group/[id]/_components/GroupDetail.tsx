@@ -325,9 +325,11 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
           <div className="flex flex-row flex-wrap gap-3">
             {playlists.map((playlist) => (
               <>
-                <Link href={`/playlist/detail/${playlist.id}`}>
+                <Link
+                  href={`/playlist/detail/${playlist.id}`}
+                  key={playlist.id}
+                >
                   <PlaylistCard
-                    key={playlist.id}
                     img={playlist.image}
                     title={playlist.title}
                     trackCount={playlist.trackCount}
