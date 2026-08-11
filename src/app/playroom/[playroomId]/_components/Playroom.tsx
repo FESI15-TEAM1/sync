@@ -1,5 +1,8 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+
 import ChatMembers from '@/app/playroom/[playroomId]/_components/Chat/ChatMembers';
 import Player from '@/app/playroom/[playroomId]/_components/Player/Player';
 
@@ -8,6 +11,7 @@ import { useGetPlaylistData } from '../_hooks/useGetPlaylistData';
 import { useGetPlayroomData } from '../_hooks/useGetPlayroomData';
 import { useWSConnect } from '../_hooks/useWSConnect';
 import PlayroomHeader from './Header';
+import RoomClosedModal from './RoomClosedModal';
 
 export type ChatMessage = {
   id: number;
@@ -25,7 +29,10 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
     playback,
     playbackControl,
     memberJoinedCount,
+    isRoomClosed,
   } = useWSConnect(playroomId);
+  const router = useRouter();
+  const queryClient = useQueryClient();
   // 접속 전 대화는 WebSocket 으로 오지 않으므로, 지난 채팅 기록과 합쳐서 보여줍니다.
   const { messages, errorMessage: chatHistoryErrorMessage } = useChatMessages(
     playroomId,
@@ -36,6 +43,18 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
     useGetPlayroomData(playroomId);
 
   const isHost = playroomData?.isHost ?? false;
+
+  // 방장은 종료 요청이 성공하면 스스로 이동하므로, 안내는 참가자에게만 보여줍니다.
+  const isClosedNoticeOpen = isRoomClosed && !isHost;
+
+  const handleClosedNoticeConfirm = () => {
+    // 종료된 방은 더 이상 조회할 수 없으므로 캐시에서 지우고 목록만 갱신합니다.
+    queryClient.removeQueries({ queryKey: ['playrooms', playroomId] });
+    queryClient.invalidateQueries({ queryKey: ['playrooms'], exact: true });
+
+    router.replace('/stage');
+    router.refresh();
+  };
 
   // 플레이리스트는 방장만 받아옵니다. 참가자는 방장의 플레이리스트에 접근하지 못할 수 있고,
   // 재생에 필요한 곡 정보는 방 상세의 currentTrack 으로 충분하기 때문입니다.
@@ -94,6 +113,11 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
           />
         </div>
       )}
+
+      <RoomClosedModal
+        isOpen={isClosedNoticeOpen}
+        onConfirm={handleClosedNoticeConfirm}
+      />
     </div>
   );
 }
