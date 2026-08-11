@@ -20,13 +20,10 @@ export async function GET(req: NextRequest) {
   if (limit) params.limit = limit;
 
   try {
-    const data = await serverFetch<GetPublicGroupsResponse>(
-      '/groups/public',
-      {
-        method: 'GET',
-        params,
-      },
-    );
+    const data = await serverFetch<GetPublicGroupsResponse>('/groups/public', {
+      method: 'GET',
+      params,
+    });
 
     return Response.json(data, { status: 200 });
   } catch (error) {
