@@ -21,6 +21,7 @@ export function useGetPlayroomList() {
     isFetching,
     isFetchingNextPage,
     isFetchNextPageError,
+    refetch,
   } = useInfiniteQuery({
     queryKey: ['playrooms'],
     queryFn: ({ pageParam }) =>
@@ -59,8 +60,11 @@ export function useGetPlayroomList() {
     isPending,
     fetchNextPage,
     hasNextPage,
+    // 첫 조회 실패 화면에서 다시 시도하는 동안 버튼을 잠그기 위해 함께 노출합니다.
+    isFetching,
     isFetchingNextPage,
     isFetchNextPageError,
+    refetch,
     loadMoreRef,
   };
 }

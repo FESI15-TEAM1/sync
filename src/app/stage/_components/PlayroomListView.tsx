@@ -13,26 +13,41 @@ export default function PlayroomListView() {
     isPending,
     fetchNextPage,
     hasNextPage,
+    isFetching,
     isFetchingNextPage,
     isFetchNextPageError,
+    refetch,
     loadMoreRef,
   } = useGetPlayroomList();
 
   if (isPending) {
     return (
-      <StatusMessage className="text-text-secondary">
-        현재 라이브 중인 플레이룸을 불러오는 중입니다!
-      </StatusMessage>
+      <StatusContainer>
+        <p className="text-text-secondary">
+          현재 라이브 중인 플레이룸을 불러오는 중입니다!
+        </p>
+      </StatusContainer>
     );
   }
 
   // 첫 페이지부터 실패해 보여줄 목록이 없는 경우입니다.
+  // 자동 재시도를 두지 않으므로 여기서 직접 다시 시도할 수단을 제공합니다.
   // 다음 페이지 실패는 이미 받은 목록을 유지한 채 하단에서 따로 안내합니다.
   if (!data) {
     return (
-      <StatusMessage className="text-red-500">
-        플레이룸을 불러오는데 실패하였습니다.
-      </StatusMessage>
+      <StatusContainer>
+        <p className="text-red-500" role="alert">
+          플레이룸을 불러오는데 실패하였습니다.
+        </p>
+        <Button
+          size="sm"
+          variant="outline"
+          isDisabled={isFetching}
+          onClick={() => refetch()}
+        >
+          {isFetching ? '불러오는 중...' : '다시 시도'}
+        </Button>
+      </StatusContainer>
     );
   }
 
@@ -40,9 +55,11 @@ export default function PlayroomListView() {
 
   if (playrooms.length === 0) {
     return (
-      <StatusMessage className="text-text-primary">
-        현재 라이브 중인 플레이룸이 존재하지 않습니다.
-      </StatusMessage>
+      <StatusContainer>
+        <p className="text-text-primary">
+          현재 라이브 중인 플레이룸이 존재하지 않습니다.
+        </p>
+      </StatusContainer>
     );
   }
 
@@ -91,16 +108,10 @@ function dedupeById(playrooms: PlayroomListItemResponse[]) {
   );
 }
 
-function StatusMessage({
-  className,
-  children,
-}: {
-  className: string;
-  children: ReactNode;
-}) {
+function StatusContainer({ children }: { children: ReactNode }) {
   return (
-    <div className="flex h-(--main-content-full-height) items-center justify-center">
-      <p className={className}>{children}</p>
+    <div className="flex h-(--main-content-full-height) flex-col items-center justify-center gap-3">
+      {children}
     </div>
   );
 }
