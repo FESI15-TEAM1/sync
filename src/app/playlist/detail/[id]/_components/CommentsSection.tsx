@@ -8,7 +8,7 @@ import {
   useCommentsQuery,
   useDeleteCommentMutation,
   useEditCommentMutation,
-} from '@/app/playlist/detail/[id]/hooks/useCommentsQuery';
+} from '@/app/playlist/detail/[id]/_hooks/useCommentsQuery';
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import Modal from '@/components/Modal';

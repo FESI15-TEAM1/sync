@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { useLikedPlaylistsQuery } from '@/app/playlist/detail/[id]/hooks/useLikedQuery';
+import { useLikedPlaylistsQuery } from '@/app/playlist/detail/[id]/_hooks/useLikedQuery';
 import BackButton from '@/components/common/BackButton';
 import PlaylistCardList from '@/components/domain/playlists/PlaylistCardList';
 import IconButton from '@/components/IconButton';

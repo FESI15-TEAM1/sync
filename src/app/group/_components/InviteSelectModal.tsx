@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { useGroupsQuery } from '@/app/group/hooks/useGroupsQuery';
+import { useGroupsQuery } from '@/app/group/_hooks/useGroupsQuery';
 import Button from '@/components/Button';
 import GroupListItem from '@/components/domain/group/GroupListItem';
 import Modal from '@/components/Modal';

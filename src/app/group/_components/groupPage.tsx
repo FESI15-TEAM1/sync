@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import { useProcessGroupRequest } from '@/app/group/hooks/useProcessGroupRequest';
+import { useProcessGroupRequest } from '@/app/group/_hooks/useProcessGroupRequest';
 import Button from '@/components/Button';
 import GroupList from '@/components/domain/group/GroupList';
 import { useGroupRequestsQuery } from '@/hooks/useGroupRequestsQuery';
