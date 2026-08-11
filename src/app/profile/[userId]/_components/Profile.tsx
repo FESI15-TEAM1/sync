@@ -13,34 +13,11 @@ import { logout } from '@/services/auth/auth.api';
 import { withdraw } from '@/services/user/user.api';
 import type { MyProfile, UserProfile } from '@/services/user/user.types';
 
+import { useNotificationRequestQuery } from '../_hooks/useNotificationsQuery';
+import NotificationItem from './NotificationItem';
+
 type ProfileProps =
   { isOwn: true; profile: MyProfile } | { isOwn: false; profile: UserProfile };
-
-type NotificationItem = {
-  id: number;
-  message: string;
-  meta: string;
-  isUnread?: boolean;
-};
-
-const MOCK_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: 1,
-    message: '도윤님이 "~" 플레이리스트 에 참여요청을 했습니다',
-    meta: '게시글에서 참여 신청 · 3분 전',
-    isUnread: true,
-  },
-  {
-    id: 2,
-    message: '서아님이 참여를 요청했어요',
-    meta: '초대 링크로 참여 신청 · 1시간 전',
-  },
-  {
-    id: 3,
-    message: '예준님이 참여를 요청했어요',
-    meta: '게시글에서 참여 신청 · 어제',
-  },
-];
 
 export default function Profile(props: ProfileProps) {
   const router = useRouter();
@@ -51,6 +28,8 @@ export default function Profile(props: ProfileProps) {
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [logoutError, setLogoutError] = useState('');
   const [withdrawError, setWithdrawError] = useState('');
+
+  const { data, isPending, error } = useNotificationRequestQuery();
 
   const handleEditProfile = () => {
     router.push(`/profile/${profile.id}/edit`);
@@ -229,33 +208,12 @@ export default function Profile(props: ProfileProps) {
             <h2 className="text-text-primary font-bold">알림</h2>
 
             <ul className="bg-bg-card divide-border flex flex-col divide-y overflow-hidden rounded-xl">
-              {MOCK_NOTIFICATIONS.map((notification) => (
-                <li
-                  key={notification.id}
-                  className="flex items-start gap-3 px-4 py-3"
-                >
-                  <div
-                    className="bg-input size-10 shrink-0 rounded-full"
-                    aria-hidden
-                  />
-
-                  <div className="min-w-0 flex-1">
-                    <p className="text-text-primary text-sm leading-snug font-bold">
-                      {notification.message}
-                    </p>
-                    <p className="text-text-secondary mt-1 text-xs">
-                      {notification.meta}
-                    </p>
-                  </div>
-
-                  {notification.isUnread && (
-                    <span
-                      aria-hidden
-                      className="mt-1 size-2 shrink-0 rounded-full bg-green-500"
-                    />
-                  )}
-                </li>
-              ))}
+              {data !== undefined &&
+                [...data.items]
+                  .sort((a, b) => Number(a.isRead) - Number(b.isRead))
+                  .map((item) => (
+                    <NotificationItem key={item.id} item={item} />
+                  ))}
             </ul>
           </div>
         ) : null}
