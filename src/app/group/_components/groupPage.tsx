@@ -8,11 +8,13 @@ import { useEffect, useRef, useState } from 'react';
 import Button from '@/components/Button';
 import GroupList from '@/components/domain/group/GroupList';
 import { useGroupRequestsQuery } from '@/hooks/useGroupRequestsQuery';
+import { useProcessGroupRequest } from '@/hooks/useProcessGroupRequest';
 import { formatTimeAgo } from '@/lib/formatITimeAgo';
 import { APIError } from '@/lib/http/error';
 import { getGroups } from '@/services/group/group.api';
 
 import InviteSelectModal from './InviteSelectModal';
+import PlaylistRequestName from './PlaylistRequestName';
 
 const GROUP_PAGE_SIZE = 10;
 // 바닥에 닿기 전에 미리 다음 페이지를 불러와 스크롤이 끊기지 않게 합니다.
@@ -47,7 +49,11 @@ export default function GroupPage() {
   const groups = groupsData?.pages.flatMap((page) => page.items) ?? [];
 
   const { data, isPending, error } = useGroupRequestsQuery({ limit: 20 });
-  const groupRequests = data?.items ?? [];
+  const groupRequests = (data?.items ?? []).filter(
+    (request) => request.status === 'pending',
+  );
+
+  const { mutate: processGroupRequest } = useProcessGroupRequest();
 
   const isGroupsAuthError =
     isGroupsError &&
@@ -80,18 +86,18 @@ export default function GroupPage() {
   }, [hasNextPage, isGroupsFetching, isFetchNextPageError, fetchNextPage]);
 
   const handleReject = (id: number) => {
-    // 요청 거절 API 연동
-    console.log('요청 거절', id);
+    processGroupRequest({ requestId: id, payload: { status: 'rejected' } });
   };
 
   const handleAccept = (id: number) => {
-    // 요청 수락 API 연동
-    console.log('요청 수락', id);
+    processGroupRequest({ requestId: id, payload: { status: 'accepted' } });
   };
 
   const handleGroupSelect = (requestId: number, groupId: number) => {
-    // 그룹 선택 확정(초대) API 연동
-    console.log('그룹 선택', requestId, groupId);
+    processGroupRequest({
+      requestId,
+      payload: { status: 'accepted', targetGroupId: groupId },
+    });
   };
 
   const handleJoinByCode = () => {
@@ -139,9 +145,14 @@ export default function GroupPage() {
                     {request.requester.nickname}
                   </span>
                   님이{' '}
-                  {request.sourceType === 'playlist'
-                    ? '플레이리스트에서 그룹 생성 요청을 했습니다.'
-                    : '그룹에 참여 요청을 했습니다.'}
+                  {request.sourceType === 'playlist' ? (
+                    <>
+                      <PlaylistRequestName playlistId={request.sourceId} />{' '}
+                      플레이리스트에서 그룹 생성 요청을 했습니다.
+                    </>
+                  ) : (
+                    '그룹에 참여 요청을 했습니다.'
+                  )}
                 </p>
                 <p className="text-text-secondary mt-1 text-xs">
                   {formatTimeAgo(request.createdAt)}
@@ -256,9 +267,7 @@ export default function GroupPage() {
         <InviteSelectModal
           isOpen
           onClose={() => setSelectedRequestId(null)}
-          onSelect={(groupId) =>
-            handleGroupSelect(selectedRequestId, groupId)
-          }
+          onSelect={(groupId) => handleGroupSelect(selectedRequestId, groupId)}
         />
       )}
     </div>

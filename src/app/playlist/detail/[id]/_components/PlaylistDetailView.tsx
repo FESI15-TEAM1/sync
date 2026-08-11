@@ -55,8 +55,15 @@ export default function PlaylistDetailView({
     setCurrentTime(0);
     setDuration(0);
   }
-  const { mutate: createGroupRequest, isPending: isRequesting } =
-    useCreateGroupRequest();
+  const {
+    mutate: createGroupRequest,
+    isPending: isRequesting,
+    isSuccess: isRequestSuccess,
+    variables: requestedPlaylistId,
+  } = useCreateGroupRequest();
+
+  const isRequestedThisPlaylist =
+    isRequestSuccess && requestedPlaylistId === playlist?.id;
 
   const [lastTrack, setLastTrack] = useState(currentTrack);
   if (currentTrack && currentTrack !== lastTrack) {
@@ -176,10 +183,14 @@ export default function PlaylistDetailView({
       ) : (
         <Button
           className="w-full"
-          isDisabled={isRequesting}
-          onClick={() => createGroupRequest(playlist?.id)}
+          isDisabled={isRequesting || isRequestedThisPlaylist}
+          onClick={() => createGroupRequest(playlist.id)}
         >
-          그룹생성 요청
+          {isRequesting
+            ? '그룹생성 요청중..'
+            : isRequestedThisPlaylist
+              ? '요청됨'
+              : '그룹생성 요청'}
         </Button>
       )}
       <div className="bg-bg-card rounded-xl p-4">

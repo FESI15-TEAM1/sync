@@ -10,6 +10,12 @@ import type {
   MyplaylistResponse,
 } from '@/services/playlist/playlistCard.type';
 
+export const getPlaylistDetail = (id: number | string) => {
+  return clientFetch<PlaylistDetail>(`/playlists/${id}`, {
+    method: 'GET',
+  });
+};
+
 export const postPlaylist = (form: CreatePlaylistRequest) => {
   return clientFetch('/playlists', {
     method: 'POST',
