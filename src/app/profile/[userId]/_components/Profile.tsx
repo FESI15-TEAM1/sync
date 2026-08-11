@@ -13,7 +13,10 @@ import { logout } from '@/services/auth/auth.api';
 import { withdraw } from '@/services/user/user.api';
 import type { MyProfile, UserProfile } from '@/services/user/user.types';
 
-import { useNotificationRequestQuery } from '../_hooks/useNotificationsQuery';
+import {
+  useMarkNotificationRealAll,
+  useNotificationRequestQuery,
+} from '../_hooks/useNotificationsQuery';
 import NotificationItem from './NotificationItem';
 
 type ProfileProps =
@@ -30,6 +33,7 @@ export default function Profile(props: ProfileProps) {
   const [withdrawError, setWithdrawError] = useState('');
 
   const { data, isPending, error } = useNotificationRequestQuery();
+  const { mutate: notificationReadAll } = useMarkNotificationRealAll();
 
   const handleEditProfile = () => {
     router.push(`/profile/${profile.id}/edit`);
@@ -205,8 +209,15 @@ export default function Profile(props: ProfileProps) {
 
         {isOwn ? (
           <div className="border-border flex flex-col gap-3 border-t pt-6">
-            <h2 className="text-text-primary font-bold">알림</h2>
-
+            <div className="flex justify-between">
+              <h2 className="text-text-primary font-bold">알림</h2>
+              <button
+                className="text-text-secondary hover:text-text-primary cursor-pointer text-sm font-bold transition-all"
+                onClick={() => notificationReadAll()}
+              >
+                모두 읽기
+              </button>
+            </div>
             <ul className="bg-bg-card divide-border flex flex-col divide-y overflow-hidden rounded-xl">
               {data !== undefined &&
                 [...data.items]

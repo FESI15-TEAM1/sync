@@ -25,3 +25,23 @@ export async function GET() {
     );
   }
 }
+export async function PATCH() {
+  try {
+    const data = await serverFetch(`/notifications/read-all`, {
+      method: 'PATCH',
+      body: { isRead: true },
+    });
+
+    return Response.json(data, { status: 200 });
+  } catch (error) {
+    if (error instanceof APIError) {
+      return errorResponse(error.status, error.code, error.message);
+    }
+
+    return errorResponse(
+      500,
+      'INTERNAL_SERVER_ERROR',
+      '서버 오류가 발생했습니다.',
+    );
+  }
+}

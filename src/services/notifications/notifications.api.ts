@@ -25,3 +25,6 @@ export const markNotificationRead = (notificationId: number) => {
     method: 'PATCH',
   });
 };
+export const markNotificationReadAll = () => {
+  return clientFetch(`/notifications`, { method: 'PATCH' });
+};

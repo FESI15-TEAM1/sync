@@ -6,6 +6,7 @@ import { APIError } from '@/lib/http/error';
 import {
   getNotifications,
   markNotificationRead,
+  markNotificationReadAll,
 } from '@/services/notifications/notifications.api';
 
 export function useNotificationRequestQuery() {
@@ -21,6 +22,25 @@ export function useMarkNotificationRead() {
   return useMutation({
     mutationFn: (notificationId: number) =>
       markNotificationRead(notificationId),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({
+        queryKey: ['notifications', 'unread-count'],
+      });
+    },
+    onError: (error) => {
+      alert(
+        error instanceof APIError ? error.message : '읽음 처리에 실패했습니다.',
+      );
+    },
+  });
+}
+export function useMarkNotificationRealAll() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => markNotificationReadAll(),
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
