@@ -32,7 +32,7 @@ export default function Profile(props: ProfileProps) {
   const [logoutError, setLogoutError] = useState('');
   const [withdrawError, setWithdrawError] = useState('');
 
-  const { data, isPending, error } = useNotificationRequestQuery();
+  const { data } = useNotificationRequestQuery();
   const { mutate: notificationReadAll } = useMarkNotificationRealAll();
 
   const handleEditProfile = () => {
