@@ -30,7 +30,8 @@ async function getMyPlaylists(userId: number) {
       },
     );
 
-    playlists.push(...data.items);
+    // 트랙이 없는 플레이리스트는 공유해도 재생할 수 없으므로 선택지에서 제외합니다.
+    playlists.push(...data.items.filter((item) => item.trackCount > 0));
 
     if (!data.nextCursor) break;
     cursor = data.nextCursor;
