@@ -68,10 +68,9 @@ export default function Player({
 
   // 방 상세를 다시 받아오는 동안에도 썸네일은 videoId 로 바로 만들 수 있다.
   const thumbnail =
+    `https://i.ytimg.com/vi/${currentVideoId}/hqdefault.jpg` ||
     currentTrack?.thumbnail ||
-    (currentVideoId
-      ? `https://i.ytimg.com/vi/${currentVideoId}/hqdefault.jpg`
-      : mookImage.src);
+    mookImage.src;
 
   const { currentTime, duration, seekPlayerTo, clearPendingSeek } =
     usePlaybackProgress({ playerRef, currentVideoId });
