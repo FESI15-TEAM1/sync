@@ -8,11 +8,14 @@ import ChatBox from './ChatMessage';
 
 export default function Chatting({
   messages,
+  historyErrorMessage,
   chat,
   setChat,
   handleSubmit,
 }: {
   messages: ChatMessage[];
+  // 지난 채팅을 불러오지 못한 경우의 안내. 실시간 채팅은 그대로 동작합니다.
+  historyErrorMessage?: string | null;
   chat: string;
   setChat: (chat: string) => void;
   handleSubmit: (e: SubmitEvent<HTMLFormElement>) => void;
@@ -20,12 +23,18 @@ export default function Chatting({
   return (
     <div className="scrollbar-track-bg-card scrollbar-thumb-text-secondary grid min-h-0 grid-rows-[1fr_auto]">
       {/* 채팅 로그 */}
-      <div className="flex min-h-0 flex-1 flex-col-reverse overflow-y-auto px-4 pb-2">
+      <div className="flex min-h-0 flex-1 flex-col-reverse overflow-y-auto px-4 py-2">
         <div className="flex h-max flex-col gap-2">
-          {messages.map((message, index) => (
+          {historyErrorMessage && (
+            <p role="alert" className="py-2 text-center text-xs text-red-500">
+              {historyErrorMessage}
+            </p>
+          )}
+          {messages.map((message) => (
             <ChatBox
-              key={index}
+              key={message.id}
               username={message.username}
+              userImage={message.userImage}
               message={message.message}
             />
           ))}

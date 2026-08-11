@@ -44,10 +44,12 @@ export function TabButton({
 
 export default function ChatMembers({
   messages,
+  historyErrorMessage,
   sendMessage,
   members,
 }: {
   messages: ChatMessage[];
+  historyErrorMessage?: string | null;
   sendMessage: (message: string) => void;
   members: MemberType[];
 }) {
@@ -92,6 +94,7 @@ export default function ChatMembers({
         // 채팅 탭 내용
         <Chatting
           messages={messages}
+          historyErrorMessage={historyErrorMessage}
           chat={chat}
           setChat={setChat}
           handleSubmit={handleSubmit}
