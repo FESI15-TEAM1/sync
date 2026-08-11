@@ -3,7 +3,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Button from '@/components/Button';
 import GroupList from '@/components/domain/group/GroupList';
@@ -12,12 +12,18 @@ import { formatTimeAgo } from '@/lib/formatITimeAgo';
 import { APIError } from '@/lib/http/error';
 import { getGroups } from '@/services/group/group.api';
 
+import InviteSelectModal from './InviteSelectModal';
+
 const GROUP_PAGE_SIZE = 10;
 // 바닥에 닿기 전에 미리 다음 페이지를 불러와 스크롤이 끊기지 않게 합니다.
 const LOAD_MORE_ROOT_MARGIN = '200px';
 
 export default function GroupPage() {
   const router = useRouter();
+
+  const [selectedRequestId, setSelectedRequestId] = useState<number | null>(
+    null,
+  );
 
   const {
     data: groupsData,
@@ -79,8 +85,13 @@ export default function GroupPage() {
   };
 
   const handleAccept = (id: number) => {
-    // 요청 수락/그룹 선택 API 연동
+    // 요청 수락 API 연동
     console.log('요청 수락', id);
+  };
+
+  const handleGroupSelect = (requestId: number, groupId: number) => {
+    // 그룹 선택 확정(초대) API 연동
+    console.log('그룹 선택', requestId, groupId);
   };
 
   const handleJoinByCode = () => {
@@ -152,7 +163,11 @@ export default function GroupPage() {
                   size="md"
                   isDisabled={false}
                   type="button"
-                  onClick={() => handleAccept(request.id)}
+                  onClick={() =>
+                    request.sourceType === 'playlist'
+                      ? setSelectedRequestId(request.id)
+                      : handleAccept(request.id)
+                  }
                   className="bg-primary hover:bg-secondary text-text-primary cursor-pointer rounded-full px-4 py-1.5 text-sm font-semibold transition-colors"
                 >
                   {request.sourceType === 'playlist'
@@ -237,6 +252,15 @@ export default function GroupPage() {
           </div>
         )}
       </div>
+      {selectedRequestId !== null && (
+        <InviteSelectModal
+          isOpen
+          onClose={() => setSelectedRequestId(null)}
+          onSelect={(groupId) =>
+            handleGroupSelect(selectedRequestId, groupId)
+          }
+        />
+      )}
     </div>
   );
 }

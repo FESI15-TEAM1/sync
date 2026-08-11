@@ -4,7 +4,7 @@ import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
 import type { MyProfile } from '@/services/user/user.types';
 
-import GroupPage from './groupPage';
+import GroupPage from './_components/groupPage';
 
 export default async function GroupListPage() {
   try {
