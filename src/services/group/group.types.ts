@@ -157,7 +157,15 @@ export interface CreateGroupJoinRequestPayload {
   sourceType: 'group';
   sourceId: number;
 }
+export interface CreatePlaylistJoinRequestPayload {
+  sourceType: 'playlist';
+  sourceId: number;
+}
 
+export interface CreateGroupRequestPayload {
+  sourceType: 'group' | 'playlist';
+  sourceId: number;
+}
 export interface GroupRequestResponse {
   id: number;
   sourceType: 'group' | 'playlist';

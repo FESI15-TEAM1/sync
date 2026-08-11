@@ -20,6 +20,7 @@ import { usePlayerStore } from '@/providers/player-store-provider';
 import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 import { type PlaylistTrack } from '@/services/playlist/playlist';
 
+import { useCreateGroupRequest } from '../hooks/useCreateGroupRequest';
 import { useLikedMutation } from '../hooks/useLikedQuery';
 
 const RESTART_THRESHOLD_SECONDS = 3;
@@ -54,6 +55,8 @@ export default function PlaylistDetailView({
     setCurrentTime(0);
     setDuration(0);
   }
+  const { mutate: createGroupRequest, isPending: isRequesting } =
+    useCreateGroupRequest();
 
   const [lastTrack, setLastTrack] = useState(currentTrack);
   if (currentTrack && currentTrack !== lastTrack) {
@@ -168,7 +171,17 @@ export default function PlaylistDetailView({
       <p className="bg-bg-card text-text-primary rounded-xl p-4">
         {playlist.description}
       </p>
-      <Button className="w-full"> 그룹생성 요청</Button>
+      {userid == String(playlist.owner.userId) ? (
+        ''
+      ) : (
+        <Button
+          className="w-full"
+          isDisabled={isRequesting}
+          onClick={() => createGroupRequest(playlist?.id)}
+        >
+          그룹생성 요청
+        </Button>
+      )}
       <div className="bg-bg-card rounded-xl p-4">
         <TrackList
           trackList={playlist?.tracks}
