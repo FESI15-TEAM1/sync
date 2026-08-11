@@ -23,6 +23,12 @@ const SYNC_INTERVAL_MS = 5000;
 // 재생 명령을 보냈는데 이만큼 지나도 재생되지 않으면 브라우저가 자동재생을 막은 것으로 본다.
 const AUTOPLAY_BLOCKED_TIMEOUT_MS = 1500;
 
+// 탐색을 요청한 위치에 플레이어가 이만큼 가까워지면 실제로 옮겨간 것으로 본다.
+const SEEK_SETTLE_TOLERANCE_SECONDS = 1;
+
+// 시작 전(-1)과 큐만 올린 상태(5)의 유튜브 플레이어는 seekTo 를 무시한다.
+const UNSTARTED_PLAYER_STATES = [-1, 5];
+
 /** 방장이 상태를 보낸 뒤 흐른 시간까지 더한, 지금 맞춰야 할 재생 위치(초). */
 function getSyncTargetTime(playback: PlaybackState) {
   const elapsed = (Date.now() - new Date(playback.updatedAt).getTime()) / 1000;
@@ -118,12 +124,29 @@ export default function Player({
     setDuration(0);
   }
 
+  // 방금 요청한 탐색 위치. 플레이어가 실제로 그 위치로 옮겨갈 때까지 아래 폴링이
+  // 낡은 값으로 막대를 되돌리지 않도록 붙잡아 둔다.
+  const pendingSeekRef = useRef<number | null>(null);
+
   // 재생 중이 아닐 때도 읽는다. 방장은 재생 전에도 길이를 알아야 막대를 잡아 탐색할 수 있고,
   // 참가자는 방장이 멈춘 채로 탐색한 위치를 따라가야 하기 때문이다.
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTime(playerRef.current?.getCurrentTime() ?? 0);
-      setDuration(playerRef.current?.getDuration() ?? 0);
+      const player = playerRef.current;
+      setDuration(player?.getDuration() ?? 0);
+
+      const time = player?.getCurrentTime() ?? 0;
+      const pendingSeek = pendingSeekRef.current;
+
+      // 탐색이 아직 반영되지 않았으면 방금 요청한 위치를 그대로 둔다.
+      if (
+        pendingSeek !== null &&
+        Math.abs(time - pendingSeek) > SEEK_SETTLE_TOLERANCE_SECONDS
+      )
+        return;
+
+      pendingSeekRef.current = null;
+      setCurrentTime(time);
     }, 500);
 
     return () => clearInterval(interval);
@@ -142,16 +165,34 @@ export default function Player({
   };
 
   const playTrack = (track: Track) => {
+    // 곡이 바뀌면 이전 곡에 걸어 둔 탐색 위치는 더 이상 기다릴 대상이 아니다.
+    pendingSeekRef.current = null;
     playerRef.current?.loadVideo(track.videoId);
     setSelectedVideoId(track.videoId);
     setIsPlaying(true);
     publishPlayback(track.videoId, true, 0);
   };
 
-  const handleSeek = (time: number) => {
-    playerRef.current?.seekTo(time);
-    // 일시정지 상태에서는 폴링이 돌지 않으므로 여기서 직접 반영해야 막대가 움직인다.
+  // 아직 한 번도 재생하지 않은(시작 전·큐만 올린) 플레이어는 seekTo 를 무시하고 원래 위치를
+  // 계속 보고한다. 이때는 같은 곡을 새 시작 위치로 다시 큐에 올려야 실제로 위치가 옮겨간다.
+  const seekPlayerTo = (time: number) => {
+    const player = playerRef.current;
+    if (!player) return;
+
+    if (
+      currentVideoId &&
+      UNSTARTED_PLAYER_STATES.includes(player.getPlayerState())
+    )
+      player.cueVideo(currentVideoId, time);
+    else player.seekTo(time);
+
+    // 일시정지 중에는 폴링이 새 값을 읽어오기까지 막대가 멈춰 보이므로 여기서 먼저 반영한다.
+    pendingSeekRef.current = time;
     setCurrentTime(time);
+  };
+
+  const handleSeek = (time: number) => {
+    seekPlayerTo(time);
 
     if (currentVideoId) publishPlayback(currentVideoId, isPlaying, time);
   };
@@ -173,8 +214,7 @@ export default function Player({
     // 마지막 곡이면 멈추고 처음으로 되감는다.
     if (!nextTrack) {
       playerRef.current?.pause();
-      playerRef.current?.seekTo(0);
-      setCurrentTime(0);
+      seekPlayerTo(0);
 
       if (currentVideoId) publishPlayback(currentVideoId, false, 0);
       return;
@@ -188,8 +228,7 @@ export default function Player({
     const previousTrack = tracks[currentIndex - 1];
 
     if (elapsed > RESTART_THRESHOLD_SECONDS || !previousTrack) {
-      playerRef.current?.seekTo(0);
-      setCurrentTime(0);
+      seekPlayerTo(0);
 
       if (currentVideoId) publishPlayback(currentVideoId, isPlaying, 0);
       return;
@@ -212,10 +251,13 @@ export default function Player({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memberJoinedCount]);
 
-  /* ----------------------------- 참가자/방장: 따라가기 ---------------------------- */
+  /* ------------------------------ 참가자: 따라가기 ----------------------------- */
 
   // 준비되기 전의 재생·탐색 명령은 조용히 무시되므로, 준비된 시점을 알아야 다시 맞출 수 있다.
   const [isPlayerReady, setIsPlayerReady] = useState(false);
+
+  // 방장이 서버의 마지막 재생 상태를 이미 되살렸는지. 복원은 딱 한 번이어야 한다.
+  const hasRestoredRef = useRef(false);
 
   const handlePlayerReady = () => {
     setIsPlayerReady(true);
@@ -223,11 +265,15 @@ export default function Player({
     const player = playerRef.current;
     if (!player || !playback) return;
 
+    // 방장에게는 이 한 번이 곧 복원이다. 아래 이펙트가 두 번 맞추지 않도록 표시해 둔다.
+    hasRestoredRef.current = true;
     syncPlayerToHost(player, playback);
   };
 
+  // 방장은 재생 상태의 주인이므로 자기가 보낸 브로드캐스트를 따라가지 않는다.
+  // 따라가게 두면 로컬 조작과 되돌아온 에코가 같은 플레이어를 서로 밀어낸다.
   useEffect(() => {
-    if (!playback) return;
+    if (isHost || !playback) return;
 
     const sync = () => {
       if (playerRef.current) syncPlayerToHost(playerRef.current, playback);
@@ -239,7 +285,20 @@ export default function Player({
 
     const interval = setInterval(sync, SYNC_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [playback]);
+  }, [isHost, playback]);
+
+  // 방장이 방을 나갔다 돌아오면 플레이어는 빈 상태로 다시 뜬다. 서버가 들고 있던 마지막
+  // 재생 상태를 첫 스냅샷으로 한 번만 되살린다. 스냅샷이 준비보다 늦게 올 수 있어
+  // handlePlayerReady 만으로는 부족하고, 이후 브로드캐스트는 방장이 주인이므로 무시한다.
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!isHost || hasRestoredRef.current || !isPlayerReady || !playback)
+      return;
+    if (!player) return;
+
+    hasRestoredRef.current = true;
+    syncPlayerToHost(player, playback);
+  }, [isHost, isPlayerReady, playback]);
 
   // 소리 있는 재생은 브라우저의 자동재생 정책에 막힐 수 있지만 음소거 재생은 늘 허용된다.
   // 재생해야 하는데 한동안 재생되지 않으면 막힌 것으로 보고, 음소거로라도 방장을 따라간다.
@@ -294,12 +353,12 @@ export default function Player({
 
       {/* song title */}
       <h2 className="pt-2 text-base font-bold text-white">
-        {currentTrack?.title ?? ''}
+        {currentTrack?.title ?? ' '}
       </h2>
 
       {/* song artist */}
       <p className="text-text-secondary text-xs">
-        {currentTrack?.artist ?? ''}
+        {currentTrack?.artist ?? ' '}
       </p>
 
       {/* play progress bar */}
