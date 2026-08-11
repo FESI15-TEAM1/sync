@@ -54,7 +54,6 @@ export function useWSConnect(playroomId: number) {
           `/user/queue/playrooms/${playroomId}`,
           (msg: IMessage) => {
             const s = JSON.parse(msg.body);
-            console.log(s);
 
             if (s.type !== 'sync_state') return;
 
@@ -138,9 +137,6 @@ export function useWSConnect(playroomId: number) {
         }
 
         hasConnectedRef.current = true;
-      },
-      debug: (str) => {
-        console.log(str);
       },
     });
 
