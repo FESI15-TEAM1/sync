@@ -99,7 +99,7 @@ function StatusMessage({
   children: ReactNode;
 }) {
   return (
-    <div className="flex h-[var(--main-content-full-height)] items-center justify-center">
+    <div className="flex h-(--main-content-full-height) items-center justify-center">
       <p className={className}>{children}</p>
     </div>
   );
