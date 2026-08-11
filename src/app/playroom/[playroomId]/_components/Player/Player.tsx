@@ -1,11 +1,15 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import mookImage from '@/assets/images/mook.jpg';
 import type { Track } from '@/services/playlist/PlatylistDetail.type';
 
+import { useAutoplayFallback } from '../../_hooks/Player/useAutoplayFallback';
+import { useHostPlaybackPublisher } from '../../_hooks/Player/useHostPlaybackPublisher';
+import { usePlaybackProgress } from '../../_hooks/Player/usePlaybackProgress';
+import { usePlayerSync } from '../../_hooks/Player/usePlayerSync';
 import type { PlaybackState } from '../../_hooks/useWSConnect';
 import Controller from './Controller';
 import PlayProgressBar from './PlayProgressBar';
@@ -13,51 +17,6 @@ import YoutubePlayer, { type YoutubePlayerHandle } from './YoutubePlayer';
 
 // 이 시간을 넘겨 재생했다면 이전 곡으로 넘어가는 대신 현재 곡을 처음부터 다시 재생한다.
 const RESTART_THRESHOLD_SECONDS = 3;
-
-// 방장과 이만큼 벌어졌을 때만 탐색한다. 매번 맞추면 재생이 계속 끊긴다.
-const SYNC_TOLERANCE_SECONDS = 1.5;
-
-// 버퍼링 등으로 조금씩 밀리는 만큼을 참가자 쪽에서 주기적으로 다시 맞춘다.
-const SYNC_INTERVAL_MS = 5000;
-
-// 재생 명령을 보냈는데 이만큼 지나도 재생되지 않으면 브라우저가 자동재생을 막은 것으로 본다.
-const AUTOPLAY_BLOCKED_TIMEOUT_MS = 1500;
-
-// 탐색을 요청한 위치에 플레이어가 이만큼 가까워지면 실제로 옮겨간 것으로 본다.
-const SEEK_SETTLE_TOLERANCE_SECONDS = 1;
-
-// 시작 전(-1)과 큐만 올린 상태(5)의 유튜브 플레이어는 seekTo 를 무시한다.
-const UNSTARTED_PLAYER_STATES = [-1, 5];
-
-/** 방장이 상태를 보낸 뒤 흐른 시간까지 더한, 지금 맞춰야 할 재생 위치(초). */
-function getSyncTargetTime(playback: PlaybackState) {
-  const elapsed = (Date.now() - new Date(playback.updatedAt).getTime()) / 1000;
-  const seekTo = playback.isPlaying
-    ? playback.currentTime + elapsed
-    : playback.currentTime;
-  return seekTo > playback.currentTime ? seekTo : playback.currentTime;
-}
-
-/** 참가자의 플레이어를 방장의 재생 상태(곡·위치·재생 여부)에 맞춘다. */
-function syncPlayerToHost(
-  player: YoutubePlayerHandle,
-  playback: PlaybackState,
-) {
-  const targetTime = getSyncTargetTime(playback);
-
-  // iframe 에 다른 곡이 올라가 있으면 곡부터 갈아끼운다. 이때 위치는 불러오면서 함께 지정한다.
-  if (player.getLoadedVideoId() !== playback.videoId) {
-    if (playback.isPlaying) player.loadVideo(playback.videoId, targetTime);
-    else player.cueVideo(playback.videoId, targetTime);
-    return;
-  }
-
-  if (Math.abs(player.getCurrentTime() - targetTime) > SYNC_TOLERANCE_SECONDS)
-    player.seekTo(targetTime);
-
-  if (playback.isPlaying) player.play();
-  else player.pause();
-}
 
 /** 곡 정보를 화면에 띄우는 데 필요한 최소 필드. 플레이리스트 트랙과 방 상세의 현재 곡이 모두 만족한다. */
 type PlayerTrack = Pick<Track, 'videoId' | 'title' | 'artist' | 'thumbnail'>;
@@ -90,8 +49,6 @@ export default function Player({
 
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
 
   // 트랙 목록은 비동기로 도착하므로 인덱스를 state 로 들고 있지 않고 매 렌더에서 찾는다.
   // 방장은 자기가 고른 곡을, 참가자는 방장이 알려준 곡만 재생한다.
@@ -116,79 +73,39 @@ export default function Player({
       ? `https://i.ytimg.com/vi/${currentVideoId}/hqdefault.jpg`
       : mookImage.src);
 
-  // 곡이 바뀌면 이전 곡의 재생 시간이 잠시 남아 보이지 않도록 즉시 초기화한다.
-  const [trackIdForTime, setTrackIdForTime] = useState(currentVideoId);
-  if (currentVideoId !== trackIdForTime) {
-    setTrackIdForTime(currentVideoId);
-    setCurrentTime(0);
-    setDuration(0);
-  }
+  const { currentTime, duration, seekPlayerTo, clearPendingSeek } =
+    usePlaybackProgress({ playerRef, currentVideoId });
 
-  // 방금 요청한 탐색 위치. 플레이어가 실제로 그 위치로 옮겨갈 때까지 아래 폴링이
-  // 낡은 값으로 막대를 되돌리지 않도록 붙잡아 둔다.
-  const pendingSeekRef = useRef<number | null>(null);
+  const { isPlayerReady, handlePlayerReady } = usePlayerSync({
+    playerRef,
+    isHost,
+    playback,
+  });
 
-  // 재생 중이 아닐 때도 읽는다. 방장은 재생 전에도 길이를 알아야 막대를 잡아 탐색할 수 있고,
-  // 참가자는 방장이 멈춘 채로 탐색한 위치를 따라가야 하기 때문이다.
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const player = playerRef.current;
-      setDuration(player?.getDuration() ?? 0);
+  const isMutedForAutoplay = useAutoplayFallback({
+    playerRef,
+    isPlayerReady,
+    playback,
+    isPlaying,
+  });
 
-      const time = player?.getCurrentTime() ?? 0;
-      const pendingSeek = pendingSeekRef.current;
+  const publishPlayback = useHostPlaybackPublisher({
+    playerRef,
+    isHost,
+    currentVideoId,
+    isPlaying,
+    memberJoinedCount,
+    onPlaybackChange,
+  });
 
-      // 탐색이 아직 반영되지 않았으면 방금 요청한 위치를 그대로 둔다.
-      if (
-        pendingSeek !== null &&
-        Math.abs(time - pendingSeek) > SEEK_SETTLE_TOLERANCE_SECONDS
-      )
-        return;
-
-      pendingSeekRef.current = null;
-      setCurrentTime(time);
-    }, 500);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  /* ------------------------------ 방장: 보내기 ------------------------------ */
-
-  // 방장이 재생을 시작하기 전에는 알릴 상태 자체가 없다. 한 번이라도 알린 뒤부터
-  // 새 참가자에게 다시 알려 줄 수 있다.
-  const hasPublishedRef = useRef(false);
-
-  // 방장이 재생/일시정지/탐색/곡 변경을 할 때마다 참가자들이 따라올 수 있도록 알린다.
-  const publishPlayback = (videoId: string, playing: boolean, time: number) => {
-    hasPublishedRef.current = true;
-    onPlaybackChange({ videoId, isPlaying: playing, currentTime: time });
-  };
+  /* ------------------------------ 방장: 조작하기 ------------------------------ */
 
   const playTrack = (track: Track) => {
-    // 곡이 바뀌면 이전 곡에 걸어 둔 탐색 위치는 더 이상 기다릴 대상이 아니다.
-    pendingSeekRef.current = null;
+    clearPendingSeek();
     playerRef.current?.loadVideo(track.videoId);
     setSelectedVideoId(track.videoId);
     setIsPlaying(true);
     publishPlayback(track.videoId, true, 0);
-  };
-
-  // 아직 한 번도 재생하지 않은(시작 전·큐만 올린) 플레이어는 seekTo 를 무시하고 원래 위치를
-  // 계속 보고한다. 이때는 같은 곡을 새 시작 위치로 다시 큐에 올려야 실제로 위치가 옮겨간다.
-  const seekPlayerTo = (time: number) => {
-    const player = playerRef.current;
-    if (!player) return;
-
-    if (
-      currentVideoId &&
-      UNSTARTED_PLAYER_STATES.includes(player.getPlayerState())
-    )
-      player.cueVideo(currentVideoId, time);
-    else player.seekTo(time);
-
-    // 일시정지 중에는 폴링이 새 값을 읽어오기까지 막대가 멈춰 보이므로 여기서 먼저 반영한다.
-    pendingSeekRef.current = time;
-    setCurrentTime(time);
   };
 
   const handleSeek = (time: number) => {
@@ -237,109 +154,6 @@ export default function Player({
     playTrack(previousTrack);
   };
 
-  // 참가자가 접속 직후 받는 스냅샷은 방장이 마지막으로 알린 시점의 것이라, 방장이 그 뒤로
-  // 아무 조작도 하지 않았다면 재생 중인데도 비어 있거나 한참 낡은 상태로 온다.
-  // 그래서 누가 들어오면 방장이 지금 재생 위치를 다시 알려 바로 따라올 수 있게 한다.
-  useEffect(() => {
-    const player = playerRef.current;
-    if (!isHost || !hasPublishedRef.current || !player || !currentVideoId)
-      return;
-
-    publishPlayback(currentVideoId, isPlaying, player.getCurrentTime());
-    // 참가자가 들어온 그 순간의 상태만 다시 알린다. 방장의 조작으로 값이 바뀌는 경우는
-    // 각 핸들러가 이미 알리고 있으므로, 여기서 같이 보면 같은 상태를 두 번 보내게 된다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [memberJoinedCount]);
-
-  /* ------------------------------ 참가자: 따라가기 ----------------------------- */
-
-  // 준비되기 전의 재생·탐색 명령은 조용히 무시되므로, 준비된 시점을 알아야 다시 맞출 수 있다.
-  const [isPlayerReady, setIsPlayerReady] = useState(false);
-
-  // 방장이 서버의 마지막 재생 상태를 이미 되살렸는지. 복원은 딱 한 번이어야 한다.
-  const hasRestoredRef = useRef(false);
-
-  const handlePlayerReady = () => {
-    setIsPlayerReady(true);
-
-    const player = playerRef.current;
-    if (!player || !playback) return;
-
-    // 방장에게는 이 한 번이 곧 복원이다. 아래 이펙트가 두 번 맞추지 않도록 표시해 둔다.
-    hasRestoredRef.current = true;
-    syncPlayerToHost(player, playback);
-  };
-
-  // 방장은 재생 상태의 주인이므로 자기가 보낸 브로드캐스트를 따라가지 않는다.
-  // 따라가게 두면 로컬 조작과 되돌아온 에코가 같은 플레이어를 서로 밀어낸다.
-  useEffect(() => {
-    if (isHost || !playback) return;
-
-    const sync = () => {
-      if (playerRef.current) syncPlayerToHost(playerRef.current, playback);
-    };
-
-    // 새 상태가 올 때마다 한 번 맞추고, 재생 중에는 벌어지는 오차를 주기적으로 다시 맞춘다.
-    sync();
-    if (!playback.isPlaying) return;
-
-    const interval = setInterval(sync, SYNC_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [isHost, playback]);
-
-  // 방장이 방을 나갔다 돌아오면 플레이어는 빈 상태로 다시 뜬다. 서버가 들고 있던 마지막
-  // 재생 상태를 첫 스냅샷으로 한 번만 되살린다. 스냅샷이 준비보다 늦게 올 수 있어
-  // handlePlayerReady 만으로는 부족하고, 이후 브로드캐스트는 방장이 주인이므로 무시한다.
-  useEffect(() => {
-    const player = playerRef.current;
-    if (!isHost || hasRestoredRef.current || !isPlayerReady || !playback)
-      return;
-    if (!player) return;
-
-    hasRestoredRef.current = true;
-    syncPlayerToHost(player, playback);
-  }, [isHost, isPlayerReady, playback]);
-
-  // 소리 있는 재생은 브라우저의 자동재생 정책에 막힐 수 있지만 음소거 재생은 늘 허용된다.
-  // 재생해야 하는데 한동안 재생되지 않으면 막힌 것으로 보고, 음소거로라도 방장을 따라간다.
-  const [isMutedForAutoplay, setIsMutedForAutoplay] = useState(false);
-
-  // isPlayerReady 를 함께 보는 이유: 플레이어가 준비되기 전에 타이머가 끝나면 음소거로 되돌릴
-  // 대상이 없어 그냥 지나가는데, 준비된 뒤 이펙트가 다시 돌아야 그때 판정을 다시 한다.
-  useEffect(() => {
-    if (!isPlayerReady || !playback?.isPlaying || isPlaying) return;
-
-    const timeout = setTimeout(() => {
-      const player = playerRef.current;
-      if (!player) return;
-
-      player.mute();
-      // 막혀 있는 동안 재생 위치가 밀렸으므로 다시 맞추면서 재생한다.
-      syncPlayerToHost(player, playback);
-      setIsMutedForAutoplay(true);
-    }, AUTOPLAY_BLOCKED_TIMEOUT_MS);
-
-    return () => clearTimeout(timeout);
-  }, [isPlayerReady, playback, isPlaying]);
-
-  useEffect(() => {
-    if (!isMutedForAutoplay) return;
-
-    // 페이지를 한 번이라도 조작하면 그때부터는 소리를 켤 수 있다. 채팅 입력이든 클릭이든 상관없다.
-    const handleUserGesture = () => {
-      playerRef.current?.unMute();
-      setIsMutedForAutoplay(false);
-    };
-
-    document.addEventListener('pointerdown', handleUserGesture, { once: true });
-    document.addEventListener('keydown', handleUserGesture, { once: true });
-
-    return () => {
-      document.removeEventListener('pointerdown', handleUserGesture);
-      document.removeEventListener('keydown', handleUserGesture);
-    };
-  }, [isMutedForAutoplay]);
-
   return (
     <div className="bg-bg-card border-border box-border flex flex-col items-center gap-2 rounded-xl border px-2 py-5 text-center lg:py-8">
       {/* thumbnail image */}
@@ -353,12 +167,12 @@ export default function Player({
 
       {/* song title */}
       <h2 className="pt-2 text-base font-bold text-white">
-        {currentTrack?.title ?? ' '}
+        {currentTrack?.title ?? ' '}
       </h2>
 
       {/* song artist */}
       <p className="text-text-secondary text-xs">
-        {currentTrack?.artist ?? ' '}
+        {currentTrack?.artist ?? ' '}
       </p>
 
       {/* play progress bar */}
