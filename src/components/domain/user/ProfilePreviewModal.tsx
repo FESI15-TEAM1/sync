@@ -61,8 +61,13 @@ export default function ProfilePreviewModal({
     : [];
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal
+      ariaLabelledBy="profile-preview-title"
+      isOpen={isOpen}
+      onClose={onClose}
+    >
       <Modal.Body>
+        <h2 id="profile-preview-title" className="sr-only"></h2>
         <div className="flex flex-col items-center text-white">
           {errorMessage ? (
             <p className="py-10 text-sm text-red-500">{errorMessage}</p>
