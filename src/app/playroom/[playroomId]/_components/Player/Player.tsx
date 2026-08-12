@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import { useRef, useState } from 'react';
 
-import mookImage from '@/assets/images/mook.jpg';
 import type { Track } from '@/services/playlist/PlatylistDetail.type';
 
 import { useAutoplayFallback } from '../../_hooks/Player/useAutoplayFallback';
@@ -69,7 +68,7 @@ export default function Player({
   // 방 상세를 다시 받아오는 동안에도 썸네일은 videoId 로 바로 만들 수 있다.
   const thumbnail = currentVideoId
     ? `https://i.ytimg.com/vi/${currentVideoId}/hqdefault.jpg`
-    : mookImage.src;
+    : null;
 
   const { currentTime, duration, seekPlayerTo, clearPendingSeek } =
     usePlaybackProgress({ playerRef, currentVideoId });
@@ -152,26 +151,28 @@ export default function Player({
     playTrack(previousTrack);
   };
 
+  const thumbnailStyle =
+    'bg-disabled aspect-square max-w-25 object-cover lg:max-w-none';
+
   return (
     <div className="bg-bg-card border-border box-border flex flex-col items-center gap-2 rounded-xl border px-2 py-5 text-center lg:py-8">
       {/* thumbnail image */}
-      <div className="relative h-25 w-25 lg:h-60 lg:w-60">
-        <Image
-          src={thumbnail}
-          alt=""
-          fill
-          className="aspect-square max-w-25 rounded-2xl object-cover lg:max-w-none"
-        />
+      <div className="relative h-25 w-25 overflow-hidden rounded-2xl lg:h-60 lg:w-60">
+        {thumbnail ? (
+          <Image src={thumbnail} alt="" fill className={thumbnailStyle} />
+        ) : (
+          <div className={thumbnailStyle}></div>
+        )}
       </div>
 
       {/* song title */}
       <h2 className="pt-2 text-base font-bold text-white">
-        {currentTrack?.title ?? ' '}
+        {currentTrack?.title ?? ' '}
       </h2>
 
       {/* song artist */}
       <p className="text-text-secondary text-xs">
-        {currentTrack?.artist ?? ' '}
+        {currentTrack?.artist ?? ' '}
       </p>
 
       {/* play progress bar */}
