@@ -1,26 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 
-import Bell from '@/assets/icons/bell.svg';
 import SyncLogo from '@/assets/icons/syncLogo.svg';
-import Button from '@/components/Button';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useUserStore } from '@/providers/user-store-provider';
-import { logout } from '@/services/auth/auth.api';
 
 import HamburgerButton from './HamburgerButton';
+import NotificationBell from './NotificationsBell';
 
 export default function Header() {
   const headerRef = useRef<HTMLElement>(null);
-  const router = useRouter();
   const user = useUserStore((state) => state.user);
   const isLoading = useUserStore((state) => state.isLoading);
   const showLoading = useDelayedLoading(isLoading);
-  const setUser = useUserStore((state) => state.setUser);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useLayoutEffect(() => {
     const headerElement = headerRef.current;
@@ -40,23 +34,6 @@ export default function Header() {
     };
   }, []);
 
-  const handleLogout = async () => {
-    if (isLoggingOut) return;
-
-    setIsLoggingOut(true);
-    try {
-      await logout();
-      //로그아웃 성공 시에만 사용자 상태 초기화
-      setUser(null);
-      router.push('/');
-    } catch (error) {
-      // 로그아웃 실패 시 현재 로그인 상태를 유지
-      console.error('로그아웃 실패:', error);
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
-
   return (
     <header
       className="bg-bg-card flex-[0 0 auto] flex items-center justify-between px-4 py-4 text-center shadow-md"
@@ -72,7 +49,7 @@ export default function Header() {
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <Bell width={30} height={30} color={'white'} />
+        <NotificationBell />
         {isLoading ? (
           // 200ms 이상 로딩이 지속될 때만 스켈레톤 표시(짧은 로딩의 깜빡임 방지)
           <div

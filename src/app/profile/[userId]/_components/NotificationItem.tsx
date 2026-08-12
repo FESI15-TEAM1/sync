@@ -1,0 +1,125 @@
+import Image from 'next/image';
+import Link from 'next/link';
+
+import defaultImg from '@/assets/images/default.png';
+import { formatTimeAgo } from '@/lib/formatITimeAgo';
+import type { NotificationItem } from '@/services/notifications/notifications.type';
+
+import { useMarkNotificationRead } from '../_hooks/useNotificationsQuery';
+function getNotificationContent(item: NotificationItem) {
+  const name =
+    item.actorCount > 1
+      ? `${item.actor.nickname} 외 ${item.actorCount - 1}인`
+      : item.actor.nickname;
+  const name_element = <span className="font-bold">{name}</span>;
+
+  switch (item.type) {
+    case 'PLAYLIST_COMMENT':
+      return {
+        href: `/playlist/detail/${item.sourceId}`,
+        message: (
+          <>
+            <span className="font-bold">{name_element}님</span>이 내
+            플레이리스트에 <span className="font-bold">댓글</span>을 남겼습니다.
+          </>
+        ),
+      };
+    case 'PLAYLIST_LIKE':
+      return {
+        href: `/playlist/detail/${item.sourceId}`,
+        message: (
+          <>
+            <span className="font-bold">{name_element}님</span>이 내
+            <span className="font-bold"> 플레이리스트를 좋아합니다.</span>
+          </>
+        ),
+      };
+    case 'FOLLOW':
+      return {
+        href: `/profile/${item.actor.userId}`,
+        message: (
+          <>
+            <span className="font-bold">{name_element}님</span>이 나를
+            <span className="font-bold">팔로우</span> 했습니다.
+          </>
+        ),
+      };
+    case 'FOLLOWED_LIVE':
+      return {
+        href: `/playroom/${item.sourceId}`,
+        message: (
+          <>
+            <span className="font-bold">{name_element}님</span>이
+            <span className="font-bold">라이브</span>를 시작했습니다.
+          </>
+        ),
+      };
+    case 'GROUP_JOIN_REQUEST':
+      return {
+        href: `/group`,
+        message: (
+          <>
+            <span className="font-bold">{name_element}님</span>이 내
+            <span className="font-bold">그룹 참여</span>를 요청했습니다.
+          </>
+        ),
+      };
+    case 'GROUP_CREATE_REQUEST':
+      return {
+        // sourceId는 요청의 근거가 된 playlist — 그룹은 아직 생성 전이라 그룹 목록으로 이동
+        href: `/group`,
+        message: (
+          <>
+            <span className="font-bold">{name_element}님</span>이 내
+            플레이리스트로 <span className="font-bold">그룹 생성</span>을
+            요청했습니다.
+          </>
+        ),
+      };
+  }
+}
+
+export default function NotificationItem({
+  item,
+  userId,
+}: {
+  item: NotificationItem;
+  userId: number;
+}) {
+  const { href, message } = getNotificationContent(item);
+  const { mutate: markRead } = useMarkNotificationRead(userId);
+  return (
+    <li>
+      <Link
+        href={href}
+        className="flex items-center gap-3 px-4 py-3"
+        onClick={() => {
+          if (!item.isRead) markRead(item.id);
+        }}
+      >
+        <div className="relative h-12 w-12 overflow-hidden rounded-full">
+          <Image
+            src={item.actor.image ? item.actor.image : defaultImg}
+            alt="프로필이미지"
+            fill={true}
+            className="object-cover"
+          />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="text-text-primary text-sm leading-snug">{message}</p>
+          <p className="text-text-secondary mt-1 text-xs">
+            {formatTimeAgo(item.createdAt)}
+          </p>
+        </div>
+
+        {!item.isRead && (
+          <span
+            aria-hidden
+            className="bg-primary mt-1 size-2 shrink-0 rounded-full"
+          />
+        )}
+      </Link>
+    </li>
+  );
+}
