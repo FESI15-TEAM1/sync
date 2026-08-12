@@ -3,7 +3,7 @@ import Image from 'next/image';
 import SyncLogo from '@/assets/icons/syncLogo.svg';
 import Button from '@/components/Button';
 
-import type { FollowUser } from './FollowPage';
+import type { FollowUser } from '../_hooks/useFollowQuery';
 
 type Props = {
   users: FollowUser[];

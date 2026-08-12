@@ -13,9 +13,32 @@ import {
   getFollowing,
   unfollowUser,
 } from '@/services/follow/follow.api';
-import type { FollowListResponse } from '@/services/follow/follow.types';
+import type {
+  FollowListResponse,
+  FollowUserResponse,
+} from '@/services/follow/follow.types';
 
 const FOLLOW_PAGE_SIZE = 20;
+
+export type FollowUser = {
+  id: number;
+  nickname: string;
+  image?: string | null;
+  isFollowing: boolean;
+};
+
+function toFollowUser(item: FollowUserResponse): FollowUser {
+  return {
+    id: item.userId,
+    nickname: item.nickname,
+    image: item.image,
+    isFollowing: item.isFollowing,
+  };
+}
+
+function selectFollowUsers(data: InfiniteData<FollowListResponse>) {
+  return data.pages.flatMap((page) => page.items.map(toFollowUser));
+}
 
 export const followersQueryKey = (userId: number) =>
   ['users', userId, 'followers'] as const;
@@ -30,6 +53,7 @@ export function useFollowersQuery(userId: number) {
     initialPageParam: undefined as string | undefined,
     // nextCursor가 null이면 마지막 페이지입니다.
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    select: selectFollowUsers,
   });
 }
 
@@ -40,6 +64,7 @@ export function useFollowingQuery(userId: number) {
       getFollowing(userId, { cursor: pageParam, limit: FOLLOW_PAGE_SIZE }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    select: selectFollowUsers,
   });
 }
 

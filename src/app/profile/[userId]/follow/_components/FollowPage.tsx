@@ -3,7 +3,6 @@
 import { useState } from 'react';
 
 import { APIError } from '@/lib/http/error';
-import type { FollowUserResponse } from '@/services/follow/follow.types';
 
 import {
   useFollowersQuery,
@@ -13,27 +12,11 @@ import {
 import FollowerList from './FollowerList';
 import FollowingList from './FollowingList';
 
-export type FollowUser = {
-  id: number;
-  nickname: string;
-  image?: string | null;
-  isFollowing: boolean;
-};
-
 type FollowTab = 'followers' | 'following';
 
 type Props = {
   userId: number;
 };
-
-function toFollowUser(item: FollowUserResponse): FollowUser {
-  return {
-    id: item.userId,
-    nickname: item.nickname,
-    image: item.image,
-    isFollowing: item.isFollowing,
-  };
-}
 
 export default function FollowPage({ userId }: Props) {
   const [activeTab, setActiveTab] = useState<FollowTab>('followers');
@@ -42,12 +25,8 @@ export default function FollowPage({ userId }: Props) {
   const followingQuery = useFollowingQuery(userId);
   const toggleFollowMutation = useToggleFollowMutation(userId);
 
-  const followers = (
-    followersQuery.data?.pages.flatMap((page) => page.items) ?? []
-  ).map(toFollowUser);
-  const following = (
-    followingQuery.data?.pages.flatMap((page) => page.items) ?? []
-  ).map(toFollowUser);
+  const followers = followersQuery.data ?? [];
+  const following = followingQuery.data ?? [];
 
   const activeQuery =
     activeTab === 'followers' ? followersQuery : followingQuery;
