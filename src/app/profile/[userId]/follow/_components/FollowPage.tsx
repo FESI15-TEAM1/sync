@@ -1,16 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { APIError } from '@/lib/http/error';
-import {
-  followUser,
-  getFollowers,
-  getFollowing,
-  unfollowUser,
-} from '@/services/follow/follow.api';
 import type { FollowUserResponse } from '@/services/follow/follow.types';
 
+import {
+  useFollowersQuery,
+  useFollowingQuery,
+  useToggleFollowMutation,
+} from '../_hooks/useFollowQuery';
 import FollowerList from './FollowerList';
 import FollowingList from './FollowingList';
 
@@ -38,118 +37,41 @@ function toFollowUser(item: FollowUserResponse): FollowUser {
 
 export default function FollowPage({ userId }: Props) {
   const [activeTab, setActiveTab] = useState<FollowTab>('followers');
-  const [followers, setFollowers] = useState<FollowUser[]>([]);
-  const [following, setFollowing] = useState<FollowUser[]>([]);
-  const [followersCursor, setFollowersCursor] = useState<string | null>(null);
-  const [followingCursor, setFollowingCursor] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
 
-  useEffect(() => {
-    let isMounted = true;
+  const followersQuery = useFollowersQuery(userId);
+  const followingQuery = useFollowingQuery(userId);
+  const toggleFollowMutation = useToggleFollowMutation(userId);
 
-    async function loadLists() {
-      setIsLoading(true);
-      setError('');
-      try {
-        const [followersRes, followingRes] = await Promise.all([
-          getFollowers(userId),
-          getFollowing(userId),
-        ]);
+  const followers = (
+    followersQuery.data?.pages.flatMap((page) => page.items) ?? []
+  ).map(toFollowUser);
+  const following = (
+    followingQuery.data?.pages.flatMap((page) => page.items) ?? []
+  ).map(toFollowUser);
 
-        if (!isMounted) return;
+  const activeQuery =
+    activeTab === 'followers' ? followersQuery : followingQuery;
 
-        setFollowers(followersRes.items.map(toFollowUser));
-        setFollowersCursor(followersRes.nextCursor);
-        setFollowing(followingRes.items.map(toFollowUser));
-        setFollowingCursor(followingRes.nextCursor);
-      } catch (err) {
-        if (!isMounted) return;
-        console.error('팔로우 목록 조회 실패:', err);
-        setError(
-          err instanceof APIError
-            ? err.message
-            : '팔로우 목록을 불러오지 못했습니다.',
-        );
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    }
+  const errorMessage = toggleFollowMutation.isError
+    ? toggleFollowMutation.error instanceof APIError
+      ? toggleFollowMutation.error.message
+      : '팔로우 상태를 변경하지 못했습니다.'
+    : activeQuery.isError
+      ? activeQuery.error instanceof APIError
+        ? activeQuery.error.message
+        : '팔로우 목록을 불러오지 못했습니다.'
+      : '';
 
-    loadLists();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [userId]);
-
-  const handleLoadMore = useCallback(async () => {
-    const cursor = activeTab === 'followers' ? followersCursor : followingCursor;
-    if (!cursor) return;
-
-    try {
-      if (activeTab === 'followers') {
-        const res = await getFollowers(userId, { cursor });
-        setFollowers((prev) => [...prev, ...res.items.map(toFollowUser)]);
-        setFollowersCursor(res.nextCursor);
-      } else {
-        const res = await getFollowing(userId, { cursor });
-        setFollowing((prev) => [...prev, ...res.items.map(toFollowUser)]);
-        setFollowingCursor(res.nextCursor);
-      }
-    } catch (err) {
-      console.error('팔로우 목록 추가 조회 실패:', err);
-      setError(
-        err instanceof APIError
-          ? err.message
-          : '팔로우 목록을 불러오지 못했습니다.',
-      );
-    }
-  }, [activeTab, followersCursor, followingCursor, userId]);
-
-  const handleToggleFollow = async (targetId: number) => {
+  const handleToggleFollow = (targetId: number) => {
     const list = activeTab === 'followers' ? followers : following;
     const target = list.find((user) => user.id === targetId);
     if (!target) return;
 
-    const nextIsFollowing = !target.isFollowing;
-    const updateList = (users: FollowUser[]) =>
-      users.map((user) =>
-        user.id === targetId
-          ? { ...user, isFollowing: nextIsFollowing }
-          : user,
-      );
-
-    setFollowers(updateList);
-    setFollowing(updateList);
-
-    try {
-      if (nextIsFollowing) {
-        await followUser(targetId);
-      } else {
-        await unfollowUser(targetId);
-      }
-    } catch (err) {
-      console.error('팔로우 상태 변경 실패:', err);
-      const revertList = (users: FollowUser[]) =>
-        users.map((user) =>
-          user.id === targetId
-            ? { ...user, isFollowing: target.isFollowing }
-            : user,
-        );
-
-      setFollowers(revertList);
-      setFollowing(revertList);
-      setError(
-        err instanceof APIError
-          ? err.message
-          : '팔로우 상태를 변경하지 못했습니다.',
-      );
-    }
+    toggleFollowMutation.mutate({
+      targetId,
+      nextIsFollowing: !target.isFollowing,
+    });
   };
-
-  const activeCursor =
-    activeTab === 'followers' ? followersCursor : followingCursor;
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 py-6">
@@ -183,12 +105,14 @@ export default function FollowPage({ userId }: Props) {
         </button>
       </div>
 
-      {error ? (
-        <p className="mt-4 text-center text-sm text-red-500">{error}</p>
+      {errorMessage ? (
+        <p className="mt-4 text-center text-sm text-red-500">
+          {errorMessage}
+        </p>
       ) : null}
 
       <div className="mt-4">
-        {isLoading ? (
+        {activeQuery.isPending ? (
           <p className="text-text-secondary py-10 text-center text-sm">
             불러오는 중...
           </p>
@@ -202,13 +126,14 @@ export default function FollowPage({ userId }: Props) {
         )}
       </div>
 
-      {!isLoading && activeCursor ? (
+      {!activeQuery.isPending && activeQuery.hasNextPage ? (
         <button
           type="button"
-          onClick={handleLoadMore}
-          className="text-text-secondary mt-4 self-center text-sm"
+          onClick={() => activeQuery.fetchNextPage()}
+          disabled={activeQuery.isFetchingNextPage}
+          className="text-text-secondary mt-4 self-center text-sm disabled:opacity-50"
         >
-          더 보기
+          {activeQuery.isFetchingNextPage ? '불러오는 중...' : '더 보기'}
         </button>
       ) : null}
     </div>
