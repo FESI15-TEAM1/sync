@@ -62,7 +62,14 @@ export default function FollowPage({ userId }: Props) {
         : '팔로우 목록을 불러오지 못했습니다.'
       : '';
 
+  const pendingTargetId = toggleFollowMutation.isPending
+    ? toggleFollowMutation.variables.targetId
+    : null;
+
   const handleToggleFollow = (targetId: number) => {
+    // 같은 대상에 대한 요청이 아직 진행 중이면 중복 토글(POST/DELETE 경합)을 막습니다.
+    if (pendingTargetId === targetId) return;
+
     const list = activeTab === 'followers' ? followers : following;
     const target = list.find((user) => user.id === targetId);
     if (!target) return;
@@ -117,11 +124,16 @@ export default function FollowPage({ userId }: Props) {
             불러오는 중...
           </p>
         ) : activeTab === 'followers' ? (
-          <FollowerList users={followers} onToggleFollow={handleToggleFollow} />
+          <FollowerList
+            users={followers}
+            onToggleFollow={handleToggleFollow}
+            pendingUserId={pendingTargetId}
+          />
         ) : (
           <FollowingList
             users={following}
             onToggleFollow={handleToggleFollow}
+            pendingUserId={pendingTargetId}
           />
         )}
       </div>
