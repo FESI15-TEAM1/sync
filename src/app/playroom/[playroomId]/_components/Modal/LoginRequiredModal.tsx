@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 
 import Button from '@/components/Button';
+import useFocusTrap from '@/hooks/useFocusTrap';
 
 type LoginRequiredModalProps = {
   isOpen: boolean;
@@ -19,6 +20,8 @@ export default function LoginRequiredModal({
   onCancel,
   onConfirm,
 }: LoginRequiredModalProps) {
+  const dialogRef = useFocusTrap<HTMLDivElement>(isOpen);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -36,9 +39,11 @@ export default function LoginRequiredModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-[10px]">
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="playroom-login-required-modal-title"
+        tabIndex={-1}
         className="bg-bg-primary flex max-h-[90vh] w-full max-w-md flex-col rounded-2xl p-5 shadow-xl"
       >
         <div className="flex-1 scrollbar-none overflow-y-auto">

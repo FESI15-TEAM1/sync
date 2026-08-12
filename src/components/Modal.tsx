@@ -8,6 +8,8 @@ import {
   useEffect,
 } from 'react';
 
+import useFocusTrap from '@/hooks/useFocusTrap';
+
 import IconButton from './IconButton';
 
 type ModalContextType = {
@@ -40,6 +42,8 @@ export function Modal({
   children,
   ariaLabelledBy,
 }: ModalProps) {
+  const dialogRef = useFocusTrap<HTMLDivElement>(isOpen);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -66,9 +70,11 @@ export function Modal({
         onClick={handleBackdropClick}
       >
         <div
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby={ariaLabelledBy ?? 'modal-title'}
+          tabIndex={-1}
           className="bg-bg-primary flex max-h-[90vh] w-full max-w-md flex-col rounded-2xl p-5 shadow-xl"
         >
           {children}
