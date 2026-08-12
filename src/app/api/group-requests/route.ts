@@ -1,11 +1,12 @@
-import type { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 
 import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
 import type {
-  CreateGroupJoinRequestPayload,
+  CreateGroupRequestPayload,
   GroupRequestResponse,
 } from '@/services/group/group.types';
+import type { GetGroupRequestsResponse } from '@/services/group/groupRequests.type';
 
 function errorResponse(status: number, code: string, message: string) {
   return Response.json({ error: { code, message } }, { status });
@@ -29,7 +30,10 @@ export async function POST(req: NextRequest) {
       Record<'sourceType' | 'sourceId', unknown>
     >;
 
-    if (sourceType !== 'group' || typeof sourceId !== 'number') {
+    if (
+      (sourceType !== 'group' && sourceType !== 'playlist') ||
+      typeof sourceId !== 'number'
+    ) {
       return errorResponse(
         400,
         'VALIDATION_ERROR',
@@ -37,7 +41,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const payload: CreateGroupJoinRequestPayload = { sourceType, sourceId };
+    const payload: CreateGroupRequestPayload = {
+      sourceType,
+      sourceId,
+    };
 
     const data = await serverFetch<GroupRequestResponse>('/group-requests', {
       method: 'POST',
@@ -45,6 +52,34 @@ export async function POST(req: NextRequest) {
     });
 
     return Response.json(data, { status: 201 });
+  } catch (error) {
+    if (error instanceof APIError) {
+      return errorResponse(error.status, error.code, error.message);
+    }
+
+    return errorResponse(
+      500,
+      'INTERNAL_SERVER_ERROR',
+      '서버 오류가 발생했습니다.',
+    );
+  }
+}
+export async function GET(req: NextRequest) {
+  const { searchParams } = req.nextUrl;
+  const cursor = searchParams.get('cursor');
+  const limit = searchParams.get('limit');
+
+  const params: Record<string, string> = {};
+  if (cursor) params.cursor = cursor;
+  if (limit) params.limit = limit;
+
+  try {
+    const data = await serverFetch<GetGroupRequestsResponse>(
+      '/group-requests',
+      { method: 'GET', params },
+    );
+
+    return Response.json(data, { status: 200 });
   } catch (error) {
     if (error instanceof APIError) {
       return errorResponse(error.status, error.code, error.message);

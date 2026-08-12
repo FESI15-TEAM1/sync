@@ -4,16 +4,18 @@ import mookImage from '@/assets/images/mook.jpg';
 
 export default function ChatMessage({
   username,
+  userImage,
   message,
 }: {
   username: string;
+  userImage?: string | null;
   message: string;
 }) {
   return (
     <>
       <span className="flex flex-row items-start gap-2">
         <Image
-          src={mookImage.src}
+          src={userImage ?? mookImage.src}
           alt="유저 프로필"
           width={20}
           height={20}

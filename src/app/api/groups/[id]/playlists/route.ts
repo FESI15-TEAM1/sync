@@ -14,9 +14,9 @@ function errorResponse(status: number, code: string, message: string) {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ groupId: string }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const { groupId } = await params;
+  const { id } = await params;
   const { searchParams } = req.nextUrl;
   const cursor = searchParams.get('cursor');
   const limit = searchParams.get('limit');
@@ -29,7 +29,7 @@ export async function GET(
 
   try {
     const data = await serverFetch<GetGroupPlaylistsResponse>(
-      `/groups/${groupId}/playlists`,
+      `/groups/${id}/playlists`,
       {
         method: 'GET',
         params: queryParams,
@@ -52,9 +52,9 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ groupId: string }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const { groupId } = await params;
+  const { id } = await params;
 
   try {
     let body: unknown;
@@ -90,7 +90,7 @@ export async function PUT(
     const payload: EditGroupPlaylistsRequest = { playlistIds };
 
     const data = await serverFetch<EditGroupPlaylistsResponse>(
-      `/groups/${groupId}/playlists`,
+      `/groups/${id}/playlists`,
       {
         method: 'PUT',
         body: payload,

@@ -3,15 +3,15 @@
 import { useState } from 'react';
 
 import CommentItemList from '@/app/playlist/detail/[id]/_components/CommentItemList';
-import Button from '@/components/Button';
-import InputField from '@/components/InputField';
-import Modal from '@/components/Modal';
 import {
   useAddCommentMutation,
   useCommentsQuery,
   useDeleteCommentMutation,
   useEditCommentMutation,
-} from '@/hooks/useCommentsQuery';
+} from '@/app/playlist/detail/[id]/_hooks/useCommentsQuery';
+import Button from '@/components/Button';
+import InputField from '@/components/InputField';
+import Modal from '@/components/Modal';
 import {} from '@/lib/http/client-fetch';
 import { APIError } from '@/lib/http/error';
 

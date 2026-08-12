@@ -6,12 +6,12 @@ import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import CommentsSection from '@/app/playlist/detail/[id]/_components/CommentsSection';
+import LikedButton from '@/app/playlist/detail/[id]/_components/LikedButton';
 import PlaylistHeaderActions from '@/app/playlist/detail/[id]/_components/PlaylistHeaderActions';
 import PlaylistPlayer from '@/app/playlist/detail/[id]/_components/PlaylistPlayer';
 import { type PlaylistPlayerHandle } from '@/app/playlist/detail/[id]/_components/PlaylistPlayer';
 import PlaylistPlayerBar from '@/app/playlist/detail/[id]/_components/PlaylistPlayerBar';
 import TrackHoverController from '@/app/playlist/detail/[id]/_components/TrackHoverController';
-import Heart from '@/assets/icons/heart.svg';
 import defaultImg from '@/assets/images/default.png';
 import Button from '@/components/Button';
 import TrackList from '@/components/domain/playlists/TrackList';
@@ -19,6 +19,9 @@ import { clientFetch } from '@/lib/http/client-fetch';
 import { usePlayerStore } from '@/providers/player-store-provider';
 import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 import { type PlaylistTrack } from '@/services/playlist/playlist';
+
+import { useCreateGroupRequest } from '../_hooks/useCreateGroupRequest';
+import { useLikedMutation } from '../_hooks/useLikedQuery';
 
 const RESTART_THRESHOLD_SECONDS = 3;
 
@@ -37,7 +40,6 @@ export default function PlaylistDetailView({
   const [duration, setDuration] = useState(0);
   const { id } = useParams<{ id: string }>();
 
-  console.log('id: ', id);
   const {
     data: playlist,
     isPending: isPlaylistPending,
@@ -53,11 +55,28 @@ export default function PlaylistDetailView({
     setCurrentTime(0);
     setDuration(0);
   }
+  const {
+    mutate: createGroupRequest,
+    isPending: isRequesting,
+    isSuccess: isRequestSuccess,
+    variables: requestedPlaylistId,
+  } = useCreateGroupRequest();
+
+  const isRequestedThisPlaylist =
+    isRequestSuccess && requestedPlaylistId === playlist?.id;
 
   const [lastTrack, setLastTrack] = useState(currentTrack);
   if (currentTrack && currentTrack !== lastTrack) {
     setLastTrack(currentTrack);
   }
+  const { mutate: toggleLiked, isPending } = useLikedMutation(
+    String(playlist?.id),
+  );
+
+  const handleLikedClick = () => {
+    if (isPending) return;
+    toggleLiked(!playlist?.isLiked);
+  };
 
   useEffect(() => {
     if (!isPlaying) return;
@@ -149,15 +168,31 @@ export default function PlaylistDetailView({
             {playlist.title}
           </h3>
           <span className="text-text-secondary text-sm">{`작성자: ${playlist.owner.nickname}`}</span>
-          <span>
-            <Heart />
-          </span>
+          <LikedButton
+            isLiked={!!playlist.isLiked}
+            onClick={handleLikedClick}
+            disabled={!userid}
+          />
         </div>
       </div>
       <p className="bg-bg-card text-text-primary rounded-xl p-4">
         {playlist.description}
       </p>
-      <Button className="w-full"> 그룹생성 요청</Button>
+      {userid == String(playlist.owner.userId) ? (
+        ''
+      ) : (
+        <Button
+          className="w-full"
+          isDisabled={isRequesting || isRequestedThisPlaylist}
+          onClick={() => createGroupRequest(playlist.id)}
+        >
+          {isRequesting
+            ? '그룹생성 요청중..'
+            : isRequestedThisPlaylist
+              ? '요청됨'
+              : '그룹생성 요청'}
+        </Button>
+      )}
       <div className="bg-bg-card rounded-xl p-4">
         <TrackList
           trackList={playlist?.tracks}

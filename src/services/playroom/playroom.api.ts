@@ -1,4 +1,5 @@
 import { clientFetch } from '@/lib/http/client-fetch';
+import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 
 import type {
   GetPlayroomsParams,
@@ -24,5 +25,15 @@ export const getPlayrooms = ({ cursor, limit }: GetPlayroomsParams = {}) => {
   return clientFetch<GetPlayroomsResponse>('/playrooms', {
     method: 'GET',
     params: Object.keys(params).length > 0 ? params : undefined,
+  });
+};
+
+/**
+ * 방이 재생 중인 플레이리스트의 상세(트랙 목록 포함)를 조회합니다.
+ * 방 상세의 playlistId 로 호출하며, 방장이 아니어도 볼 수 있는 플레이리스트여야 합니다.
+ */
+export const getPlayroomPlaylist = (playlistId: number) => {
+  return clientFetch<PlaylistDetail>(`/playlists/${playlistId}`, {
+    method: 'GET',
   });
 };

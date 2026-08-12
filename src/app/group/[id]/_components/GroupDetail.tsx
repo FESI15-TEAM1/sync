@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -323,12 +324,18 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
         ) : (
           <div className="flex flex-row flex-wrap gap-3">
             {playlists.map((playlist) => (
-              <PlaylistCard
-                key={playlist.id}
-                img={playlist.image}
-                title={playlist.title}
-                trackCount={playlist.trackCount}
-              />
+              <>
+                <Link
+                  href={`/playlist/detail/${playlist.id}`}
+                  key={playlist.id}
+                >
+                  <PlaylistCard
+                    img={playlist.image}
+                    title={playlist.title}
+                    trackCount={playlist.trackCount}
+                  />
+                </Link>
+              </>
             ))}
           </div>
         )}

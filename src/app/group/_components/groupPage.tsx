@@ -1,48 +1,31 @@
 'use client';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
+import { useProcessGroupRequest } from '@/app/group/_hooks/useProcessGroupRequest';
 import Button from '@/components/Button';
 import GroupList from '@/components/domain/group/GroupList';
+import { useGroupRequestsQuery } from '@/hooks/useGroupRequestsQuery';
+import { formatTimeAgo } from '@/lib/formatITimeAgo';
 import { APIError } from '@/lib/http/error';
 import { getGroups } from '@/services/group/group.api';
+
+import InviteSelectModal from './InviteSelectModal';
+import PlaylistRequestName from './PlaylistRequestName';
 
 const GROUP_PAGE_SIZE = 10;
 // 바닥에 닿기 전에 미리 다음 페이지를 불러와 스크롤이 끊기지 않게 합니다.
 const LOAD_MORE_ROOT_MARGIN = '200px';
 
-type GroupRequest = {
-  id: number;
-  requester: string;
-  message: string;
-  meta: string;
-  actionLabel: string;
-  gradientClassName: string;
-};
-
-const MOCK_REQUESTS: GroupRequest[] = [
-  {
-    id: 1,
-    requester: '도윤',
-    message: '"비 오는 날 감성" 플레이리스트에서 그룹 생성 요청을 했습니다.',
-    meta: '게시글에서 참여 신청 · 3분 전',
-    actionLabel: '그룹 선택하기',
-    gradientClassName: 'from-[#6366f1] to-[#c084fc]',
-  },
-  {
-    id: 2,
-    requester: '도윤',
-    message: '"인디밴드 러버스" 그룹에 참여 요청을 했습니다.',
-    meta: '게시글에서 참여 신청 · 3분 전',
-    actionLabel: '수락하기',
-    gradientClassName: 'from-[#38bdf8] to-[#4f46e5]',
-  },
-];
-
 export default function GroupPage() {
   const router = useRouter();
+
+  const [selectedRequestId, setSelectedRequestId] = useState<number | null>(
+    null,
+  );
 
   const {
     data: groupsData,
@@ -64,6 +47,13 @@ export default function GroupPage() {
   });
 
   const groups = groupsData?.pages.flatMap((page) => page.items) ?? [];
+
+  const { data, isPending, error } = useGroupRequestsQuery({ limit: 20 });
+  const groupRequests = (data?.items ?? []).filter(
+    (request) => request.status === 'pending',
+  );
+
+  const { mutate: processGroupRequest } = useProcessGroupRequest();
 
   const isGroupsAuthError =
     isGroupsError &&
@@ -96,13 +86,18 @@ export default function GroupPage() {
   }, [hasNextPage, isGroupsFetching, isFetchNextPageError, fetchNextPage]);
 
   const handleReject = (id: number) => {
-    // 요청 거절 API 연동
-    console.log('요청 거절', id);
+    processGroupRequest({ requestId: id, payload: { status: 'rejected' } });
   };
 
   const handleAccept = (id: number) => {
-    // 요청 수락/그룹 선택 API 연동
-    console.log('요청 수락', id);
+    processGroupRequest({ requestId: id, payload: { status: 'accepted' } });
+  };
+
+  const handleGroupSelect = (requestId: number, groupId: number) => {
+    processGroupRequest({
+      requestId,
+      payload: { status: 'accepted', targetGroupId: groupId },
+    });
   };
 
   const handleJoinByCode = () => {
@@ -112,24 +107,55 @@ export default function GroupPage() {
 
   return (
     <div className="mx-auto flex flex-col gap-8 px-5 py-6">
-      {MOCK_REQUESTS.length > 0 && (
+      {isPending && (
+        <p className="text-text-secondary text-sm">
+          그룹 요청을 불러오는 중입니다...
+        </p>
+      )}
+      {error && (
+        <p className="text-sm text-red-500" role="alert">
+          그룹 요청을 불러오지 못했습니다.
+        </p>
+      )}
+
+      {groupRequests.length > 0 && (
         <div className="flex flex-col gap-3">
-          {MOCK_REQUESTS.map((request) => (
+          {groupRequests.map((request) => (
             <div
               key={request.id}
               className="bg-bg-card flex items-center gap-3 rounded-2xl p-4"
             >
-              <div
-                aria-hidden
-                className={`size-14 shrink-0 rounded-full bg-linear-to-br ${request.gradientClassName}`}
-              />
+              {request.requester.image ? (
+                <Image
+                  src={request.requester.image}
+                  width={56}
+                  height={56}
+                  alt={request.requester.nickname}
+                  className="size-14 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <div
+                  aria-hidden
+                  className="from-primary to-secondary size-14 shrink-0 rounded-full bg-linear-to-br"
+                />
+              )}
               <div className="min-w-0 flex-1">
                 <p className="text-text-primary text-sm leading-snug">
-                  <span className="font-semibold">{request.requester}</span>
-                  님이 {request.message}
+                  <span className="font-semibold">
+                    {request.requester.nickname}
+                  </span>
+                  님이{' '}
+                  {request.sourceType === 'playlist' ? (
+                    <>
+                      <PlaylistRequestName playlistId={request.sourceId} />{' '}
+                      플레이리스트에서 그룹 생성 요청을 했습니다.
+                    </>
+                  ) : (
+                    '그룹에 참여 요청을 했습니다.'
+                  )}
                 </p>
                 <p className="text-text-secondary mt-1 text-xs">
-                  {request.meta}
+                  {formatTimeAgo(request.createdAt)}
                 </p>
               </div>
               <div className="flex shrink-0 gap-2">
@@ -148,10 +174,16 @@ export default function GroupPage() {
                   size="md"
                   isDisabled={false}
                   type="button"
-                  onClick={() => handleAccept(request.id)}
+                  onClick={() =>
+                    request.sourceType === 'playlist'
+                      ? setSelectedRequestId(request.id)
+                      : handleAccept(request.id)
+                  }
                   className="bg-primary hover:bg-secondary text-text-primary cursor-pointer rounded-full px-4 py-1.5 text-sm font-semibold transition-colors"
                 >
-                  {request.actionLabel}
+                  {request.sourceType === 'playlist'
+                    ? '그룹 선택하기'
+                    : '수락하기'}
                 </Button>
               </div>
             </div>
@@ -231,6 +263,13 @@ export default function GroupPage() {
           </div>
         )}
       </div>
+      {selectedRequestId !== null && (
+        <InviteSelectModal
+          isOpen
+          onClose={() => setSelectedRequestId(null)}
+          onSelect={(groupId) => handleGroupSelect(selectedRequestId, groupId)}
+        />
+      )}
     </div>
   );
 }
