@@ -1,11 +1,15 @@
 'use client';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 import SyncLogo from '@/assets/icons/syncLogo.svg';
+import Button from '@/components/Button';
 import Modal from '@/components/Modal';
+import { useToggleFollowMutation } from '@/hooks/useToggleFollowMutation';
 import { useUserQuery } from '@/hooks/useUserQuery';
 import { APIError } from '@/lib/http/error';
+import { useUserStore } from '@/providers/user-store-provider';
 
 type ProfilePreviewModalProps = {
   userId: number | null;
@@ -18,12 +22,29 @@ export default function ProfilePreviewModal({
   isOpen,
   onClose,
 }: ProfilePreviewModalProps) {
+  const router = useRouter();
+  const myId = useUserStore((state) => state.user?.id);
   const {
     data: user,
     isPending,
     isError,
     error,
   } = useUserQuery(userId ?? 0, isOpen && userId !== null);
+  const { mutate: toggleFollow, isPending: isTogglingFollow } =
+    useToggleFollowMutation();
+
+  const handleToggleFollow = () => {
+    if (!user || userId === null) return;
+
+    toggleFollow({ userId, nextIsFollowing: !user.isFollowing });
+  };
+
+  const handleGoToProfile = () => {
+    if (userId === null) return;
+
+    onClose();
+    router.push(`/profile/${userId}`);
+  };
 
   const errorMessage = isError
     ? error instanceof APIError
@@ -79,6 +100,23 @@ export default function ProfilePreviewModal({
           )}
         </div>
       </Modal.Body>
+      {user ? (
+        <Modal.Footer>
+          {userId !== myId ? (
+            <Button
+              type="button"
+              variant={user.isFollowing ? 'outline' : 'primary'}
+              isDisabled={isTogglingFollow}
+              onClick={handleToggleFollow}
+            >
+              {user.isFollowing ? '언팔로우' : '팔로우'}
+            </Button>
+          ) : null}
+          <Button type="button" variant="outline" onClick={handleGoToProfile}>
+            프로필
+          </Button>
+        </Modal.Footer>
+      ) : null}
     </Modal>
   );
 }
