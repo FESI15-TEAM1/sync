@@ -9,8 +9,7 @@ import {
 
 import {
   followUser,
-  getFollowers,
-  getFollowing,
+  getFollowList,
   unfollowUser,
 } from '@/services/follow/follow.api';
 import type {
@@ -49,7 +48,10 @@ export function useFollowersQuery(userId: number) {
   return useInfiniteQuery({
     queryKey: followersQueryKey(userId),
     queryFn: ({ pageParam }) =>
-      getFollowers(userId, { cursor: pageParam, limit: FOLLOW_PAGE_SIZE }),
+      getFollowList(userId, 'followers', {
+        cursor: pageParam,
+        limit: FOLLOW_PAGE_SIZE,
+      }),
     initialPageParam: undefined as string | undefined,
     // nextCursor가 null이면 마지막 페이지입니다.
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
@@ -61,7 +63,10 @@ export function useFollowingQuery(userId: number) {
   return useInfiniteQuery({
     queryKey: followingQueryKey(userId),
     queryFn: ({ pageParam }) =>
-      getFollowing(userId, { cursor: pageParam, limit: FOLLOW_PAGE_SIZE }),
+      getFollowList(userId, 'following', {
+        cursor: pageParam,
+        limit: FOLLOW_PAGE_SIZE,
+      }),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     select: selectFollowUsers,

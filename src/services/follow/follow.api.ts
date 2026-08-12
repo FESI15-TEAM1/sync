@@ -12,32 +12,22 @@ export function unfollowUser(userId: number) {
   return clientFetch<null>(`/users/${userId}/follow`, { method: 'DELETE' });
 }
 
-// 팔로워 목록 조회
-export function getFollowers(
-  userId: number,
-  { cursor, limit }: GetFollowListParams = {},
-) {
+function toFollowListParams({ cursor, limit }: GetFollowListParams = {}) {
   const params: Record<string, string> = {};
 
   if (cursor) params.cursor = cursor;
   if (limit !== undefined) params.limit = String(limit);
 
-  return clientFetch<FollowListResponse>(`/users/${userId}/followers`, {
-    params: Object.keys(params).length > 0 ? params : undefined,
-  });
+  return Object.keys(params).length > 0 ? params : undefined;
 }
 
-// 팔로잉 목록 조회
-export function getFollowing(
+// 팔로워/팔로잉 목록 조회
+export function getFollowList(
   userId: number,
-  { cursor, limit }: GetFollowListParams = {},
+  type: 'followers' | 'following',
+  params: GetFollowListParams = {},
 ) {
-  const params: Record<string, string> = {};
-
-  if (cursor) params.cursor = cursor;
-  if (limit !== undefined) params.limit = String(limit);
-
-  return clientFetch<FollowListResponse>(`/users/${userId}/following`, {
-    params: Object.keys(params).length > 0 ? params : undefined,
+  return clientFetch<FollowListResponse>(`/users/${userId}/${type}`, {
+    params: toFollowListParams(params),
   });
 }
