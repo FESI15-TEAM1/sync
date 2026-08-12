@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { useSidebarStore } from '@/providers/sidebar-store-provider';
+import { useUserStore } from '@/providers/user-store-provider';
 
 import SearchBar from './SearchBar';
 
@@ -12,6 +13,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const isOpen = useSidebarStore((state) => state.isOpen);
   const close = useSidebarStore((state) => state.close);
+  const user = useUserStore((state) => state.user);
 
   useEffect(() => {
     if (isOpen) {
@@ -46,34 +48,55 @@ export default function Sidebar() {
       >
         <SearchBar />
         <div className="text-text-primary text- flex h-full flex-col gap-9 p-4">
-          <Link
-            href={'/'}
-            className={`${checkSamePathname('/', pathname)}`}
-            onClick={() => close()}
-          >
-            홈
-          </Link>
-          <Link
-            href={'/stage'}
-            className={`${checkSamePathname('/stage', pathname)}`}
-            onClick={() => close()}
-          >
-            스테이지
-          </Link>
-          <Link
-            href={'/group'}
-            className={`${checkSamePathname('/group', pathname)}`}
-            onClick={() => close()}
-          >
-            내 그룹
-          </Link>
-          <Link
-            href={'/playlist'}
-            className={`${checkSamePathname('/playlist', pathname)}`}
-            onClick={() => close()}
-          >
-            내 플레이리스트
-          </Link>
+          {user !== null ? (
+            <>
+              <Link
+                href={'/'}
+                className={`${checkSamePathname('/', pathname)}`}
+                onClick={() => close()}
+              >
+                홈
+              </Link>
+              <Link
+                href={'/stage'}
+                className={`${checkSamePathname('/stage', pathname)}`}
+                onClick={() => close()}
+              >
+                스테이지
+              </Link>
+              <Link
+                href={'/group'}
+                className={`${checkSamePathname('/group', pathname)}`}
+                onClick={() => close()}
+              >
+                내 그룹
+              </Link>
+              <Link
+                href={'/playlist'}
+                className={`${checkSamePathname('/playlist', pathname)}`}
+                onClick={() => close()}
+              >
+                내 플레이리스트
+              </Link>{' '}
+            </>
+          ) : (
+            <>
+              <Link
+                href={'/'}
+                className={`${checkSamePathname('/', pathname)}`}
+                onClick={() => close()}
+              >
+                홈
+              </Link>{' '}
+              <Link
+                href={'/stage'}
+                className={`${checkSamePathname('/stage', pathname)}`}
+                onClick={() => close()}
+              >
+                스테이지
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </>
