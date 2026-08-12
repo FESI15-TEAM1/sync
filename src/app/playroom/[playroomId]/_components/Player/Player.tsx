@@ -128,8 +128,8 @@ export default function Player({
 
     // 마지막 곡이면 멈추고 처음으로 되감는다.
     if (!nextTrack) {
-      playerRef.current?.pause();
       seekPlayerTo(0);
+      playerRef.current?.pause();
 
       if (currentVideoId) publishPlayback(currentVideoId, false, 0);
       return;
@@ -155,13 +155,14 @@ export default function Player({
   return (
     <div className="bg-bg-card border-border box-border flex flex-col items-center gap-2 rounded-xl border px-2 py-5 text-center lg:py-8">
       {/* thumbnail image */}
-      <Image
-        src={thumbnail}
-        alt=""
-        width={250}
-        height={250}
-        className="aspect-square max-w-25 rounded-2xl lg:max-w-none"
-      />
+      <div className="relative h-25 w-25 lg:h-60 lg:w-60">
+        <Image
+          src={thumbnail}
+          alt=""
+          fill
+          className="aspect-square max-w-25 rounded-2xl object-cover lg:max-w-none"
+        />
+      </div>
 
       {/* song title */}
       <h2 className="pt-2 text-base font-bold text-white">
