@@ -13,14 +13,16 @@ export default function PlaylistCard({
 }) {
   return (
     <div className="bg-bg-card text-text-primary hover:-translate-y- flex h-57.5 w-42.5 flex-col gap-2 rounded-2xl px-3 py-5 transition duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-2xl">
-      <Image
-        className="rounded-2xl select-none"
-        src={img ? img : mookImage}
-        alt="플레이리스트 대표 이미지"
-        width={150}
-        height={150}
-        draggable={false}
-      />
+      <div className="relative flex justify-center overflow-hidden">
+        <Image
+          className="aspect-square rounded-2xl object-cover select-none"
+          src={img ? img : mookImage}
+          alt="플레이리스트 대표 이미지"
+          width={140}
+          height={140}
+          draggable={false}
+        />
+      </div>
       <div className="items-baseline">
         <h4 className="truncate text-base">{title}</h4>
         <span title={title} className="text-sm">

@@ -155,14 +155,16 @@ export default function PlaylistDetailView({
         playlistId={id}
         isOwner={userid == String(playlist.owner.userId)}
       />
-      <div className="ju flex items-center gap-4">
-        <Image
-          src={playlist.image || defaultImg}
-          width={145}
-          height={145}
-          alt="플레이리스트 이미지"
-          className="rounded-xl"
-        />
+      <div className="flex items-center gap-4">
+        <div className="overflow-hidden">
+          <Image
+            src={playlist.image || defaultImg}
+            width={140}
+            height={140}
+            alt="플레이리스트 이미지"
+            className="aspect-square rounded-2xl object-cover select-none"
+          />
+        </div>
         <div className="mb-4 flex flex-col gap-3">
           <h3 className="text-text-primary text-xl font-bold">
             {playlist.title}
