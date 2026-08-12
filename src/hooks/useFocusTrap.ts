@@ -34,7 +34,9 @@ export default function useFocusTrap<T extends HTMLElement>(isActive: boolean) {
     const previouslyFocused = document.activeElement as HTMLElement | null;
 
     const getFocusableElements = () =>
-      Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+      Array.from(
+        container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).filter((el) => el.tabIndex >= 0 && el.offsetParent !== null);
 
     const focusable = getFocusableElements();
 

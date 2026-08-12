@@ -143,6 +143,7 @@ export default function Player({
 
     if (elapsed > RESTART_THRESHOLD_SECONDS || !previousTrack) {
       seekPlayerTo(0);
+      if (!isPlaying) playerRef.current?.pause();
 
       if (currentVideoId) publishPlayback(currentVideoId, isPlaying, 0);
       return;
