@@ -13,6 +13,14 @@ const baseCookieOptions = {
   path: '/',
 };
 
+const PROTECTED_PATH_PREFIXES = ['/search'];
+
+function isProtectedPath(pathname: string) {
+  return PROTECTED_PATH_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
 // 같은 refreshToken으로 동시에 여러 요청이 들어와도 /auth/refresh는 한 번만 호출한다.
 // refreshToken은 회전(rotate) 방식이라, 동시 요청이 각자 호출하면 먼저 도착한
 // 하나만 성공하고 나머지는 이미 회전되어버린 토큰으로 401을 받는다.
@@ -72,10 +80,17 @@ async function requestNewTokens(refreshToken: string): Promise<RefreshResult> {
 export async function proxy(request: NextRequest) {
   const accessToken = request.cookies.get('accessToken')?.value;
   const refreshToken = request.cookies.get('refreshToken')?.value;
+  const protectedPath = isProtectedPath(request.nextUrl.pathname);
 
+  const loginRequiredResponse = () =>
+    NextResponse.redirect(new URL('/login-required', request.url));
   // accessToken 쿠키는 로그인/refresh 시 expiresIn을 그대로 max-age로 사용하므로,
   // 쿠키가 사라졌다는 것 자체가 만료됐다는 신호다.
-  if (accessToken || !refreshToken) return NextResponse.next();
+  if (accessToken) return NextResponse.next();
+
+  if (!refreshToken) {
+    return protectedPath ? loginRequiredResponse() : NextResponse.next();
+  }
 
   const result = await refreshAccessToken(refreshToken);
 
@@ -86,7 +101,9 @@ export async function proxy(request: NextRequest) {
 
   // refreshToken 자체가 무효 → 재로그인이 필요하므로 쿠키를 지운다
   if (result.status === 'invalid') {
-    const response = NextResponse.next();
+    const response = protectedPath
+      ? loginRequiredResponse()
+      : NextResponse.next();
     response.cookies.delete('accessToken');
     response.cookies.delete('refreshToken');
     return response;
