@@ -13,12 +13,14 @@ export default function CommentItem({
   userid,
   onEditSave,
   onDeleteRequest,
+  onProfileClick,
   isSaving,
 }: {
   comment: CommentItemType;
   userid: string | null;
   onEditSave: (commentId: number, content: string) => Promise<unknown>;
   onDeleteRequest: (commentId: number) => void;
+  onProfileClick: (userId: number) => void;
   isSaving: boolean;
 }) {
   const [isEdit, setIsEdit] = useState<boolean>(false);
@@ -51,17 +53,27 @@ export default function CommentItem({
 
   return (
     <div className="text-text-primary relative flex items-center gap-3">
-      <div className="relative size-8 shrink-0 overflow-hidden rounded-full">
+      <button
+        type="button"
+        className="relative size-8 shrink-0 cursor-pointer overflow-hidden rounded-full"
+        onClick={() => onProfileClick(comment.author.userId)}
+      >
         <Image
           src={comment.author.image || defaultImage}
           alt="프로필"
           fill
           className="rounded-full object-cover"
         />
-      </div>
+      </button>
       <div>
         <div className="flex gap-5 text-start">
-          <span className="text-sm">{comment.author.nickname}</span>
+          <button
+            type="button"
+            className="cursor-pointer text-sm"
+            onClick={() => onProfileClick(comment.author.userId)}
+          >
+            {comment.author.nickname}
+          </button>
           <span className="text-text-secondary text-sm">
             {formatTimeAgo(comment.createdAt)}
           </span>

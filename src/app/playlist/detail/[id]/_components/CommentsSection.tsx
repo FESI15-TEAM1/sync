@@ -10,9 +10,9 @@ import {
   useEditCommentMutation,
 } from '@/app/playlist/detail/[id]/_hooks/useCommentsQuery';
 import Button from '@/components/Button';
+import ProfilePreviewModal from '@/components/domain/user/ProfilePreviewModal';
 import InputField from '@/components/InputField';
 import Modal from '@/components/Modal';
-import {} from '@/lib/http/client-fetch';
 import { APIError } from '@/lib/http/error';
 
 export default function CommentsSection({
@@ -24,6 +24,7 @@ export default function CommentsSection({
 }) {
   const [commentContent, setCommentContent] = useState('');
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+  const [previewUserId, setPreviewUserId] = useState<number | null>(null);
   const {
     data: comments,
     isPending: isCommentsPending,
@@ -67,6 +68,7 @@ export default function CommentsSection({
         onEditSave={(commentId, content) => editComment({ commentId, content })}
         isSaving={isEditingComment}
         onDeleteRequest={setDeleteTargetId}
+        onProfileClick={setPreviewUserId}
       />
       <InputField>
         <InputField.Input
@@ -131,6 +133,11 @@ export default function CommentsSection({
           </div>
         </Modal>
       )}
+      <ProfilePreviewModal
+        userId={previewUserId}
+        isOpen={previewUserId !== null}
+        onClose={() => setPreviewUserId(null)}
+      />
     </div>
   );
 }

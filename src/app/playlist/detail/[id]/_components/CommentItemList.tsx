@@ -22,11 +22,13 @@ export default function CommentItemList({
   onEditSave,
   isSaving,
   onDeleteRequest,
+  onProfileClick,
 }: {
   comments: CommentItemsType;
   userid: string | null;
   onEditSave: (commentId: number, content: string) => Promise<unknown>;
   onDeleteRequest: (commentId: number) => void;
+  onProfileClick: (userId: number) => void;
   isSaving: boolean;
 }) {
   return (
@@ -40,6 +42,7 @@ export default function CommentItemList({
             onEditSave={onEditSave}
             isSaving={isSaving}
             onDeleteRequest={onDeleteRequest}
+            onProfileClick={onProfileClick}
           />
         );
       })}
