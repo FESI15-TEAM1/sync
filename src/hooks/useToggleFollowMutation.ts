@@ -17,7 +17,7 @@ export function useToggleFollowMutation() {
     }) => (nextIsFollowing ? followUser(userId) : unfollowUser(userId)),
 
     onSuccess: (_data, { userId }) => {
-      queryClient.invalidateQueries({ queryKey: userQueryKey(userId) });
+      return queryClient.invalidateQueries({ queryKey: userQueryKey(userId) });
     },
   });
 }
