@@ -15,6 +15,7 @@ import TrackHoverController from '@/app/playlist/detail/[id]/_components/TrackHo
 import defaultImg from '@/assets/images/default.png';
 import Button from '@/components/Button';
 import TrackList from '@/components/domain/playlists/TrackList';
+import ProfilePreviewModal from '@/components/domain/user/ProfilePreviewModal';
 import { clientFetch } from '@/lib/http/client-fetch';
 import { usePlayerStore } from '@/providers/player-store-provider';
 import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
@@ -38,6 +39,7 @@ export default function PlaylistDetailView({
   const playerRef = useRef<PlaylistPlayerHandle | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isOwnerPreviewOpen, setIsOwnerPreviewOpen] = useState(false);
   const { id } = useParams<{ id: string }>();
 
   const {
@@ -167,7 +169,11 @@ export default function PlaylistDetailView({
           <h3 className="text-text-primary text-xl font-bold">
             {playlist.title}
           </h3>
-          <span className="text-text-secondary text-sm">{`작성자: ${playlist.owner.nickname}`}</span>
+          <button
+            type="button"
+            onClick={() => setIsOwnerPreviewOpen(true)}
+            className="text-text-secondary w-fit cursor-pointer text-left text-sm"
+          >{`작성자: ${playlist.owner.nickname}`}</button>
           <LikedButton
             isLiked={!!playlist.isLiked}
             onClick={handleLikedClick}
@@ -228,6 +234,12 @@ export default function PlaylistDetailView({
         />
       )}
       <CommentsSection playlistId={id} userid={userid} />
+
+      <ProfilePreviewModal
+        userId={playlist.owner.userId}
+        isOpen={isOwnerPreviewOpen}
+        onClose={() => setIsOwnerPreviewOpen(false)}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import ProfilePreviewModal from '@/components/domain/user/ProfilePreviewModal';
 import { APIError } from '@/lib/http/error';
 
 import {
@@ -20,6 +21,7 @@ type Props = {
 
 export default function FollowPage({ userId }: Props) {
   const [activeTab, setActiveTab] = useState<FollowTab>('followers');
+  const [previewUserId, setPreviewUserId] = useState<number | null>(null);
 
   const followersQuery = useFollowersQuery(userId);
   const followingQuery = useFollowingQuery(userId);
@@ -92,9 +94,7 @@ export default function FollowPage({ userId }: Props) {
       </div>
 
       {errorMessage ? (
-        <p className="mt-4 text-center text-sm text-red-500">
-          {errorMessage}
-        </p>
+        <p className="mt-4 text-center text-sm text-red-500">{errorMessage}</p>
       ) : null}
 
       <div className="mt-4">
@@ -106,16 +106,24 @@ export default function FollowPage({ userId }: Props) {
           <FollowerList
             users={followers}
             onToggleFollow={handleToggleFollow}
+            onUserClick={setPreviewUserId}
             pendingUserId={pendingTargetId}
           />
         ) : (
           <FollowingList
             users={following}
             onToggleFollow={handleToggleFollow}
+            onUserClick={setPreviewUserId}
             pendingUserId={pendingTargetId}
           />
         )}
       </div>
+
+      <ProfilePreviewModal
+        userId={previewUserId}
+        isOpen={previewUserId !== null}
+        onClose={() => setPreviewUserId(null)}
+      />
 
       {!activeQuery.isPending && activeQuery.hasNextPage ? (
         <button
