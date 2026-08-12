@@ -54,7 +54,7 @@ export default function ProfilePreviewModal({
 
   const stats = user
     ? [
-        { label: '플레이리스트', value: user.playlistCount },
+        { label: '플레이 리스트', value: user.playlistCount },
         { label: '팔로우', value: user.followerCount },
         { label: '팔로잉', value: user.followingCount },
       ]
@@ -95,7 +95,10 @@ export default function ProfilePreviewModal({
               {user.description ? <p>{user.description}</p> : null}
               <div className="mt-2 flex flex-row gap-2">
                 {stats.map((stat) => (
-                  <div key={stat.label} className="flex flex-col items-center">
+                  <div
+                    key={stat.label}
+                    className="flex flex-1 flex-col items-center text-center"
+                  >
                     <span>{stat.value}</span>
                     <span>{stat.label}</span>
                   </div>
