@@ -17,8 +17,12 @@ export default function MemberItem({
 }: MemberType) {
   return (
     <>
-      <Link href={`/profile/${userId}`}>
-        <span className="flex items-center gap-2">
+      <span>
+        <Link
+          href={`/profile/${userId}`}
+          className="inline-flex items-center gap-2 *:hover:underline"
+          target="_blank"
+        >
           <Image
             src={userImage ?? mookImage.src}
             alt=""
@@ -27,8 +31,8 @@ export default function MemberItem({
             className="rounded-full"
           />
           <p className="text-text-primary text-sm">{username}</p>
-        </span>
-      </Link>
+        </Link>
+      </span>
     </>
   );
 }
