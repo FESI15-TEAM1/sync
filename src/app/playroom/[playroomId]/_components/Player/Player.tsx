@@ -67,10 +67,9 @@ export default function Player({
     (roomTrack?.videoId === currentVideoId ? roomTrack : null);
 
   // 방 상세를 다시 받아오는 동안에도 썸네일은 videoId 로 바로 만들 수 있다.
-  const thumbnail =
-    `https://i.ytimg.com/vi/${currentVideoId}/hqdefault.jpg` ||
-    currentTrack?.thumbnail ||
-    mookImage.src;
+  const thumbnail = currentVideoId
+    ? `https://i.ytimg.com/vi/${currentVideoId}/hqdefault.jpg`
+    : mookImage.src;
 
   const { currentTime, duration, seekPlayerTo, clearPendingSeek } =
     usePlaybackProgress({ playerRef, currentVideoId });
