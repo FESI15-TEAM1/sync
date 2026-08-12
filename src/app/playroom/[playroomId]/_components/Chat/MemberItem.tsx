@@ -23,13 +23,15 @@ export default function MemberItem({
           className="inline-flex items-center gap-2 *:hover:underline"
           target="_blank"
         >
-          <Image
-            src={userImage ?? mookImage.src}
-            alt=""
-            width={32}
-            height={32}
-            className="rounded-full"
-          />
+          <span className="relative h-8 w-8 overflow-hidden rounded-full">
+            <Image
+              src={userImage ?? mookImage.src}
+              alt=""
+              fill
+              className="bg-bg-card object-cover"
+            />
+          </span>
+
           <p className="text-text-primary text-sm">{username}</p>
         </Link>
       </span>
