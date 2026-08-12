@@ -46,7 +46,8 @@ export default function Sidebar() {
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } item-center bg-bg-primary fixed top-[var(--global-header-height)] z-40 flex h-[calc(100vh_-_var(--global-header-height))] w-full shrink-0 flex-col gap-4 px-7 py-3 shadow-xl transition-transform duration-300 ease-in-out lg:absolute lg:w-64 lg:max-w-64 lg:translate-x-0`}
       >
-        <SearchBar />
+        {pathname === '/search' ? '' : <SearchBar />}
+
         <div className="text-text-primary text- flex h-full flex-col gap-9 p-4">
           {user !== null ? (
             <>
