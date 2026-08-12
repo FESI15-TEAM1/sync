@@ -32,8 +32,10 @@ export default function Profile(props: ProfileProps) {
   const [logoutError, setLogoutError] = useState('');
   const [withdrawError, setWithdrawError] = useState('');
 
-  const { data } = useNotificationRequestQuery();
-  const { mutate: notificationReadAll } = useMarkNotificationRealAll();
+  const { data } = useNotificationRequestQuery(profile.id, isOwn);
+  const { mutate: notificationReadAll } = useMarkNotificationRealAll(
+    profile.id,
+  );
 
   const handleEditProfile = () => {
     router.push(`/profile/${profile.id}/edit`);
@@ -223,7 +225,11 @@ export default function Profile(props: ProfileProps) {
                 [...data.items]
                   .sort((a, b) => Number(a.isRead) - Number(b.isRead))
                   .map((item) => (
-                    <NotificationItem key={item.id} item={item} />
+                    <NotificationItem
+                      key={item.id}
+                      item={item}
+                      userId={profile.id}
+                    />
                   ))}
             </ul>
           </div>

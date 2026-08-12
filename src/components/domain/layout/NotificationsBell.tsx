@@ -8,12 +8,14 @@ import { useUserStore } from '@/providers/user-store-provider';
 import { getNotificationsUnread } from '@/services/notifications/notifications.api';
 
 export default function NotificationBell() {
+  const user = useUserStore((state) => state.user);
+
   const { data } = useQuery({
-    queryKey: ['notifications', 'unread-count'],
+    queryKey: ['notifications', 'unread-count', user?.id],
     queryFn: getNotificationsUnread,
     refetchInterval: 30000,
+    enabled: !!user,
   });
-  const user = useUserStore((state) => state.user);
 
   const unreadCount = data?.count;
 

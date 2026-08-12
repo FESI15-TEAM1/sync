@@ -6,7 +6,6 @@ import { formatTimeAgo } from '@/lib/formatITimeAgo';
 import type { NotificationItem } from '@/services/notifications/notifications.type';
 
 import { useMarkNotificationRead } from '../_hooks/useNotificationsQuery';
-
 function getNotificationContent(item: NotificationItem) {
   const name =
     item.actorCount > 1
@@ -80,9 +79,15 @@ function getNotificationContent(item: NotificationItem) {
   }
 }
 
-export default function NotificationItem({ item }: { item: NotificationItem }) {
+export default function NotificationItem({
+  item,
+  userId,
+}: {
+  item: NotificationItem;
+  userId: number;
+}) {
   const { href, message } = getNotificationContent(item);
-  const { mutate: markRead } = useMarkNotificationRead();
+  const { mutate: markRead } = useMarkNotificationRead(userId);
   return (
     <li>
       <Link

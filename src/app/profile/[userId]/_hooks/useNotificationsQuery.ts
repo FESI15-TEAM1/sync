@@ -9,14 +9,15 @@ import {
   markNotificationReadAll,
 } from '@/services/notifications/notifications.api';
 
-export function useNotificationRequestQuery() {
+export function useNotificationRequestQuery(userId: number, isOwn: boolean) {
   return useQuery({
-    queryKey: ['notifications'],
+    queryKey: ['notifications', userId],
     queryFn: () => getNotifications(),
+    enabled: !!userId && isOwn,
   });
 }
 
-export function useMarkNotificationRead() {
+export function useMarkNotificationRead(userId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -24,9 +25,9 @@ export function useMarkNotificationRead() {
       markNotificationRead(notificationId),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
       queryClient.invalidateQueries({
-        queryKey: ['notifications', 'unread-count'],
+        queryKey: ['notifications', 'unread-count', userId],
       });
     },
     onError: (error) => {
@@ -36,16 +37,16 @@ export function useMarkNotificationRead() {
     },
   });
 }
-export function useMarkNotificationRealAll() {
+export function useMarkNotificationRealAll(userId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: () => markNotificationReadAll(),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
       queryClient.invalidateQueries({
-        queryKey: ['notifications', 'unread-count'],
+        queryKey: ['notifications', 'unread-count', userId],
       });
     },
     onError: (error) => {

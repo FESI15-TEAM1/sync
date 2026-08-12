@@ -1,6 +1,6 @@
 import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
-import type { NotificationItem } from '@/services/notifications/notifications.type';
+import type { NotificationItemList } from '@/services/notifications/notifications.type';
 
 function errorResponse(status: number, code: string, message: string) {
   return Response.json({ error: { code, message } }, { status });
@@ -8,7 +8,7 @@ function errorResponse(status: number, code: string, message: string) {
 
 export async function GET() {
   try {
-    const data = await serverFetch<NotificationItem>('/notifications', {
+    const data = await serverFetch<NotificationItemList>('/notifications', {
       method: 'GET',
     });
 
