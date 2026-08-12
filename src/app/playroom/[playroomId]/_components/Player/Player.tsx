@@ -161,7 +161,7 @@ export default function Player({
         alt=""
         width={250}
         height={250}
-        className="aspect-square max-w-[100px] rounded-2xl lg:max-w-none"
+        className="aspect-square max-w-25 rounded-2xl lg:max-w-none"
       />
 
       {/* song title */}
