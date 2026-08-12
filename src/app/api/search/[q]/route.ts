@@ -17,14 +17,14 @@ export async function GET(
   const cursor = searchParams.get('cursor');
   const limit = searchParams.get('limit');
 
-  const queryParams: Record<string, string> = {};
+  const queryParams: Record<string, string> = { q };
 
   if (cursor) queryParams.cursor = cursor;
   // 범위를 벗어난 값은 백엔드가 자동 보정하므로 여기서는 형식만 넘깁니다.
   if (limit) queryParams.limit = limit;
 
   try {
-    const data = await serverFetch<SearchResponse>(`/search?q=${q}`, {
+    const data = await serverFetch<SearchResponse>(`/search`, {
       method: 'GET',
       params: queryParams,
     });

@@ -30,7 +30,7 @@ export default function SearchForm() {
         </div>
       ) : !data || !hasResults ? (
         <div className="text-text-primary flex min-h-[60vh] w-full items-center justify-center font-bold">
-          검색된 내용을 찾을수 없습니다.
+          검색된 내용을 찾을 수 없습니다.
         </div>
       ) : (
         <>
