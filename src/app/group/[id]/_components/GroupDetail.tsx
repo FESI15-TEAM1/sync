@@ -92,13 +92,14 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     trackCount: item.trackCount,
     artist: item.owner.nickname,
     image: item.image,
+    ownerId: item.owner.userId,
   }));
 
   // 내가 그룹에 추가할 수 있는 플레이리스트(내 플레이리스트 중 아직 추가되지 않은 것)
   const myPlaylistsQuery = useQuery({
     queryKey: ['user', currentUser?.id, 'playlists'],
     queryFn: () => fetchAllUserPlaylists(currentUser!.id),
-    enabled: isLeader && currentUser !== null,
+    enabled: (isLeader || group.isMember) && currentUser !== null,
   });
 
   const addedPlaylistIds = new Set(playlists.map((item) => item.id));
@@ -110,18 +111,22 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
       trackCount: item.trackCount,
       artist: currentUser?.nickname ?? '',
       image: item.image,
+      ownerId: currentUser?.id ?? 0,
     }));
 
   const isPlaylistsLoading =
-    groupPlaylistsQuery.isPending || myPlaylistsQuery.isPending;
-
+    groupPlaylistsQuery.isPending ||
+    ((isLeader || group.isMember) && myPlaylistsQuery.isPending);
   //그룹 정보 수정
   const handleEditGroupInfo = () => {
     router.push(`/group/${groupId}/edit`);
   };
   //플레이리스트 편집
   const handleEditPlaylists = () => {
-    if (isSavingPlaylists || isPlaylistsLoading) return;
+    if (isSavingPlaylists || isPlaylistsLoading) {
+      console.log('click');
+      return;
+    }
 
     setSaveErrorMessage(null);
     setIsEditPlaylistsOpen(true);
@@ -243,12 +248,17 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
                       </KebabModal.Item>
                     </>
                   ) : (
-                    <KebabModal.Item
-                      variant="danger"
-                      onClick={handleLeaveGroup}
-                    >
-                      그룹 탈퇴하기
-                    </KebabModal.Item>
+                    <>
+                      <KebabModal.Item onClick={handleEditPlaylists}>
+                        내 플레이리스트 편집
+                      </KebabModal.Item>
+                      <KebabModal.Item
+                        variant="danger"
+                        onClick={handleLeaveGroup}
+                      >
+                        그룹 탈퇴하기
+                      </KebabModal.Item>
+                    </>
                   )}
                 </KebabModal>
               )}
@@ -299,6 +309,8 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
             isOpen={isEditPlaylistsOpen}
             addedPlaylists={playlists}
             availablePlaylists={availablePlaylists}
+            isLeader={isLeader}
+            currentUserId={currentUser?.id ?? null}
             onClose={() => setIsEditPlaylistsOpen(false)}
             onSave={handleSavePlaylists}
           />
