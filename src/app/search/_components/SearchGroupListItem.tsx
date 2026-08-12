@@ -7,7 +7,7 @@ export default function SearchGroupListItem({
   memberCount,
 }: SearchGroupItem) {
   return (
-    <div className="bg-bg-card hover:bg-input flex items-center gap-4 rounded-2xl p-3 transition-colors">
+    <div className="bg-bg-card hover:bg-input flex items-center gap-4 rounded-2xl p-3 transition-all hover:-translate-y-0.5 hover:shadow-xl">
       <div
         aria-hidden
         className={`size-14 shrink-0 rounded-xl bg-linear-to-br ${getGroupGradientClassName(id)}`}
