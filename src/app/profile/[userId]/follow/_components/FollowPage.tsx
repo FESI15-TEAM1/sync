@@ -2,15 +2,15 @@
 
 import { useState } from 'react';
 
+import { APIError } from '@/lib/http/error';
+
+import {
+  useFollowersQuery,
+  useFollowingQuery,
+  useToggleFollowMutation,
+} from '../_hooks/useFollowQuery';
 import FollowerList from './FollowerList';
 import FollowingList from './FollowingList';
-
-export type FollowUser = {
-  id: number;
-  nickname: string;
-  image?: string | null;
-  isFollowing: boolean;
-};
 
 type FollowTab = 'followers' | 'following';
 
@@ -18,75 +18,45 @@ type Props = {
   userId: number;
 };
 
-const MOCK_FOLLOWERS: FollowUser[] = [
-  {
-    id: 1,
-    nickname: 'KPOP의 신',
-    isFollowing: true,
-  },
-  {
-    id: 2,
-    nickname: '나는 문어 꿈을꾸는 문어',
-    isFollowing: true,
-  },
-  {
-    id: 3,
-    nickname: '개발하면서 듣기',
-    isFollowing: true,
-  },
-  {
-    id: 4,
-    nickname: '테크노의 신',
-    isFollowing: true,
-  },
-  {
-    id: 5,
-    nickname: '감다살디제잉',
-    isFollowing: true,
-  },
-];
-
-const MOCK_FOLLOWING: FollowUser[] = [
-  {
-    id: 11,
-    nickname: '새벽감성',
-    isFollowing: true,
-  },
-  {
-    id: 12,
-    nickname: '재즈라운지',
-    isFollowing: true,
-  },
-  {
-    id: 13,
-    nickname: '코딩할때',
-    isFollowing: true,
-  },
-  {
-    id: 14,
-    nickname: '인디플리',
-    isFollowing: true,
-  },
-];
-
 export default function FollowPage({ userId }: Props) {
   const [activeTab, setActiveTab] = useState<FollowTab>('followers');
-  const [followers, setFollowers] = useState(MOCK_FOLLOWERS);
-  const [following, setFollowing] = useState(MOCK_FOLLOWING);
+
+  const followersQuery = useFollowersQuery(userId);
+  const followingQuery = useFollowingQuery(userId);
+  const toggleFollowMutation = useToggleFollowMutation(userId);
+
+  const followers = followersQuery.data ?? [];
+  const following = followingQuery.data ?? [];
+
+  const activeQuery =
+    activeTab === 'followers' ? followersQuery : followingQuery;
+
+  const errorMessage = toggleFollowMutation.isError
+    ? toggleFollowMutation.error instanceof APIError
+      ? toggleFollowMutation.error.message
+      : '팔로우 상태를 변경하지 못했습니다.'
+    : activeQuery.isError
+      ? activeQuery.error instanceof APIError
+        ? activeQuery.error.message
+        : '팔로우 목록을 불러오지 못했습니다.'
+      : '';
+
+  const pendingTargetId = toggleFollowMutation.isPending
+    ? toggleFollowMutation.variables.targetId
+    : null;
 
   const handleToggleFollow = (targetId: number) => {
-    const updateList = (list: FollowUser[]) =>
-      list.map((user) =>
-        user.id === targetId
-          ? { ...user, isFollowing: !user.isFollowing }
-          : user,
-      );
+    // 같은 대상에 대한 요청이 아직 진행 중이면 중복 토글(POST/DELETE 경합)을 막습니다.
+    if (pendingTargetId === targetId) return;
 
-    if (activeTab === 'followers') {
-      setFollowers(updateList);
-    } else {
-      setFollowing(updateList);
-    }
+    const list = activeTab === 'followers' ? followers : following;
+    const target = list.find((user) => user.id === targetId);
+    if (!target) return;
+
+    toggleFollowMutation.mutate({
+      targetId,
+      nextIsFollowing: !target.isFollowing,
+    });
   };
 
   return (
@@ -121,16 +91,42 @@ export default function FollowPage({ userId }: Props) {
         </button>
       </div>
 
+      {errorMessage ? (
+        <p className="mt-4 text-center text-sm text-red-500">
+          {errorMessage}
+        </p>
+      ) : null}
+
       <div className="mt-4">
-        {activeTab === 'followers' ? (
-          <FollowerList users={followers} onToggleFollow={handleToggleFollow} />
+        {activeQuery.isPending ? (
+          <p className="text-text-secondary py-10 text-center text-sm">
+            불러오는 중...
+          </p>
+        ) : activeTab === 'followers' ? (
+          <FollowerList
+            users={followers}
+            onToggleFollow={handleToggleFollow}
+            pendingUserId={pendingTargetId}
+          />
         ) : (
           <FollowingList
             users={following}
             onToggleFollow={handleToggleFollow}
+            pendingUserId={pendingTargetId}
           />
         )}
       </div>
+
+      {!activeQuery.isPending && activeQuery.hasNextPage ? (
+        <button
+          type="button"
+          onClick={() => activeQuery.fetchNextPage()}
+          disabled={activeQuery.isFetchingNextPage}
+          className="text-text-secondary mt-4 self-center text-sm disabled:opacity-50"
+        >
+          {activeQuery.isFetchingNextPage ? '불러오는 중...' : '더 보기'}
+        </button>
+      ) : null}
     </div>
   );
 }

@@ -3,14 +3,19 @@ import Image from 'next/image';
 import SyncLogo from '@/assets/icons/syncLogo.svg';
 import Button from '@/components/Button';
 
-import type { FollowUser } from './FollowPage';
+import type { FollowUser } from '../_hooks/useFollowQuery';
 
 type Props = {
   users: FollowUser[];
   onToggleFollow: (userId: number) => void;
+  pendingUserId?: number | null;
 };
 
-export default function FollowingList({ users, onToggleFollow }: Props) {
+export default function FollowingList({
+  users,
+  onToggleFollow,
+  pendingUserId,
+}: Props) {
   if (users.length === 0) {
     return (
       <p className="text-text-secondary py-10 text-center text-sm">
@@ -52,6 +57,7 @@ export default function FollowingList({ users, onToggleFollow }: Props) {
             type="button"
             size="sm"
             variant={user.isFollowing ? 'outline' : 'primary'}
+            isDisabled={pendingUserId === user.id}
             onClick={() => onToggleFollow(user.id)}
           >
             {user.isFollowing ? '언팔로우' : '팔로우'}
