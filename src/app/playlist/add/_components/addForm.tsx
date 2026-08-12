@@ -7,6 +7,7 @@ import AddedTracksSection from '@/app/playlist/add/_components/AddedTracksSectio
 import PlaylistThumbnailField from '@/app/playlist/add/_components/PlaylistThumbnailField';
 import TrackSearchSection from '@/app/playlist/add/_components/TrackSearchSection';
 import Button from '@/components/Button';
+import BackButton from '@/components/common/BackButton';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
 import Toggle from '@/components/Toggle';
@@ -76,6 +77,9 @@ export default function AddForm() {
 
   return (
     <div className="flex w-4xl flex-col items-center gap-6">
+      <div className="flex w-full">
+        <BackButton fallbackUrl="/playlist" />
+      </div>
       <PlaylistThumbnailField onFileSelect={setImgFile} />
 
       {/* 플레이리스트 이름 색션 */}
