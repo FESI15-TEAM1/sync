@@ -7,15 +7,11 @@ import { useState } from 'react';
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
-import { APIError } from '@/lib/http/error';
 import { type MyPlaylistItem } from '@/services/playlist/playlistCard.type';
-import { postPlayroom } from '@/services/playroom/playroom.api';
 import { hashTagToArray } from '@/utils/playroom/hashTag';
 
+import { usePostPlayroom } from '../_hooks/usePostPlayroom';
 import PlaylistSelector from './PlaylistSelector';
-
-const SUBMIT_ERROR_MESSAGE =
-  '플레이룸 생성에 실패했습니다. 잠시 후 다시 시도해주세요.';
 
 // 백엔드 스펙(PlayroomCreateRequest)과 동일한 길이 제한
 const TITLE_MAX_LENGTH = 100;
@@ -33,36 +29,24 @@ export default function AddForm({
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<number | null>(
     null,
   );
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const { createPlayroom, isCreating, errorMessage } = usePostPlayroom();
 
   const isSubmitDisabled =
-    !title.trim() || selectedPlaylistId === null || isSubmitting;
+    !title.trim() || selectedPlaylistId === null || isCreating;
 
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const trimmedTitle = title.trim();
-    if (!trimmedTitle || selectedPlaylistId === null || isSubmitting) return;
+    if (!trimmedTitle || selectedPlaylistId === null || isCreating) return;
 
-    setIsSubmitting(true);
-    setErrorMessage(null);
-
-    try {
-      const { id } = await postPlayroom({
-        title: trimmedTitle,
-        description,
-        playlistId: selectedPlaylistId,
-        hashtags: hashTagToArray(description),
-      });
-      router.push(`/playroom/${id}`);
-    } catch (error) {
-      // 성공 시에는 페이지 이동이 끝날 때까지 제출 상태를 유지해 중복 생성을 막는다.
-      setIsSubmitting(false);
-      setErrorMessage(
-        error instanceof APIError ? error.message : SUBMIT_ERROR_MESSAGE,
-      );
-    }
+    createPlayroom({
+      title: trimmedTitle,
+      description,
+      playlistId: selectedPlaylistId,
+      hashtags: hashTagToArray(description),
+    });
   };
 
   return (
@@ -114,7 +98,7 @@ export default function AddForm({
         {/* buttons */}
         <div className="flex items-center justify-center gap-4">
           <Button isDisabled={isSubmitDisabled} type="submit">
-            {isSubmitting ? '생성 중...' : '생성하기'}
+            {isCreating ? '생성 중...' : '생성하기'}
           </Button>
 
           <button
