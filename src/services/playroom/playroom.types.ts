@@ -30,7 +30,13 @@ export interface PlayroomListItemResponse {
 /** 목록 카드가 실제로 사용하는 필드만 추린 타입. API 응답(PlayroomListItemResponse)을 그대로 넘길 수 있습니다. */
 export type PlayroomCardData = Pick<
   PlayroomListItemResponse,
-  'id' | 'title' | 'description' | 'hashtags' | 'listenerCount' | 'host'
+  | 'id'
+  | 'title'
+  | 'description'
+  | 'hashtags'
+  | 'listenerCount'
+  | 'host'
+  | 'isLive'
 >;
 
 /** 한 페이지 개수의 허용 범위. 벗어난 값은 백엔드가 임의로 보정하므로 요청 전에 걸러냅니다. */
