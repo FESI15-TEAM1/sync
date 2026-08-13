@@ -28,3 +28,7 @@ export const markNotificationRead = (notificationId: number) => {
 export const markNotificationReadAll = () => {
   return clientFetch(`/notifications`, { method: 'PATCH' });
 };
+
+export const deleteNotification = (notificationId: number) => {
+  return clientFetch(`/notifications/${notificationId}`, { method: 'DELETE' });
+};
