@@ -20,6 +20,9 @@ export default function SearchBar() {
         className="bg-bg-card text-text-primary w-full rounded-full px-6 py-2 pr-10 text-sm"
         placeholder="검색어 를 입력해 주세요"
         onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleSaearch();
+        }}
       ></input>
       <button className="absolute top-2 right-4" onClick={handleSaearch}>
         <Serach />
