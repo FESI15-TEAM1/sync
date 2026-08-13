@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -26,6 +27,7 @@ type ProfileProps =
 
 export default function Profile(props: ProfileProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const setUser = useUserStore((state) => state.setUser);
   const { isOwn, profile } = props;
 
@@ -70,6 +72,8 @@ export default function Profile(props: ProfileProps) {
     try {
       await logout();
       setUser(null);
+      // 계정에 묶인 캐시(내 프로필·내 플레이룸 등)가 다음 계정으로 새지 않도록 전부 비웁니다.
+      queryClient.clear();
       router.push('/');
     } catch (error) {
       console.error('로그아웃 실패:', error);
@@ -89,6 +93,8 @@ export default function Profile(props: ProfileProps) {
     try {
       await withdraw();
       setUser(null);
+      // 탈퇴한 계정의 캐시가 남지 않도록 전부 비웁니다.
+      queryClient.clear();
       router.push('/');
       setIsWithdrawModalOpen(false);
     } catch (error) {

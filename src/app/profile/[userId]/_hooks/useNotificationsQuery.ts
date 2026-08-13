@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { APIError } from '@/lib/http/error';
 import {
+  deleteNotification,
   getNotifications,
   markNotificationRead,
   markNotificationReadAll,
@@ -52,6 +53,26 @@ export function useMarkNotificationRealAll(userId: number) {
     onError: (error) => {
       alert(
         error instanceof APIError ? error.message : '읽음 처리에 실패했습니다.',
+      );
+    },
+  });
+}
+
+export function useDeleteNotification(notificationId: number, userId: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => deleteNotification(notificationId),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
+      queryClient.invalidateQueries({
+        queryKey: ['notifications', 'unread-count', userId],
+      });
+    },
+    onError: (error) => {
+      alert(
+        error instanceof APIError ? error.message : '삭제 처리를 실패했습니다.',
       );
     },
   });

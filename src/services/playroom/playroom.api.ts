@@ -2,6 +2,7 @@ import { clientFetch } from '@/lib/http/client-fetch';
 import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 
 import type {
+  GetMyPlayroomsResponse,
   GetPlayroomsParams,
   GetPlayroomsResponse,
   PlayroomCreateRequest,
@@ -25,6 +26,16 @@ export const getPlayrooms = ({ cursor, limit }: GetPlayroomsParams = {}) => {
   return clientFetch<GetPlayroomsResponse>('/playrooms', {
     method: 'GET',
     params: Object.keys(params).length > 0 ? params : undefined,
+  });
+};
+
+/**
+ * 내가 방장인 플레이룸을 최신순으로 조회합니다. 회원 전용이라 비회원이면 401 입니다.
+ * 개설 상한(5개)이 한 페이지를 넘지 않아 커서 파라미터가 없습니다.
+ */
+export const getMyPlayrooms = () => {
+  return clientFetch<GetMyPlayroomsResponse>('/playrooms/me', {
+    method: 'GET',
   });
 };
 

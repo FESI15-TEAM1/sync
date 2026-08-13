@@ -13,6 +13,7 @@ export default function Main() {
         '새벽 감성방에 오신 것을 환영합니다. 이 방은 새벽 감성을 공유하는 공간입니다.',
       hashtags: ['Jazz', 'Blues', 'Indie', 'Ballad', 'R&B'],
       listenerCount: 1,
+      isLive: true,
       host: { userId: 1, nickname: '김디제이', image: null },
     },
     {
@@ -22,6 +23,7 @@ export default function Main() {
         '창문 내리고 달릴 때 듣기 좋은 곡만 모았습니다. 신나는 노래 환영해요.',
       hashtags: ['Pop', 'Rock', 'Dance', 'City Pop'],
       listenerCount: 3,
+      isLive: false,
       host: { userId: 2, nickname: '창문내린김대리', image: null },
     },
     {
@@ -31,6 +33,7 @@ export default function Main() {
         '가사 없는 음악만 틀어주세요. 조용히 각자 할 일 하는 작업 공간입니다.',
       hashtags: ['Lo-fi', 'Ambient', 'Classical', 'Piano'],
       listenerCount: 15,
+      isLive: false,
       host: { userId: 3, nickname: '이어폰붙박이', image: null },
     },
   ];
