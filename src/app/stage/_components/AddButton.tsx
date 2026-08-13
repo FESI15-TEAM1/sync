@@ -18,9 +18,8 @@ export default function AddButton() {
   const router = useRouter();
 
   // 개설 상한 확인용. 회원일 때만 요청하며, 목록 뷰와 쿼리 키를 공유합니다.
-  const { playrooms, isLoading: isMyPlayroomsLoading } = useGetMyPlayroomList(
-    Boolean(user),
-  );
+  const { playrooms, isFetching: isMyPlayroomsFetching } =
+    useGetMyPlayroomList();
 
   const [isLoginRequiredOpen, setIsLoginRequiredOpen] = useState(false);
   const [isLimitReachedOpen, setIsLimitReachedOpen] = useState(false);
@@ -51,10 +50,11 @@ export default function AddButton() {
       <IconButton
         variants="primary"
         size="lg"
-        className="fixed right-5 bottom-5 z-10 disabled:cursor-not-allowed disabled:opacity-60"
+        className="disabled:bg-disabled fixed right-5 bottom-5 z-10 disabled:cursor-not-allowed disabled:opacity-60"
         onClick={handleDirectToCreate}
-        // 세션 확인 전에는 비회원 여부를, 목록 조회 전에는 개설 개수를 알 수 없으므로 버튼을 비활성화합니다.
-        disabled={isLoading || isMyPlayroomsLoading}
+        // 세션 확인 전에는 비회원 여부를, 목록을 다시 받아오는 동안에는 최신 개설 개수를 알 수 없으므로 버튼을 비활성화합니다.
+        // (캐시가 있는 백그라운드 재조회에서는 isLoading 이 false 라 isFetching 으로 판정합니다.)
+        disabled={isLoading || isMyPlayroomsFetching}
         aria-label="플레이룸 생성 버튼"
       >
         <span className="text-3xl text-white">+</span>
