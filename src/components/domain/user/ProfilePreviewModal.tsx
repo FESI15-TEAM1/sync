@@ -54,7 +54,7 @@ export default function ProfilePreviewModal({
 
   const stats = user
     ? [
-        { label: '플레이 리스트', value: user.playlistCount },
+        { label: '플레이리스트', value: user.playlistCount },
         { label: '팔로우', value: user.followerCount },
         { label: '팔로잉', value: user.followingCount },
       ]
