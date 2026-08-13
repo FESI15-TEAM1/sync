@@ -53,7 +53,8 @@ export default function PlayroomHeader({
 
   return (
     <div className="mx-2 flex items-center justify-between">
-      <BackButton fallbackUrl="/stage" />
+      <BackButton staticUrl="/stage" fallbackUrl="/stage" />
+
       <h1 className="text-text-primary text-base">{playroomTitle}</h1>
       {isHost ? (
         <KebabModal>
