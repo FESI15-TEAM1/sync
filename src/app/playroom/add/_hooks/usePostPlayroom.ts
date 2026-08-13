@@ -22,7 +22,7 @@ export function usePostPlayroom() {
     mutationFn: (form: PlayroomCreateRequest) => postPlayroom(form),
     onSuccess: ({ id }) => {
       // 새로 만든 방이 목록 카드에 바로 보이도록 목록만 갱신합니다.
-      queryClient.invalidateQueries({ queryKey: ['playrooms'], exact: true });
+      queryClient.invalidateQueries({ queryKey: ['playrooms'] });
 
       router.push(`/playroom/${id}`);
     },
