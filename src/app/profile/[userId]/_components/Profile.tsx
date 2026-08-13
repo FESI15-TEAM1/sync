@@ -225,7 +225,7 @@ export default function Profile(props: ProfileProps) {
                 <p className="text-text-secondary mt-1 text-xs">내 그룹</p>
               </Link>
             ) : null}
-            <Link href="/playlist" className="text-center">
+            <Link href={`/playlist/${profile.id}`} className="text-center">
               <p className="text-text-primary font-bold">
                 {profile.playlistCount}
               </p>
