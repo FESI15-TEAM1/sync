@@ -9,13 +9,20 @@ import IconButton from '../IconButton';
 
 export default function BackButton({
   fallbackUrl = '/',
+  staticUrl,
   ...props
 }: ComponentPropsWithoutRef<'button'> & {
   fallbackUrl?: string;
+  staticUrl?: string;
 }) {
   const router = useRouter();
 
   const handleBack = () => {
+    if (staticUrl) {
+      router.push(staticUrl);
+      return;
+    }
+
     if (window.history.length > 1) {
       router.back();
     } else {
