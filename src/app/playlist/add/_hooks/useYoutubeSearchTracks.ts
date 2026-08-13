@@ -26,6 +26,9 @@ export function useYoutubeSearchTracks(addedVideoIds: Set<string>) {
 
   const isFetchingRef = useRef(false);
   const fetchCountRef = useRef(0);
+  // search()가 새로 호출되면 세대를 올려, 이전 검색어의 응답이 늦게 도착해도
+  // 이미 리셋된 상태(rawTracks/nextPageToken)에 섞여 들어가지 않도록 폐기한다.
+  const generationRef = useRef(0);
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: (pageToken?: string) => searchYoutubeTracks(query, pageToken),
@@ -42,11 +45,14 @@ export function useYoutubeSearchTracks(addedVideoIds: Set<string>) {
     if (fetchCountRef.current >= MAX_AUTO_FETCH) return;
     if (filteredTracks.length > (page + 1) * PAGE_SIZE) return;
 
+    const generation = generationRef.current;
     isFetchingRef.current = true;
     fetchCountRef.current += 1;
 
     mutateAsync(nextPageToken ?? undefined)
       .then((result) => {
+        if (generation !== generationRef.current) return;
+
         setRawTracks((prev) => {
           const seen = new Set(prev.map((track) => track.videoId));
           return [
@@ -55,8 +61,10 @@ export function useYoutubeSearchTracks(addedVideoIds: Set<string>) {
           ];
         });
         setNextPageToken(result.nextPageToken);
+        setSearchError(null);
       })
       .catch(() => {
+        if (generation !== generationRef.current) return;
         setSearchError('검색 결과를 불러오지 못했습니다.');
       })
       .finally(() => {
@@ -65,6 +73,7 @@ export function useYoutubeSearchTracks(addedVideoIds: Set<string>) {
   }, [query, nextPageToken, filteredTracks.length, page, mutateAsync]);
 
   const search = (q: string) => {
+    generationRef.current += 1;
     setQuery(q);
     setPage(0);
     setRawTracks([]);
