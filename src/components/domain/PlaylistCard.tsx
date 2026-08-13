@@ -24,11 +24,11 @@ export default function PlaylistCard({
         />
       </div>
       <div className="items-baseline">
-        <h4 className="truncate text-base">{title}</h4>
+        <h4 className="truncate text-base" title={title}>
+          {title}
+        </h4>
         {trackCount !== undefined && (
-          <span title={title} className="text-sm">
-            {trackCount}곡
-          </span>
+          <span className="text-sm">{trackCount}곡</span>
         )}
       </div>
     </div>
