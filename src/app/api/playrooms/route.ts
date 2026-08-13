@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 
+import { MY_PLAYROOM_MAX_COUNT } from '@/constants/playroom';
 import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
 import {
@@ -62,6 +63,15 @@ export async function POST(req: NextRequest) {
     return Response.json({ id: data.id }, { status: 201 });
   } catch (error) {
     if (error instanceof APIError) {
+      // 409 는 이미 최대 개수만큼 방을 열어 둔 경우입니다. 안내 문구를 고정해서 내려줍니다.
+      if (error.status === 409) {
+        return errorResponse(
+          409,
+          error.code,
+          `플레이룸은 최대 ${MY_PLAYROOM_MAX_COUNT}개까지 만들 수 있습니다. 기존 플레이룸을 닫은 뒤 다시 시도해주세요.`,
+        );
+      }
+
       return errorResponse(error.status, error.code, error.message);
     }
 
