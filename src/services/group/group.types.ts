@@ -168,6 +168,11 @@ export interface GetGroupMembersResponse {
   nextCursor: string | null;
 }
 
+// POST /groups/{groupId}/members — 초대코드로 그룹 즉시 가입
+export interface JoinGroupByCodeRequest {
+  inviteCode: string;
+}
+
 export type EditGroupPlaylistsResponse = GroupPlaylistResponse[];
 
 export type GroupRequestStatus = 'pending' | 'accepted' | 'rejected';

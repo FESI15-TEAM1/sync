@@ -15,7 +15,9 @@ import type {
   GetPublicGroupsParams,
   GetPublicGroupsResponse,
   GroupDetailResponse,
+  GroupMemberResponse,
   GroupRequestResponse,
+  JoinGroupByCodeRequest,
   UpdateGroupRequest,
 } from './group.types';
 
@@ -119,6 +121,14 @@ export function getGroupMembers(
   return clientFetch<GetGroupMembersResponse>(`/groups/${groupId}/members`, {
     method: 'GET',
     params: Object.keys(params).length > 0 ? params : undefined,
+  });
+}
+
+// 초대코드로 그룹 즉시 가입
+export function joinGroupByCode(groupId: number, data: JoinGroupByCodeRequest) {
+  return clientFetch<GroupMemberResponse>(`/groups/${groupId}/members`, {
+    method: 'POST',
+    body: data,
   });
 }
 
