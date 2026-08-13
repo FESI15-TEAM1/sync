@@ -47,13 +47,13 @@ export default function GroupMemberList({
 
   return (
     <>
-      <ul className="flex flex-col">
+      <ul className="mx-auto flex w-10/12 flex-col">
         {members.map((member) => (
-          <li className="mx-auto" key={member.userId}>
+          <li className="w-full" key={member.userId}>
             <button
               type="button"
               onClick={() => setPreviewUserId(member.userId)}
-              className="flex w-full cursor-pointer items-center gap-3 py-3 text-left"
+              className="flex w-full cursor-pointer items-center gap-4 py-3 text-left"
             >
               {member.image ? (
                 <Image
@@ -71,17 +71,19 @@ export default function GroupMemberList({
                   <SyncLogo width={22} height={22} />
                 </div>
               )}
-              <p className="text-text-primary min-w-0 flex-1 truncate pr-20 pl-2 text-sm">
-                {member.nickname}
-              </p>
-              {member.isOwner && (
-                <Crown
-                  className="shrink-0 text-yellow-500"
-                  width={20}
-                  height={20}
-                  aria-label="방장"
-                />
-              )}
+              <div className="flex min-w-0 flex-1 items-center gap-1">
+                <p className="text-text-primary truncate pr-50 text-sm">
+                  {member.nickname}
+                </p>
+                {member.isOwner && (
+                  <Crown
+                    className="shrink-0 text-yellow-500"
+                    width={20}
+                    height={20}
+                    aria-label="방장"
+                  />
+                )}
+              </div>
             </button>
           </li>
         ))}
