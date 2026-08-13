@@ -148,6 +148,26 @@ export interface EditGroupPlaylistsRequest {
   playlistIds: number[];
 }
 
+// GET /groups/{groupId}/members — 그룹 멤버 목록(가입 순)
+export interface GroupMemberResponse {
+  userId: number;
+  // 탈퇴한 유저는 "탈퇴한 사용자"
+  nickname: string;
+  image: string | null;
+  isOwner: boolean;
+}
+
+export interface GetGroupMembersParams {
+  cursor?: string;
+  limit?: number;
+}
+
+export interface GetGroupMembersResponse {
+  items: GroupMemberResponse[];
+  // null 이면 마지막 페이지입니다.
+  nextCursor: string | null;
+}
+
 export type EditGroupPlaylistsResponse = GroupPlaylistResponse[];
 
 export type GroupRequestStatus = 'pending' | 'accepted' | 'rejected';

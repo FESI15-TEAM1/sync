@@ -13,6 +13,7 @@ import { APIError } from '@/lib/http/error';
 import { useUserStore } from '@/providers/user-store-provider';
 import {
   editGroupPlaylists,
+  getGroupMembers,
   getGroupPlaylists,
   leaveGroup,
   requestJoinGroup,
@@ -21,7 +22,9 @@ import type { GroupDetailResponse } from '@/services/group/group.types';
 import { getUserPlaylists } from '@/services/playlist/playlist.api';
 import type { MyPlaylistItem } from '@/services/playlist/playlistCard.type';
 
+import GroupDetailTabs, { type DetailTab } from './GroupDetailTabs';
 import GroupLeaveModal from './GroupLeaveModal';
+import GroupMemberList from './GroupMemberList';
 import PlaylistEditModal, { type EditablePlaylist } from './PlaylistEditModal';
 
 // 그룹 상세 화면에서 한 번에 다룰 플레이리스트 최대 개수(스펙상 페이지 최대치)
@@ -69,6 +72,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
 
   const [isEditPlaylistsOpen, setIsEditPlaylistsOpen] = useState(false);
   const [isLeaveGroupOpen, setIsLeaveGroupOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<DetailTab>('playlists');
 
   const groupInfo: EditableGroupInfo = {
     name: group.title,
@@ -77,6 +81,12 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     coverImage: group.image,
   };
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
+
+  // 그룹 멤버 목록
+  const groupMembersQuery = useQuery({
+    queryKey: ['group', groupId, 'members'],
+    queryFn: () => getGroupMembers(groupId, { limit: PLAYLIST_QUERY_LIMIT }),
+  });
 
   // 그룹에 추가된 플레이리스트
   const groupPlaylistsQuery = useQuery({
@@ -324,32 +334,41 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
           onConfirm={handleConfirmLeave}
         />
       </div>
-      <div className="mx-auto w-full max-w-md px-5">
-        {groupPlaylistsQuery.isPending ? (
-          <p className="text-text-secondary text-sm">
-            플레이리스트를 불러오는 중입니다...
-          </p>
-        ) : groupPlaylistsQuery.isError ? (
-          <p role="alert" className="text-sm text-red-500">
-            플레이리스트를 불러오는데 실패했습니다.
-          </p>
+      <GroupDetailTabs activeTab={activeTab} onChange={setActiveTab} />
+      <div className="mx-auto mt-4 w-full max-w-md px-5">
+        {activeTab === 'playlists' ? (
+          groupPlaylistsQuery.isPending ? (
+            <p className="text-text-secondary text-sm">
+              플레이리스트를 불러오는 중입니다...
+            </p>
+          ) : groupPlaylistsQuery.isError ? (
+            <p role="alert" className="text-sm text-red-500">
+              플레이리스트를 불러오는데 실패했습니다.
+            </p>
+          ) : (
+            <div className="flex flex-row flex-wrap gap-3">
+              {playlists.map((playlist) => (
+                <>
+                  <Link
+                    href={`/playlist/detail/${playlist.id}`}
+                    key={playlist.id}
+                  >
+                    <PlaylistCard
+                      img={playlist.image}
+                      title={playlist.title}
+                      trackCount={playlist.trackCount}
+                    />
+                  </Link>
+                </>
+              ))}
+            </div>
+          )
         ) : (
-          <div className="flex flex-row flex-wrap gap-3">
-            {playlists.map((playlist) => (
-              <>
-                <Link
-                  href={`/playlist/detail/${playlist.id}`}
-                  key={playlist.id}
-                >
-                  <PlaylistCard
-                    img={playlist.image}
-                    title={playlist.title}
-                    trackCount={playlist.trackCount}
-                  />
-                </Link>
-              </>
-            ))}
-          </div>
+          <GroupMemberList
+            members={groupMembersQuery.data?.items ?? []}
+            isLoading={groupMembersQuery.isPending}
+            isError={groupMembersQuery.isError}
+          />
         )}
       </div>
     </>

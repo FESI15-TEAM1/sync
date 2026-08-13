@@ -6,6 +6,8 @@ import type {
   CreateGroupResponse,
   EditGroupPlaylistsRequest,
   EditGroupPlaylistsResponse,
+  GetGroupMembersParams,
+  GetGroupMembersResponse,
   GetGroupPlaylistsParams,
   GetGroupPlaylistsResponse,
   GetGroupsParams,
@@ -102,6 +104,22 @@ export function getGroupPlaylists(
       params: Object.keys(params).length > 0 ? params : undefined,
     },
   );
+}
+
+// 그룹 멤버 목록
+export function getGroupMembers(
+  groupId: number,
+  { cursor, limit }: GetGroupMembersParams = {},
+) {
+  const params: Record<string, string> = {};
+
+  if (cursor) params.cursor = cursor;
+  if (limit !== undefined) params.limit = String(limit);
+
+  return clientFetch<GetGroupMembersResponse>(`/groups/${groupId}/members`, {
+    method: 'GET',
+    params: Object.keys(params).length > 0 ? params : undefined,
+  });
 }
 
 // 그룹 플레이리스트 일괄 편집
