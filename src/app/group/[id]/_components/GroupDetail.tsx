@@ -363,6 +363,8 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
           )
         ) : (
           <GroupMemberList
+            groupId={groupId}
+            isLeader={isLeader}
             members={groupMembersQuery.data?.items ?? []}
             isLoading={groupMembersQuery.isPending}
             isError={groupMembersQuery.isError}

@@ -1,25 +1,56 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useState } from 'react';
 
 import Crown from '@/assets/icons/crown.svg';
 import SyncLogo from '@/assets/icons/syncLogo.svg';
 import ProfilePreviewModal from '@/components/domain/user/ProfilePreviewModal';
+import { APIError } from '@/lib/http/error';
+import { leaveGroup } from '@/services/group/group.api';
 import type { GroupMemberResponse } from '@/services/group/group.types';
 
 type GroupMemberListProps = {
+  groupId: number;
+  isLeader: boolean;
   members: GroupMemberResponse[];
   isLoading: boolean;
   isError: boolean;
 };
 
 export default function GroupMemberList({
+  groupId,
+  isLeader,
   members,
   isLoading,
   isError,
 }: GroupMemberListProps) {
+  const queryClient = useQueryClient();
   const [previewUserId, setPreviewUserId] = useState<number | null>(null);
+
+  const { mutate: kickMember, variables: kickingUserId } = useMutation({
+    mutationFn: (userId: number) => leaveGroup(groupId, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['group', groupId, 'members'],
+      });
+    },
+    onError: (error) => {
+      alert(
+        error instanceof APIError
+          ? error.message
+          : '멤버 강퇴 중 오류가 발생했습니다.',
+      );
+    },
+  });
+
+  const handleKick = (member: GroupMemberResponse) => {
+    if (kickingUserId !== undefined) return;
+    if (!confirm(`${member.nickname}님을 내보내시겠습니까?`)) return;
+
+    kickMember(member.userId);
+  };
 
   if (isLoading) {
     return (
@@ -47,13 +78,16 @@ export default function GroupMemberList({
 
   return (
     <>
-      <ul className="mx-auto flex w-10/12 flex-col">
-        {members.map((member) => (
-          <li className="w-full" key={member.userId}>
+      <ul className="mx-auto flex w-10/12 flex-col gap-2">
+        {[...members].reverse().map((member) => (
+          <li
+            className="group bg-bg-card relative flex w-full items-center gap-2 rounded-2xl p-3"
+            key={member.userId}
+          >
             <button
               type="button"
               onClick={() => setPreviewUserId(member.userId)}
-              className="flex w-full cursor-pointer items-center gap-4 py-3 text-left"
+              className="flex min-w-0 flex-1 cursor-pointer items-center gap-4 text-left"
             >
               {member.image ? (
                 <Image
@@ -72,7 +106,7 @@ export default function GroupMemberList({
                 </div>
               )}
               <div className="flex min-w-0 flex-1 items-center gap-1">
-                <p className="text-text-primary truncate pr-50 text-sm">
+                <p className="text-text-primary text-md truncate">
                   {member.nickname}
                 </p>
                 {member.isOwner && (
@@ -85,6 +119,18 @@ export default function GroupMemberList({
                 )}
               </div>
             </button>
+            {isLeader && !member.isOwner && (
+              <button
+                type="button"
+                onClick={() => handleKick(member)}
+                disabled={kickingUserId === member.userId}
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-red-600 opacity-0 transition-opacity group-hover:opacity-100 disabled:opacity-50"
+              >
+                {kickingUserId === member.userId
+                  ? '내보내는 중...'
+                  : '내보내기'}
+              </button>
+            )}
           </li>
         ))}
       </ul>
