@@ -11,7 +11,7 @@ export default async function GroupListPage() {
     await serverFetch<MyProfile>('/users/me', { method: 'GET' });
   } catch (error) {
     if (error instanceof APIError && error.status === 401) {
-      redirect('/group/login-required');
+      redirect('/login-required');
     }
     throw error;
   }

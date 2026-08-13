@@ -13,8 +13,10 @@ export default function SearchForm() {
   const searchParams = useSearchParams();
   const q = searchParams.get('q');
 
-  const { data, isPending } = useGetSearchDataQuery({ q });
+  const { data, isPending, error } = useGetSearchDataQuery({ q });
   const { playlists, groups, playrooms } = data ?? {};
+
+  if (error) return <div>에러발생</div>;
 
   const hasResults =
     (playlists?.items.length ?? 0) > 0 ||

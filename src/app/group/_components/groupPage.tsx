@@ -62,7 +62,7 @@ export default function GroupPage() {
 
   useEffect(() => {
     if (isGroupsAuthError) {
-      router.replace('/group/login-required');
+      router.replace('/login-required');
     }
   }, [isGroupsAuthError, router]);
 

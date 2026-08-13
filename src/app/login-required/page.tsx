@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 
 import Button from '@/components/Button';
 
-export default function GroupLoginRequiredPage() {
+export default function LoginRequiredPage() {
   const router = useRouter();
 
   return (
