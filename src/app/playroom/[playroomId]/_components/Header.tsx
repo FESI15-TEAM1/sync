@@ -6,8 +6,8 @@ import BackButton from '@/components/common/BackButton';
 import KebabModal from '@/components/domain/KebabModal';
 
 import { useDeletePlayroom } from '../_hooks/useDeletePlayroom';
-import PlayroomCloseModal from './PlayroomCloseModal';
-import PlayroomEditModal from './PlayroomEditModal';
+import PlayroomCloseModal from './Modal/PlayroomCloseModal';
+import PlayroomEditModal from './Modal/PlayroomEditModal';
 
 export default function PlayroomHeader({
   playroomId,

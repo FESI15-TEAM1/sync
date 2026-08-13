@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
         hostname: 'code-it-sync-bucket.s3.ap-northeast-2.amazonaws.com', // S3 bucket for SYNC images
       },
       {
-        protocol: 'https',
+        protocol: 'http',
         hostname: 'k.kakaocdn.net', // Kakao profile images
       },
       {

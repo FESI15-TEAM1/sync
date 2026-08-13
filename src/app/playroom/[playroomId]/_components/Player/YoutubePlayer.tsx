@@ -16,6 +16,8 @@ export type YoutubePlayerHandle = {
   unMute: () => void;
   getCurrentTime: () => number;
   getDuration: () => number;
+  /** 유튜브 플레이어 상태 코드. -1(시작 전)·5(큐만 올림)에서는 seekTo 가 먹지 않는다. */
+  getPlayerState: () => number;
   /** 현재 iframe 에 올라가 있는 곡. 마운트 시점의 곡이 그대로 남아 있을 수 있어 따로 추적한다. */
   getLoadedVideoId: () => string;
 };
@@ -65,6 +67,7 @@ export default function YoutubePlayer({
     unMute: () => playerRef.current?.unMute(),
     getCurrentTime: () => playerRef.current?.getCurrentTime() ?? 0,
     getDuration: () => playerRef.current?.getDuration() ?? 0,
+    getPlayerState: () => playerRef.current?.getPlayerState() ?? -1,
     getLoadedVideoId: () => loadedVideoIdRef.current,
   }));
 

@@ -17,18 +17,24 @@ export default function MemberItem({
 }: MemberType) {
   return (
     <>
-      <Link href={`/profile/${userId}`}>
-        <span className="flex items-center gap-2">
-          <Image
-            src={userImage ?? mookImage.src}
-            alt=""
-            width={32}
-            height={32}
-            className="rounded-full"
-          />
+      <span>
+        <Link
+          href={`/profile/${userId}`}
+          className="inline-flex items-center gap-2 *:hover:underline"
+          target="_blank"
+        >
+          <span className="relative h-8 w-8 overflow-hidden rounded-full">
+            <Image
+              src={userImage ?? mookImage.src}
+              alt=""
+              fill
+              className="bg-bg-card object-cover"
+            />
+          </span>
+
           <p className="text-text-primary text-sm">{username}</p>
-        </span>
-      </Link>
+        </Link>
+      </span>
     </>
   );
 }
