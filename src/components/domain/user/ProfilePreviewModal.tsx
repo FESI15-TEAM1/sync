@@ -42,7 +42,6 @@ export default function ProfilePreviewModal({
   const handleGoToProfile = () => {
     if (userId === null) return;
 
-    onClose();
     router.push(`/profile/${userId}`);
   };
 
