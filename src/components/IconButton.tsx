@@ -15,24 +15,22 @@ export default function IconButton({
   size: 'sm' | 'md' | 'lg';
   className?: string;
 }) {
-  const buttonStyle = twMerge(
-    clsx(
-      'rounded-full flex justify-center items-center cursor-pointer',
-      {
-        'bg-primary': variants === 'primary',
-        'bg-bg-card': variants === 'secondary',
-      },
-      {
-        'size-6': size === 'sm',
-        'size-8': size === 'md',
-        'size-12': size === 'lg',
-      },
-    ),
+  const buttonStyle = clsx(
+    'rounded-full flex justify-center items-center cursor-pointer',
+    {
+      'bg-primary': variants === 'primary',
+      'bg-bg-card': variants === 'secondary',
+    },
+    {
+      'size-6': size === 'sm',
+      'size-8': size === 'md',
+      'size-12': size === 'lg',
+    },
   );
 
   return (
     <>
-      <button className={`${buttonStyle} ${className}`} {...props}>
+      <button className={twMerge(buttonStyle, className)} {...props}>
         {children}
       </button>
     </>
