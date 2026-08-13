@@ -14,6 +14,7 @@ import { APIError } from '@/lib/http/error';
 import { getGroups } from '@/services/group/group.api';
 
 import InviteSelectModal from './InviteSelectModal';
+import JoinByCodeModal from './JoinByCodeModal';
 import PlaylistRequestName from './PlaylistRequestName';
 
 const GROUP_PAGE_SIZE = 10;
@@ -26,6 +27,7 @@ export default function GroupPage() {
   const [selectedRequestId, setSelectedRequestId] = useState<number | null>(
     null,
   );
+  const [isJoinByCodeOpen, setIsJoinByCodeOpen] = useState(false);
 
   const {
     data: groupsData,
@@ -101,8 +103,7 @@ export default function GroupPage() {
   };
 
   const handleJoinByCode = () => {
-    // 코드로 참여하기 플로우 연동
-    console.log('코드로 참여하기 버튼 클릭');
+    setIsJoinByCodeOpen(true);
   };
 
   return (
@@ -270,6 +271,11 @@ export default function GroupPage() {
           onSelect={(groupId) => handleGroupSelect(selectedRequestId, groupId)}
         />
       )}
+
+      <JoinByCodeModal
+        isOpen={isJoinByCodeOpen}
+        onClose={() => setIsJoinByCodeOpen(false)}
+      />
     </div>
   );
 }
