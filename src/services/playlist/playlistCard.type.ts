@@ -37,3 +37,20 @@ export interface MyPlaylistItem {
   trackCount: number;
   createdAt: string;
 }
+
+export interface PublicPlaylistResponse {
+  items: PublicPlaylistItem[];
+  nextCursor: string | null;
+}
+
+export interface PublicPlaylistItem {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  trackCount: number;
+  likeCount: number;
+  owner: PlaylistOwner;
+  isLiked: boolean;
+  createdAt: string;
+}
