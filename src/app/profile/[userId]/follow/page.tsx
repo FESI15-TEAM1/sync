@@ -7,7 +7,7 @@ export default async function Page({
   searchParams,
 }: {
   params: Promise<{ userId: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { userId } = await params;
   const { tab } = await searchParams;
@@ -20,7 +20,11 @@ export default async function Page({
   return (
     <FollowPage
       userId={profileId}
-      initialTab={tab === 'following' ? 'following' : 'followers'}
+      initialTab={
+        typeof tab === 'string' && tab === 'following'
+          ? 'following'
+          : 'followers'
+      }
     />
   );
 }
