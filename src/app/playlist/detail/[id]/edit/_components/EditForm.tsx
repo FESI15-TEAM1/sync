@@ -3,12 +3,9 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { type ChangeEvent, useState } from 'react';
+import { type ChangeEvent, useEffect, useState } from 'react';
 
-import {
-  isYoutubeVideoItem,
-  type YoutubeSearchResponse,
-} from '@/app/api/youtube/youtube.types';
+import TrackSearchSection from '@/app/playlist/add/_components/TrackSearchSection';
 import Minus from '@/assets/icons/minus.svg';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
@@ -68,43 +65,27 @@ function EditPlaylistForm({
     isPublic: playlist.isPublic,
     tracks: playlist.tracks,
   }));
-  const [searchValue, setSearchValue] = useState('');
-  const [searchList, setSearchList] = useState<PlaylistTrack[]>([]);
   const [imgFile, setImgFile] = useState<File | null>(null);
+
+  const addedVideoIds = new Set(form.tracks.map((track) => track.videoId));
+
+  // preview가 바뀌기 직전(다음 파일 선택 시)과 언마운트 시 모두 이전 blob URL을 해제한다.
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const url = URL.createObjectURL(file);
     setImgFile(file);
-    setPreview((prev) => {
-      if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
-      return url;
-    });
+    setPreview(URL.createObjectURL(file));
   };
 
-  const fetchSearchData = async () => {
-    try {
-      const response = await fetch(`/api/youtube/searchTrack?q=${searchValue}`);
-      if (!response.ok) throw new Error('곡 검색에 실패했습니다.');
-      const result: YoutubeSearchResponse = await response.json();
-      const videos = result.items.filter(isYoutubeVideoItem).map((item) => ({
-        videoId: item.id.videoId,
-        title: item.snippet.title,
-        artist: item.snippet.channelTitle,
-        thumbnail: item.snippet.thumbnails.default.url,
-      }));
-      setSearchList(videos);
-    } catch {
-      alert('곡 검색에 실패했습니다.');
-    }
-  };
   const handleAddTrack = (track: PlaylistTrack) => {
     setForm((prev) => ({ ...prev, tracks: [...prev.tracks, track] }));
-    setSearchList((prev) =>
-      prev.filter((item) => item.videoId !== track.videoId),
-    );
   };
   const handleDeleteTrack = (track: PlaylistTrack) => {
     setForm((prev) => ({
@@ -214,38 +195,10 @@ function EditPlaylistForm({
         />
       </div>
       {/* 검색 색션 */}
-      <div className="flex w-full items-center justify-center gap-3">
-        <InputField className="w-full">
-          <InputField.Input
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            placeholder="아티스트 명 또는 곡 이름을 검색하세요."
-          ></InputField.Input>
-          <InputField.Button onClick={fetchSearchData}>검색</InputField.Button>
-        </InputField>
-      </div>
-      {searchList.length > 0 ? (
-        <>
-          <span className="text-text-secondary">검색결과</span>
-          {/* 검색 결과 색션 */}
-          <div className="bg-bg-card w-full rounded-xl p-2">
-            <TrackList
-              trackList={searchList}
-              onTrackClick={handleAddTrack}
-              Button={
-                <IconButton
-                  className="border-border text-text-secondary hover:text-text-primary flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full border text-sm"
-                  size="sm"
-                >
-                  +
-                </IconButton>
-              }
-            />
-          </div>
-        </>
-      ) : (
-        ''
-      )}
+      <TrackSearchSection
+        addedVideoIds={addedVideoIds}
+        onAddTrack={handleAddTrack}
+      />
       {/* 추가된곡 색션 */}
       <span className="text-text-secondary">추가된곡</span>
       <div className="w-full">

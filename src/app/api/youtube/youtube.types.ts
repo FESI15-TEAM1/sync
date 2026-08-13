@@ -5,9 +5,9 @@ interface YoutubeThumbnail {
 }
 
 interface YoutubeThumbnails {
-  default: YoutubeThumbnail;
-  medium: YoutubeThumbnail;
-  high: YoutubeThumbnail;
+  default?: YoutubeThumbnail;
+  medium?: YoutubeThumbnail;
+  high?: YoutubeThumbnail;
 }
 
 interface YoutubeSearchSnippet {

@@ -28,7 +28,11 @@ export const GET = async (req: NextRequest) => {
       videoId: item.id.videoId,
       title: item.snippet.title,
       artist: item.snippet.channelTitle,
-      thumbnail: item.snippet.thumbnails.default.url,
+      thumbnail:
+        item.snippet.thumbnails.default?.url ??
+        item.snippet.thumbnails.medium?.url ??
+        item.snippet.thumbnails.high?.url ??
+        '',
     }));
 
     return Response.json({
