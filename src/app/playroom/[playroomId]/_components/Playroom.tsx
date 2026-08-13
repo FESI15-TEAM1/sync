@@ -19,8 +19,9 @@ import PlayroomHeader from './Header';
 import LoginRequiredModal from './Modal/LoginRequiredModal';
 import RoomClosedModal from './Modal/RoomClosedModal';
 
-export type ChatMessage = {
+export type ChatMessageTypes = {
   id: number;
+  userId: number;
   username: string;
   // 프로필 이미지가 없거나 탈퇴한 유저면 null 입니다.
   userImage: string | null;
@@ -97,7 +98,7 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
   }));
 
   return (
-    <div className="grid h-[var(--main-content-full-height)] min-h-0 grid-rows-[auto_1fr] gap-4">
+    <div className="grid h-(--main-content-full-height) min-h-0 grid-rows-[auto_1fr] gap-4">
       <PlayroomHeader
         playroomId={playroomId}
         playroomTitle={playroomData?.title ?? ''}
@@ -133,6 +134,7 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
             historyErrorMessage={chatHistoryErrorMessage}
             sendMessage={sendMessage}
             members={members}
+            hostId={playroomData?.host.userId ?? null}
           />
         </div>
       )}

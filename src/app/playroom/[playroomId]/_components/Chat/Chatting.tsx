@@ -3,8 +3,8 @@ import { type SubmitEvent } from 'react';
 import SendIcon from '@/assets/icons/chat/send.svg';
 import IconButton from '@/components/IconButton';
 
-import { type ChatMessage } from '../Playroom';
-import ChatBox from './ChatMessage';
+import { type ChatMessageTypes } from '../Playroom';
+import ChatMessage from './ChatMessage';
 
 export default function Chatting({
   messages,
@@ -12,14 +12,17 @@ export default function Chatting({
   chat,
   setChat,
   handleSubmit,
+  hostId,
 }: {
-  messages: ChatMessage[];
+  messages: ChatMessageTypes[];
   // 지난 채팅을 불러오지 못한 경우의 안내. 실시간 채팅은 그대로 동작합니다.
   historyErrorMessage?: string | null;
   chat: string;
   setChat: (chat: string) => void;
   handleSubmit: (e: SubmitEvent<HTMLFormElement>) => void;
+  hostId: number | null;
 }) {
+  console.log(messages);
   return (
     <div className="scrollbar-track-bg-card scrollbar-thumb-text-secondary grid min-h-0 grid-rows-[1fr_auto]">
       {/* 채팅 로그 */}
@@ -31,11 +34,12 @@ export default function Chatting({
             </p>
           )}
           {messages.map((message) => (
-            <ChatBox
+            <ChatMessage
               key={message.id}
               username={message.username}
               userImage={message.userImage}
               message={message.message}
+              isHostMessage={message.userId === hostId}
             />
           ))}
         </div>

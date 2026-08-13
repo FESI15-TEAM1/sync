@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { getAccessToken } from '@/services/auth/token.api';
 
-import type { ChatMessage } from '../_components/Playroom';
+import type { ChatMessageTypes } from '../_components/Playroom';
 import { chatMessagesQueryKey } from './useChatMessages';
 import { playroomQueryKey } from './useGetPlayroomData';
 
@@ -19,7 +19,7 @@ export interface PlaybackState {
 }
 
 export function useWSConnect(playroomId: number) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessageTypes[]>([]);
   const [playback, setPlayback] = useState<PlaybackState | null>(null);
   // 참가자가 들어올 때마다 늘어납니다. 방장이 현재 재생 상태를 다시 알리는 신호로 씁니다.
   const [memberJoinedCount, setMemberJoinedCount] = useState(0);
@@ -116,6 +116,7 @@ export function useWSConnect(playroomId: number) {
                         ...prev,
                         {
                           id: e.id,
+                          userId: e.sender.id,
                           username: e.sender.nickname,
                           userImage: e.sender.image,
                           message: e.message,

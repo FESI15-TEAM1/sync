@@ -3,7 +3,7 @@
 import { cva } from 'class-variance-authority';
 import { type SubmitEvent, useState } from 'react';
 
-import { type ChatMessage } from '../Playroom';
+import { type ChatMessageTypes } from '../Playroom';
 import Chatting from './Chatting';
 import type { MemberType } from './MemberItem';
 import Members from './Members';
@@ -47,11 +47,13 @@ export default function ChatMembers({
   historyErrorMessage,
   sendMessage,
   members,
+  hostId,
 }: {
-  messages: ChatMessage[];
+  messages: ChatMessageTypes[];
   historyErrorMessage?: string | null;
   sendMessage: (message: string) => void;
   members: MemberType[];
+  hostId: number | null;
 }) {
   const [currentTab, setCurrentTab] = useState<'chatting' | 'members'>(
     'chatting',
@@ -98,10 +100,11 @@ export default function ChatMembers({
           chat={chat}
           setChat={setChat}
           handleSubmit={handleSubmit}
+          hostId={hostId}
         />
       ) : (
         // 멤버 탭 내용
-        <Members members={members} />
+        <Members members={members} hostId={hostId} />
       )}
     </div>
   );

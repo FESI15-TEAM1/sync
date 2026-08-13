@@ -4,7 +4,7 @@ import { APIError } from '@/lib/http/error';
 import { getPlayroomMessages } from '@/services/playroom/playroomMessage.api';
 import type { PlayroomMessageResponse } from '@/services/playroom/playroomMessage.types';
 
-import type { ChatMessage } from '../_components/Playroom';
+import type { ChatMessageTypes } from '../_components/Playroom';
 
 /** 방에 들어왔을 때 한 번에 불러올 지난 채팅 개수 */
 const CHAT_HISTORY_LIMIT = 50;
@@ -12,9 +12,12 @@ const CHAT_HISTORY_LIMIT = 50;
 export const chatMessagesQueryKey = (playroomId: number) =>
   ['playrooms', playroomId, 'messages'] as const;
 
-export function toChatMessage(message: PlayroomMessageResponse): ChatMessage {
+export function toChatMessage(
+  message: PlayroomMessageResponse,
+): ChatMessageTypes {
   return {
     id: message.id,
+    userId: message.sender.userId,
     username: message.sender.nickname,
     userImage: message.sender.image,
     message: message.message,
@@ -28,7 +31,7 @@ export function toChatMessage(message: PlayroomMessageResponse): ChatMessage {
  */
 export function useChatMessages(
   playroomId: number,
-  liveMessages: ChatMessage[],
+  liveMessages: ChatMessageTypes[],
 ) {
   const {
     data,
