@@ -66,6 +66,7 @@ export function useWSConnect(playroomId: number) {
             // 방 상세를 받은 뒤에 내가 접속했으므로, 참가자 목록에 나를 포함해 다시 받아옵니다.
             queryClient.invalidateQueries({
               queryKey: playroomQueryKey(playroomId),
+              exact: true,
             });
           },
         );
@@ -86,6 +87,7 @@ export function useWSConnect(playroomId: number) {
                 // 여기서 따로 쌓지 않고 다시 받아오게 한다.
                 queryClient.invalidateQueries({
                   queryKey: playroomQueryKey(playroomId),
+                  exact: true,
                 });
                 break;
               case 'playback_sync':
@@ -96,6 +98,7 @@ export function useWSConnect(playroomId: number) {
                   lastVideoIdRef.current = e.videoId;
                   queryClient.invalidateQueries({
                     queryKey: playroomQueryKey(playroomId),
+                    exact: true,
                   });
                 }
 
@@ -116,7 +119,7 @@ export function useWSConnect(playroomId: number) {
                         ...prev,
                         {
                           id: e.id,
-                          userId: e.sender.id,
+                          userId: e.sender.userId,
                           username: e.sender.nickname,
                           userImage: e.sender.image,
                           message: e.message,
