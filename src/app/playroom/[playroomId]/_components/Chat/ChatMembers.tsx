@@ -3,23 +3,12 @@
 import { cva } from 'class-variance-authority';
 import { type SubmitEvent, useState } from 'react';
 
+import SyncLogo from '@/assets/icons/syncLogo.svg';
+
 import { type ChatMessageTypes } from '../Playroom';
 import Chatting from './Chatting';
 import type { MemberType } from './MemberItem';
 import Members from './Members';
-
-const tabButtonVariants = cva('box-border cursor-pointer py-2 text-xs', {
-  variants: {
-    isActive: {
-      true: 'border-primary text-text-primary border-b-2 font-bold',
-      false:
-        'border-border text-text-secondary hover:text-text-primary border-b-1',
-    },
-  },
-  defaultVariants: {
-    isActive: false,
-  },
-});
 
 export function TabButton({
   tabname,
@@ -30,6 +19,20 @@ export function TabButton({
   isActive: boolean;
   onClick: () => void;
 }) {
+  // 탭 버튼 스타일
+  const tabButtonVariants = cva('box-border cursor-pointer py-2 text-xs', {
+    variants: {
+      isActive: {
+        true: 'border-primary text-text-primary border-b-2 font-bold',
+        false:
+          'border-border text-text-secondary hover:text-text-primary border-b-1',
+      },
+    },
+    defaultVariants: {
+      isActive: false,
+    },
+  });
+
   return (
     <button
       type="button"
@@ -75,8 +78,22 @@ export default function ChatMembers({
     }
   };
 
+  // 멤버 수 표시 패널 스타일
+  const listenerPanelStyles = cva(
+    'text-text-primary border-border absolute top-8.5 right-0 flex items-center gap-1 rounded-bl-xl border-b border-l px-2 py-1 text-center',
+    {
+      variants: {
+        currentTab: {
+          chatting: '',
+          members:
+            'before:from-primary before:absolute before:top-0 before:-left-px before:block before:h-6 before:w-px before:bg-linear-to-b before:to-transparent before:content-[""]',
+        },
+      },
+    },
+  );
+
   return (
-    <div className="border-border bg-bg-card grid h-full min-h-0 grid-rows-[auto_1fr] overflow-hidden rounded-xl border">
+    <div className="border-border bg-bg-card relative grid h-full min-h-0 grid-rows-[auto_1fr] overflow-hidden rounded-xl border">
       {/* 탭 버튼 */}
       <div className="grid grid-cols-2 text-center">
         <TabButton
@@ -90,6 +107,24 @@ export default function ChatMembers({
           onClick={() => setCurrentTab('members')}
         />
       </div>
+
+      {/* 현재 참여자 수 패널 */}
+      <span className={listenerPanelStyles({ currentTab })}>
+        <SyncLogo
+          width={20}
+          height={20}
+          key={members.length}
+          style={{
+            animation: 'var(--animate-ping)',
+            animationFillMode: 'both',
+            animationDirection: 'alternate',
+            animationDuration: '300ms',
+            animationTimingFunction: 'ease-out',
+            animationIterationCount: 2,
+          }}
+        />
+        <span>{members.length}</span>
+      </span>
 
       {/* 탭 내용 */}
       {currentTab === 'chatting' ? (
