@@ -12,6 +12,7 @@ import { usePlayerSync } from '../../_hooks/Player/usePlayerSync';
 import type { PlaybackState } from '../../_hooks/useWSConnect';
 import Controller from './Controller';
 import PlayProgressBar from './PlayProgressBar';
+import WaitingDots from './WaitingDots';
 import YoutubePlayer, { type YoutubePlayerHandle } from './YoutubePlayer';
 
 // 이 시간을 넘겨 재생했다면 이전 곡으로 넘어가는 대신 현재 곡을 처음부터 다시 재생한다.
@@ -168,12 +169,12 @@ export default function Player({
 
       {/* song title */}
       <h2 className="pt-2 text-base font-bold text-white">
-        {currentTrack?.title ?? ' '}
+        {currentTrack?.title ?? '방장의 재생을 기다리는 중이에요⏱️'}
       </h2>
 
       {/* song artist */}
       <p className="text-text-secondary text-xs">
-        {currentTrack?.artist ?? ' '}
+        {currentTrack?.artist ?? <WaitingDots />}
       </p>
 
       {/* play progress bar */}
