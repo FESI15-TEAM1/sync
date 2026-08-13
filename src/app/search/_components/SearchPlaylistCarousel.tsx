@@ -16,6 +16,7 @@ export default function SearchPlaylistCarousel({
   const contentRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const [dragRange, setDragRange] = useState(0);
+  const [playlistItems] = useState<SearchPlaylistItem[]>(items);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -33,7 +34,7 @@ export default function SearchPlaylistCarousel({
     resizeObserver.observe(content);
 
     return () => resizeObserver.disconnect();
-  }, []);
+  }, [playlistItems]);
 
   return (
     <div ref={containerRef} className="w-full">
