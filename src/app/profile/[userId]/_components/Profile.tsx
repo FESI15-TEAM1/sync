@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -101,13 +102,6 @@ export default function Profile(props: ProfileProps) {
       setIsWithdrawing(false);
     }
   };
-
-  const stats = [
-    ...(isOwn ? [{ label: '내 그룹', value: props.profile.groupCount }] : []),
-    { label: '플레이리스트', value: profile.playlistCount },
-    { label: '팔로우', value: followerCount },
-    { label: '팔로잉', value: profile.followingCount },
-  ];
 
   return (
     <>
@@ -223,12 +217,33 @@ export default function Profile(props: ProfileProps) {
           ) : null}
 
           <div className="flex justify-between">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-text-primary font-bold">{stat.value}</p>
-                <p className="text-text-secondary mt-1 text-xs">{stat.label}</p>
+            {isOwn ? (
+              <div className="text-center">
+                <p className="text-text-primary font-bold">
+                  {props.profile.groupCount}
+                </p>
+                <p className="text-text-secondary mt-1 text-xs">내 그룹</p>
               </div>
-            ))}
+            ) : null}
+            <div className="text-center">
+              <p className="text-text-primary font-bold">
+                {profile.playlistCount}
+              </p>
+              <p className="text-text-secondary mt-1 text-xs">플레이리스트</p>
+            </div>
+            <Link href={`/profile/${profile.id}/follow`} className="text-center">
+              <p className="text-text-primary font-bold">{followerCount}</p>
+              <p className="text-text-secondary mt-1 text-xs">팔로우</p>
+            </Link>
+            <Link
+              href={`/profile/${profile.id}/follow?tab=following`}
+              className="text-center"
+            >
+              <p className="text-text-primary font-bold">
+                {profile.followingCount}
+              </p>
+              <p className="text-text-secondary mt-1 text-xs">팔로잉</p>
+            </Link>
           </div>
 
           {isOwn ? null : (
