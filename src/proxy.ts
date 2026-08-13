@@ -119,7 +119,7 @@ export async function proxy(request: NextRequest) {
 
   response.cookies.set('accessToken', tokens.accessToken, {
     ...baseCookieOptions,
-    maxAge: tokens.expiresIn,
+    maxAge: tokens.expiresIn - 60 * 2,
   });
   response.cookies.set('refreshToken', tokens.refreshToken, {
     ...baseCookieOptions,
