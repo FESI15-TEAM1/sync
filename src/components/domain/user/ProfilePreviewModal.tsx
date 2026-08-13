@@ -93,14 +93,16 @@ export default function ProfilePreviewModal({
               )}
               <p className="mt-2 mb-2">{user.nickname}</p>
               {user.description ? <p>{user.description}</p> : null}
-              <div className="mt-2 flex flex-row gap-2">
+              <div className="mt-2 mb-5 flex flex-row justify-center gap-2">
                 {stats.map((stat) => (
                   <div
                     key={stat.label}
-                    className="flex flex-1 flex-col items-center text-center"
+                    className="relative flex w-28 flex-col items-center text-center"
                   >
                     <span>{stat.value}</span>
-                    <span>{stat.label}</span>
+                    <span className="absolute inset-x-0 top-full text-sm tracking-wide whitespace-nowrap">
+                      {stat.label}
+                    </span>
                   </div>
                 ))}
               </div>
