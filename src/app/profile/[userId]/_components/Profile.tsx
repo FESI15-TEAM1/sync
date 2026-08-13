@@ -7,6 +7,7 @@ import SyncLogo from '@/assets/icons/syncLogo.svg';
 import Button from '@/components/Button';
 import KebabModal from '@/components/domain/KebabModal';
 import { Modal } from '@/components/Modal';
+import { useToggleFollowMutation } from '@/hooks/useToggleFollowMutation';
 import { APIError } from '@/lib/http/error';
 import { useUserStore } from '@/providers/user-store-provider';
 import { logout } from '@/services/auth/auth.api';
@@ -31,14 +32,36 @@ export default function Profile(props: ProfileProps) {
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [logoutError, setLogoutError] = useState('');
   const [withdrawError, setWithdrawError] = useState('');
+  const [isFollowing, setIsFollowing] = useState(!isOwn && profile.isFollowing);
+  const [followerCount, setFollowerCount] = useState(profile.followerCount);
 
   const { data } = useNotificationRequestQuery(profile.id, isOwn);
   const { mutate: notificationReadAll } = useMarkNotificationRealAll(
     profile.id,
   );
+  const { mutate: toggleFollow, isPending: isTogglingFollow } =
+    useToggleFollowMutation();
 
   const handleEditProfile = () => {
     router.push(`/profile/${profile.id}/edit`);
+  };
+
+  const handleToggleFollow = () => {
+    if (isOwn) return;
+
+    const nextIsFollowing = !isFollowing;
+    setIsFollowing(nextIsFollowing);
+    setFollowerCount((count) => count + (nextIsFollowing ? 1 : -1));
+
+    toggleFollow(
+      { userId: profile.id, nextIsFollowing },
+      {
+        onError: () => {
+          setIsFollowing(!nextIsFollowing);
+          setFollowerCount((count) => count + (nextIsFollowing ? -1 : 1));
+        },
+      },
+    );
   };
 
   const handleLogout = async () => {
@@ -82,7 +105,7 @@ export default function Profile(props: ProfileProps) {
   const stats = [
     ...(isOwn ? [{ label: '내 그룹', value: props.profile.groupCount }] : []),
     { label: '플레이리스트', value: profile.playlistCount },
-    { label: '팔로우', value: profile.followerCount },
+    { label: '팔로우', value: followerCount },
     { label: '팔로잉', value: profile.followingCount },
   ];
 
@@ -207,6 +230,19 @@ export default function Profile(props: ProfileProps) {
               </div>
             ))}
           </div>
+
+          {isOwn ? null : (
+            <Button
+              type="button"
+              size="md"
+              variant={isFollowing ? 'outline' : 'primary'}
+              isDisabled={isTogglingFollow}
+              onClick={handleToggleFollow}
+              className="w-full rounded-full font-bold"
+            >
+              {isFollowing ? '언팔로우' : '팔로우'}
+            </Button>
+          )}
         </div>
 
         {isOwn ? (

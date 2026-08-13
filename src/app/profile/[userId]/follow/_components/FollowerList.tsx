@@ -8,12 +8,14 @@ import type { FollowUser } from '../_hooks/useFollowQuery';
 type Props = {
   users: FollowUser[];
   onToggleFollow: (userId: number) => void;
+  onUserClick: (userId: number) => void;
   pendingUserId?: number | null;
 };
 
 export default function FollowerList({
   users,
   onToggleFollow,
+  onUserClick,
   pendingUserId,
 }: Props) {
   if (users.length === 0) {
@@ -31,7 +33,11 @@ export default function FollowerList({
           key={user.id}
           className="flex items-center justify-between gap-3 py-3"
         >
-          <div className="flex min-w-0 items-center gap-3">
+          <button
+            type="button"
+            onClick={() => onUserClick(user.id)}
+            className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
+          >
             {user.image ? (
               <Image
                 src={user.image}
@@ -51,7 +57,7 @@ export default function FollowerList({
             <p className="text-text-primary truncate text-sm">
               {user.nickname}
             </p>
-          </div>
+          </button>
 
           <Button
             type="button"
