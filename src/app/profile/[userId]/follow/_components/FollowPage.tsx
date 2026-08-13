@@ -17,10 +17,14 @@ type FollowTab = 'followers' | 'following';
 
 type Props = {
   userId: number;
+  initialTab?: FollowTab;
 };
 
-export default function FollowPage({ userId }: Props) {
-  const [activeTab, setActiveTab] = useState<FollowTab>('followers');
+export default function FollowPage({
+  userId,
+  initialTab = 'followers',
+}: Props) {
+  const [activeTab, setActiveTab] = useState<FollowTab>(initialTab);
   const [previewUserId, setPreviewUserId] = useState<number | null>(null);
 
   const followersQuery = useFollowersQuery(userId);
