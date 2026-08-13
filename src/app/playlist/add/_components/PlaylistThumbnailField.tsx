@@ -3,8 +3,6 @@
 import Image from 'next/image';
 import { type ChangeEvent, useEffect, useState } from 'react';
 
-import IconButton from '@/components/IconButton';
-
 export default function PlaylistThumbnailField({
   onFileSelect,
 }: {
