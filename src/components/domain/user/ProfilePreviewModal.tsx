@@ -122,7 +122,7 @@ export default function ProfilePreviewModal({
               {user.isFollowing ? '언팔로우' : '팔로우'}
             </Button>
           ) : null}
-          <Button type="button" variant="outline" onClick={handleGoToProfile}>
+          <Button type="button" variant="primary" onClick={handleGoToProfile}>
             프로필
           </Button>
         </Modal.Footer>
