@@ -23,6 +23,8 @@ export function useWSConnect(playroomId: number) {
   const [playback, setPlayback] = useState<PlaybackState | null>(null);
   // 참가자가 들어올 때마다 늘어납니다. 방장이 현재 재생 상태를 다시 알리는 신호로 씁니다.
   const [memberJoinedCount, setMemberJoinedCount] = useState(0);
+  // 방장이 방을 종료했습니다. 참가자에게 안내하고 내보내는 신호로 씁니다.
+  const [isRoomClosed, setIsRoomClosed] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -123,7 +125,9 @@ export function useWSConnect(playroomId: number) {
                 );
                 break;
               case 'room_closed':
-                // {} - 방 닫힘
+                // {} - 방 닫힘. 종료된 방에는 다시 붙을 수 없으므로 재연결도 멈춥니다.
+                setIsRoomClosed(true);
+                stompClient.deactivate();
                 break;
             }
           },
@@ -185,5 +189,6 @@ export function useWSConnect(playroomId: number) {
     playback,
     playbackControl,
     memberJoinedCount,
+    isRoomClosed,
   };
 }
