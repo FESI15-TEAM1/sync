@@ -1,117 +1,28 @@
 'use client';
 
-import { type ReactNode } from 'react';
+import { useState } from 'react';
 
-import { useGetPlayroomList } from '@/app/stage/_hooks/useGetPlayroomList';
-import Button from '@/components/Button';
-import PlayroomList from '@/components/domain/playroom/PlayroomList';
-import { type PlayroomListItemResponse } from '@/services/playroom/playroom.types';
+import { useUserStore } from '@/providers/user-store-provider';
+
+import LivePlayroomListView from './LivePlayroomListView';
+import MyPlayroomListView from './MyPlayroomListView';
+import MyPlayroomToggle from './MyPlayroomToggle';
 
 export default function PlayroomListView() {
-  const {
-    data,
-    isPending,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-    isFetchingNextPage,
-    isFetchNextPageError,
-    refetch,
-    loadMoreRef,
-  } = useGetPlayroomList();
+  const user = useUserStore((state) => state.user);
 
-  if (isPending) {
-    return (
-      <StatusContainer>
-        <p className="text-text-secondary">
-          현재 라이브 중인 플레이룸을 불러오는 중입니다!
-        </p>
-      </StatusContainer>
-    );
-  }
+  const [isMineOnly, setIsMineOnly] = useState(false);
 
-  // 첫 페이지부터 실패해 보여줄 목록이 없는 경우입니다.
-  // 자동 재시도를 두지 않으므로 여기서 직접 다시 시도할 수단을 제공합니다.
-  // 다음 페이지 실패는 이미 받은 목록을 유지한 채 하단에서 따로 안내합니다.
-  if (!data) {
-    return (
-      <StatusContainer>
-        <p className="text-red-500" role="alert">
-          플레이룸을 불러오는데 실패하였습니다.
-        </p>
-        <Button
-          size="sm"
-          variant="outline"
-          isDisabled={isFetching}
-          onClick={() => refetch()}
-        >
-          {isFetching ? '불러오는 중...' : '다시 시도'}
-        </Button>
-      </StatusContainer>
-    );
-  }
-
-  const playrooms = dedupeById(data.pages.flatMap((page) => page.items));
-
-  if (playrooms.length === 0) {
-    return (
-      <StatusContainer>
-        <p className="text-text-primary">
-          현재 라이브 중인 플레이룸이 존재하지 않습니다.
-        </p>
-      </StatusContainer>
-    );
-  }
+  // 내가 만든 플레이룸 조회는 회원 전용이라 비회원에게는 토글을 노출하지 않습니다.
+  const isMyListVisible = Boolean(user) && isMineOnly;
 
   return (
-    <>
-      <PlayroomList data={playrooms} />
-
-      {hasNextPage && (
-        <div
-          ref={loadMoreRef}
-          className="flex flex-col items-center justify-center gap-2 py-4"
-        >
-          {isFetchingNextPage && (
-            <p className="text-text-secondary text-sm">
-              플레이룸을 더 불러오는 중입니다...
-            </p>
-          )}
-
-          {isFetchNextPageError && (
-            <>
-              <p className="text-sm text-red-500" role="alert">
-                플레이룸을 더 불러오는데 실패하였습니다.
-              </p>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => fetchNextPage()}
-              >
-                다시 시도
-              </Button>
-            </>
-          )}
-        </div>
+    <div className="relative">
+      {user && (
+        <MyPlayroomToggle isMineOnly={isMineOnly} onChange={setIsMineOnly} />
       )}
-    </>
-  );
-}
 
-/**
- * 라이브 목록은 방송이 끝난 방이 실시간으로 빠지면서 커서 경계가 밀릴 수 있어,
- * 페이지 사이에 같은 방이 중복으로 들어오는 경우를 걸러냅니다.
- */
-function dedupeById(playrooms: PlayroomListItemResponse[]) {
-  return Array.from(
-    new Map(playrooms.map((playroom) => [playroom.id, playroom])).values(),
-  );
-}
-
-function StatusContainer({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex h-(--main-content-full-height) flex-col items-center justify-center gap-3">
-      {children}
+      {isMyListVisible ? <MyPlayroomListView /> : <LivePlayroomListView />}
     </div>
   );
 }

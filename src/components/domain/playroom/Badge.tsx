@@ -1,22 +1,47 @@
-import { clsx } from 'clsx';
+import { cva, type VariantProps } from 'class-variance-authority';
 import { type ReactNode } from 'react';
-import { twMerge } from 'tailwind-merge';
+
+const badgeVariants = cva('rounded-full px-3 py-0.2 text-xs', {
+  variants: {
+    type: {
+      live: 'font-semibold',
+      genre:
+        'border-border text-text-secondary border text-[10px] font-normal uppercase',
+    },
+    isLive: {
+      true: '',
+      false: '',
+    },
+  },
+  compoundVariants: [
+    {
+      type: 'live',
+      isLive: true,
+      class: 'bg-[rgba(241,109,109,20%)] text-[#f16d6d]',
+    },
+    {
+      // 방송 중이 아닐 때 — 빨간 LIVE 대신 회색으로
+      type: 'live',
+      isLive: false,
+      class: 'bg-disabled/20 text-text-secondary',
+    },
+  ],
+  defaultVariants: {
+    type: 'live',
+    isLive: false,
+  },
+});
 
 export default function Badge({
   type,
+  isLive,
   children,
-}: {
-  type: 'live' | 'genre';
+}: VariantProps<typeof badgeVariants> & {
   children?: ReactNode;
 }) {
-  const badgeStyles = twMerge(
-    clsx('rounded-full py-0.2 px-3 text-xs font-semibold', {
-      'bg-[rgba(241,109,109,20%)] text-[#f16d6d]': type === 'live',
-      'border-border border-1 uppercase font-normal text-[10px] text-text-secondary':
-        type === 'genre',
-    }),
-  );
   return (
-    <span className={badgeStyles}>{type === 'live' ? 'LIVE' : children}</span>
+    <span className={badgeVariants({ type, isLive })}>
+      {type === 'live' ? 'LIVE' : children}
+    </span>
   );
 }
