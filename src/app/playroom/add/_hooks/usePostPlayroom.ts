@@ -1,7 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
+import { myPlayroomListQueryKey } from '@/app/stage/_hooks/useGetMyPlayroomList';
+import { playroomListQueryKey } from '@/app/stage/_hooks/useGetPlayroomList';
 import { APIError } from '@/lib/http/error';
+import { useUserStore } from '@/providers/user-store-provider';
 import { postPlayroom } from '@/services/playroom/playroom.api';
 import type { PlayroomCreateRequest } from '@/services/playroom/playroom.types';
 
@@ -11,6 +14,7 @@ const CREATE_ERROR_MESSAGE =
 export function usePostPlayroom() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const userId = useUserStore((state) => state.user?.id);
 
   const {
     mutate: createPlayroom,
@@ -21,8 +25,11 @@ export function usePostPlayroom() {
   } = useMutation({
     mutationFn: (form: PlayroomCreateRequest) => postPlayroom(form),
     onSuccess: ({ id }) => {
-      // 새로 만든 방이 목록 카드에 바로 보이도록 목록만 갱신합니다.
-      queryClient.invalidateQueries({ queryKey: ['playrooms'] });
+      // 새로 만든 방이 /stage 의 전체 목록과 내 플레이룸 목록 양쪽에 바로 보이도록 둘 다 갱신합니다.
+      queryClient.invalidateQueries({ queryKey: playroomListQueryKey() });
+      queryClient.invalidateQueries({
+        queryKey: myPlayroomListQueryKey(userId),
+      });
 
       router.push(`/playroom/${id}`);
     },

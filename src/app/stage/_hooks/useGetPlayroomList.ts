@@ -8,6 +8,9 @@ const STALE_TIME = 30_000;
 // 바닥에 닿기 전에 미리 다음 페이지를 불러와 스크롤이 끊기지 않게 합니다.
 const LOAD_MORE_ROOT_MARGIN = '200px';
 
+// ['playrooms'] 를 그대로 쓰면 방 상세·채팅까지 같은 prefix 에 걸리므로 목록은 한 칸 아래에 둡니다.
+export const playroomListQueryKey = () => ['playrooms', 'list'] as const;
+
 /**
  * 라이브 플레이룸 목록을 커서 기반으로 이어서 불러옵니다.
  * 반환하는 loadMoreRef 를 목록 끝에 두면 화면에 들어올 때 다음 페이지를 자동으로 요청합니다.
@@ -23,7 +26,7 @@ export function useGetPlayroomList() {
     isFetchNextPageError,
     refetch,
   } = useInfiniteQuery({
-    queryKey: ['playrooms'],
+    queryKey: playroomListQueryKey(),
     queryFn: ({ pageParam }) =>
       getPlayrooms({ cursor: pageParam, limit: PAGE_SIZE }),
     initialPageParam: undefined as string | undefined,
