@@ -33,3 +33,27 @@ export async function PATCH(
     );
   }
 }
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ notificationId: string }> },
+) {
+  try {
+    const { notificationId } = await params;
+
+    await serverFetch(`/notifications/${notificationId}`, {
+      method: 'DELETE',
+    });
+
+    return new Response(null, { status: 204 });
+  } catch (error) {
+    if (error instanceof APIError) {
+      return errorResponse(error.status, error.code, error.message);
+    }
+
+    return errorResponse(
+      500,
+      'INTERNAL_SERVER_ERROR',
+      '서버 오류가 발생했습니다.',
+    );
+  }
+}
