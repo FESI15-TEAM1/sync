@@ -22,7 +22,6 @@ export default function Chatting({
   handleSubmit: (e: SubmitEvent<HTMLFormElement>) => void;
   hostId: number | null;
 }) {
-  console.log(messages);
   return (
     <div className="scrollbar-track-bg-card scrollbar-thumb-text-secondary grid min-h-0 grid-rows-[1fr_auto]">
       {/* 채팅 로그 */}
