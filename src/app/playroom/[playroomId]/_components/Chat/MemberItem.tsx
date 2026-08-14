@@ -1,7 +1,6 @@
 import Image from 'next/image';
-import Link from 'next/link';
 
-import mookImage from '@/assets/images/mook.jpg';
+import CrownIcon from '@/assets/icons/crown.svg';
 
 export interface MemberType {
   userId: number;
@@ -14,26 +13,41 @@ export default function MemberItem({
   userId,
   username,
   userImage,
-}: MemberType) {
+  isHostMember,
+  onMemberClick,
+}: MemberType & {
+  isHostMember: boolean;
+  onMemberClick: (userId: number) => void;
+}) {
   return (
     <>
-      <span>
-        <Link
-          href={`/profile/${userId}`}
-          className="inline-flex items-center gap-2 *:hover:underline"
-          target="_blank"
+      <span className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onMemberClick(userId)}
+          className="inline-flex cursor-pointer items-center gap-2 text-left *:hover:underline"
         >
-          <span className="relative h-8 w-8 overflow-hidden rounded-full">
-            <Image
-              src={userImage ?? mookImage.src}
-              alt=""
-              fill
-              className="bg-bg-card object-cover"
-            />
+          <span className="relative h-8 w-8">
+            {userImage ? (
+              <Image
+                src={userImage}
+                alt=""
+                fill
+                className="bg-bg-card rounded-full object-cover"
+              />
+            ) : (
+              <div className="bg-disabled h-full w-full rounded-full"></div>
+            )}
           </span>
 
           <p className="text-text-primary text-sm">{username}</p>
-        </Link>
+        </button>
+
+        {isHostMember && (
+          <span title="방장">
+            <CrownIcon width={20} height={20} className="text-yellow-500" />
+          </span>
+        )}
       </span>
     </>
   );

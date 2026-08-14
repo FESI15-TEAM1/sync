@@ -29,7 +29,7 @@ export default function PlayroomListItem({
               <span className="size-1 rounded-full bg-red-500"></span>
             </span>
           )}
-          {listenerCount}명 청취 중
+          {listenerCount}명 {isLive ? '청취 중' : '참여 중'}
         </span>
       </div>
 
