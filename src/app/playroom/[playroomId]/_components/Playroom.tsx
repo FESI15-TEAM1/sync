@@ -5,11 +5,15 @@ import { useRouter } from 'next/navigation';
 
 import ChatMembers from '@/app/playroom/[playroomId]/_components/Chat/ChatMembers';
 import Player from '@/app/playroom/[playroomId]/_components/Player/Player';
+import { playroomListQueryKey } from '@/app/stage/_hooks/useGetPlayroomList';
 import { useUserStore } from '@/providers/user-store-provider';
 
 import { useChatMessages } from '../_hooks/useChatMessages';
 import { useGetPlaylistData } from '../_hooks/useGetPlaylistData';
-import { useGetPlayroomData } from '../_hooks/useGetPlayroomData';
+import {
+  playroomQueryKey,
+  useGetPlayroomData,
+} from '../_hooks/useGetPlayroomData';
 import { useWSConnect } from '../_hooks/useWSConnect';
 import PlayroomHeader from './Header';
 import LoginRequiredModal from './Modal/LoginRequiredModal';
@@ -57,9 +61,10 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
   const isClosedNoticeOpen = isRoomClosed && !isHost;
 
   const handleClosedNoticeConfirm = () => {
-    // 종료된 방은 더 이상 조회할 수 없으므로 캐시에서 지우고 목록만 갱신합니다.
-    queryClient.removeQueries({ queryKey: ['playrooms', playroomId] });
-    queryClient.invalidateQueries({ queryKey: ['playrooms'], exact: true });
+    // 종료된 방은 더 이상 조회할 수 없으므로 상세·채팅 캐시를 통째로 지웁니다.
+    queryClient.removeQueries({ queryKey: playroomQueryKey(playroomId) });
+    // 이 안내는 참가자에게만 보이므로 내 플레이룸 목록은 그대로 두고 전체 목록만 갱신합니다.
+    queryClient.invalidateQueries({ queryKey: playroomListQueryKey() });
 
     router.replace('/stage');
     router.refresh();

@@ -1,8 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
+import { myPlayroomListQueryKey } from '@/app/stage/_hooks/useGetMyPlayroomList';
+import { playroomListQueryKey } from '@/app/stage/_hooks/useGetPlayroomList';
 import { APIError } from '@/lib/http/error';
+import { useUserStore } from '@/providers/user-store-provider';
 import { deletePlayroom } from '@/services/playroom/playroomDetail.api';
+
+import { playroomQueryKey } from './useGetPlayroomData';
 
 const CLOSE_ERROR_MESSAGE =
   '플레이룸 종료에 실패했습니다. 잠시 후 다시 시도해주세요.';
@@ -10,6 +15,7 @@ const CLOSE_ERROR_MESSAGE =
 export function useDeletePlayroom(playroomId: number) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const userId = useUserStore((state) => state.user?.id);
 
   const {
     mutate: closePlayroom,
@@ -20,9 +26,13 @@ export function useDeletePlayroom(playroomId: number) {
   } = useMutation({
     mutationFn: () => deletePlayroom(playroomId),
     onSuccess: () => {
-      // 종료된 방은 더 이상 조회할 수 없으므로 캐시에서 지우고 목록만 갱신합니다.
-      queryClient.removeQueries({ queryKey: ['playrooms', playroomId] });
-      queryClient.invalidateQueries({ queryKey: ['playrooms'], exact: true });
+      // 종료된 방은 더 이상 조회할 수 없으므로 상세·채팅 캐시를 통째로 지웁니다.
+      queryClient.removeQueries({ queryKey: playroomQueryKey(playroomId) });
+      // 방장이 종료한 방이라 /stage 의 전체 목록과 내 플레이룸 목록 양쪽에서 빠져야 합니다.
+      queryClient.invalidateQueries({ queryKey: playroomListQueryKey() });
+      queryClient.invalidateQueries({
+        queryKey: myPlayroomListQueryKey(userId),
+      });
 
       router.replace('/stage');
       router.refresh();

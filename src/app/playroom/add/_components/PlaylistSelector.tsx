@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import { type MyPlaylistItem } from '@/services/playlist/playlistCard.type';
 
@@ -17,7 +19,13 @@ export default function PlaylistSelector({
   if (playlists.length === 0) {
     return (
       <p className="text-text-secondary text-sm">
-        공유할 수 있는 플레이리스트가 없습니다.
+        공유할 수 있는 플레이리스트가 없습니다. 플레이리스트를 만들어보세요!{' '}
+        <Link
+          href="/playlist/add"
+          className="text-primary hover:text-secondary hover:underline"
+        >
+          플레이리스트 만들기
+        </Link>
       </p>
     );
   }
