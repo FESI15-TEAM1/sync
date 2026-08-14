@@ -98,11 +98,11 @@ export default function Login() {
         <Button
           variant="secondary"
           type="button"
-          onClick={() => handleSocialLogin('kakao')}
+          onClick={() => handleSocialLogin('google')}
         >
           <Image
-            src={Kakao}
-            alt="카카오 로그인"
+            src={Google}
+            alt="구글 로그인"
             width={40}
             height={40}
             className="mr-2"
@@ -112,11 +112,11 @@ export default function Login() {
         <Button
           variant="secondary"
           type="button"
-          onClick={() => handleSocialLogin('google')}
+          onClick={() => handleSocialLogin('kakao')}
         >
           <Image
-            src={Google}
-            alt="구글 로그인"
+            src={Kakao}
+            alt="카카오 로그인"
             width={40}
             height={40}
             className="mr-2"
