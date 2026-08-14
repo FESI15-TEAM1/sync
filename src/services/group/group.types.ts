@@ -148,6 +148,11 @@ export interface EditGroupPlaylistsRequest {
   playlistIds: number[];
 }
 
+// PATCH /groups/{groupId}/playlists/{playlistId} — 상단 고정(하이라이트), 그룹장만 가능
+export interface HighlightGroupPlaylistRequest {
+  isHighlighted: boolean;
+}
+
 // GET /groups/{groupId}/members — 그룹 멤버 목록(가입 순)
 export interface GroupMemberResponse {
   userId: number;
