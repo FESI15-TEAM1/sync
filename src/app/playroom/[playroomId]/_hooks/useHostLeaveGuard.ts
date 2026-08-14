@@ -22,8 +22,8 @@ export function useHostLeaveGuard(isEnabled: boolean) {
   // 안내에서 확인을 누른 뒤의 이동은 다시 가로채지 않습니다.
   const isLeaveConfirmedRef = useRef(false);
   const pendingNavigationRef = useRef<(() => void) | null>(null);
-  // 심어 둔 히스토리 항목의 개수. 가드가 여러 번 켜졌다 꺼져도 어긋나지 않게 추적합니다.
-  const sentinelCountRef = useRef(0);
+  // 히스토리 항목을 심어 뒀는지. 가드가 여러 번 켜졌다 꺼져도 하나만 유지합니다.
+  const isSentinelPushedRef = useRef(false);
 
   // 앵커 클릭 가로채기
   useEffect(() => {
@@ -81,21 +81,20 @@ export function useHostLeaveGuard(isEnabled: boolean) {
     if (!isEnabled) return;
 
     // 뒤로가기 한 번을 흡수할 항목을 심어 둡니다. 같은 URL 이라 화면은 그대로입니다.
-    window.history.pushState(window.history.state, '', window.location.href);
-    sentinelCountRef.current += 1;
+    // 가드가 껐다 켜지거나 effect 가 다시 실행돼도 항목은 하나만 유지합니다.
+    if (!isSentinelPushedRef.current) {
+      window.history.pushState(window.history.state, '', window.location.href);
+      isSentinelPushedRef.current = true;
+    }
 
     const handlePopState = () => {
-      if (isLeaveConfirmedRef.current) {
-        // 확인 이동으로 심어 둔 항목을 모두 걷어낸 뒤입니다.
-        sentinelCountRef.current = 0;
-        return;
-      }
+      if (isLeaveConfirmedRef.current) return;
 
       // 흡수한 만큼 다시 심어 두므로 개수는 그대로입니다.
       window.history.pushState(window.history.state, '', window.location.href);
 
-      // 심어 둔 항목 전부와 이 방 항목을 한 번에 건너뜁니다.
-      const skipCount = sentinelCountRef.current + 1;
+      // 심어 둔 항목과 이 방 항목을 한 번에 건너뜁니다.
+      const skipCount = isSentinelPushedRef.current ? 2 : 1;
       pendingNavigationRef.current = () => {
         window.history.go(-skipCount);
       };
@@ -106,13 +105,10 @@ export function useHostLeaveGuard(isEnabled: boolean) {
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
-
-      // 가드가 꺼지면 심어 둔 항목을 되돌립니다. 남겨 두면 뒤로가기를 두 번 눌러야 합니다.
-      if (isLeaveConfirmedRef.current || sentinelCountRef.current === 0) return;
-
-      sentinelCountRef.current -= 1;
-      window.history.back();
     };
+    // 심어 둔 항목은 여기서 되돌리지 않습니다. 이 정리 함수는 가드가 꺼질 때뿐 아니라
+    // 페이지를 실제로 떠나 언마운트될 때도 돌기 때문에, 되돌리면 방금 이동한 화면에서
+    // 방으로 튕겨 돌아옵니다. 남은 항목은 같은 URL 이라 뒤로가기 한 번에 흡수됩니다.
   }, [isEnabled]);
 
   // 새로고침·탭 닫기
