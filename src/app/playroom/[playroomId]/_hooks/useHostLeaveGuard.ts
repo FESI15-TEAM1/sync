@@ -22,6 +22,8 @@ export function useHostLeaveGuard(isEnabled: boolean) {
   // 안내에서 확인을 누른 뒤의 이동은 다시 가로채지 않습니다.
   const isLeaveConfirmedRef = useRef(false);
   const pendingNavigationRef = useRef<(() => void) | null>(null);
+  // 심어 둔 히스토리 항목의 개수. 가드가 여러 번 켜졌다 꺼져도 어긋나지 않게 추적합니다.
+  const sentinelCountRef = useRef(0);
 
   // 앵커 클릭 가로채기
   useEffect(() => {
@@ -80,15 +82,22 @@ export function useHostLeaveGuard(isEnabled: boolean) {
 
     // 뒤로가기 한 번을 흡수할 항목을 심어 둡니다. 같은 URL 이라 화면은 그대로입니다.
     window.history.pushState(window.history.state, '', window.location.href);
+    sentinelCountRef.current += 1;
 
     const handlePopState = () => {
-      if (isLeaveConfirmedRef.current) return;
+      if (isLeaveConfirmedRef.current) {
+        // 확인 이동으로 심어 둔 항목을 모두 걷어낸 뒤입니다.
+        sentinelCountRef.current = 0;
+        return;
+      }
 
-      // 흡수한 만큼 다시 심어 두고, 확인을 누르면 두 항목을 한 번에 건너뜁니다.
+      // 흡수한 만큼 다시 심어 두므로 개수는 그대로입니다.
       window.history.pushState(window.history.state, '', window.location.href);
 
+      // 심어 둔 항목 전부와 이 방 항목을 한 번에 건너뜁니다.
+      const skipCount = sentinelCountRef.current + 1;
       pendingNavigationRef.current = () => {
-        window.history.go(-2);
+        window.history.go(-skipCount);
       };
       setIsLeaveNoticeOpen(true);
     };
@@ -97,6 +106,12 @@ export function useHostLeaveGuard(isEnabled: boolean) {
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
+
+      // 가드가 꺼지면 심어 둔 항목을 되돌립니다. 남겨 두면 뒤로가기를 두 번 눌러야 합니다.
+      if (isLeaveConfirmedRef.current || sentinelCountRef.current === 0) return;
+
+      sentinelCountRef.current -= 1;
+      window.history.back();
     };
   }, [isEnabled]);
 
