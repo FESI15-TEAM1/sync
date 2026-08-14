@@ -4,21 +4,29 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
+import More2Icon from '@/assets/icons/more2.svg';
+import Star from '@/assets/icons/star.svg';
 import Button from '@/components/Button';
 import KebabModal from '@/components/domain/KebabModal';
 import PlaylistCard from '@/components/domain/PlaylistCard';
+import IconButton from '@/components/IconButton';
 import { APIError } from '@/lib/http/error';
 import { useUserStore } from '@/providers/user-store-provider';
 import {
   editGroupPlaylists,
   getGroupMembers,
   getGroupPlaylists,
+  highlightGroupPlaylist,
   leaveGroup,
+  removeGroupPlaylist,
   requestJoinGroup,
 } from '@/services/group/group.api';
-import type { GroupDetailResponse } from '@/services/group/group.types';
+import type {
+  GroupDetailResponse,
+  GroupPlaylistResponse,
+} from '@/services/group/group.types';
 import { getUserPlaylists } from '@/services/playlist/playlist.api';
 import type { MyPlaylistItem } from '@/services/playlist/playlistCard.type';
 
@@ -55,6 +63,52 @@ type GroupDetailProps = {
   groupId: number;
   group: GroupDetailResponse;
 };
+
+// 플레이리스트 카드 전용 케밥 메뉴(more2 아이콘, 카드 하단에 위치)
+function PlaylistCardMenu({ children }: { children: ReactNode }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMenuOpen]);
+
+  return (
+    <div className="relative shrink-0" ref={menuRef}>
+      <IconButton
+        size="sm"
+        variants="secondary"
+        onClick={(e) => {
+          e.preventDefault();
+          setIsMenuOpen((prev) => !prev);
+        }}
+      >
+        <More2Icon width={22} height={22} />
+      </IconButton>
+
+      {isMenuOpen && (
+        <div
+          className="absolute right-0 bottom-8 z-10 flex w-max min-w-40 flex-col rounded-lg bg-zinc-800 p-2"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export type EditableGroupInfo = {
   name: string;
@@ -127,6 +181,11 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   const isPlaylistsLoading =
     groupPlaylistsQuery.isPending ||
     ((isLeader || group.isMember) && myPlaylistsQuery.isPending);
+
+  // 하이라이트된 플레이리스트를 상단에 고정해서 보여준다
+  const displayPlaylists = [...(groupPlaylistsQuery.data?.items ?? [])].sort(
+    (a, b) => Number(b.isHighlighted) - Number(a.isHighlighted),
+  );
   //그룹 정보 수정
   const handleEditGroupInfo = () => {
     router.push(`/group/${groupId}/edit`);
@@ -172,6 +231,67 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
 
   const handleSavePlaylists = (nextPlaylists: EditablePlaylist[]) => {
     savePlaylists(nextPlaylists);
+  };
+
+  // 그룹 플레이리스트 개별 제거(본인이 담은 것이거나 그룹장만 가능)
+  const { mutate: removePlaylist, isPending: isRemovingPlaylist } = useMutation(
+    {
+      mutationFn: (playlistId: number) =>
+        removeGroupPlaylist(groupId, playlistId),
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ['group', groupId, 'playlists'],
+        });
+      },
+      onError: (error) => {
+        alert(
+          error instanceof APIError
+            ? error.message
+            : '플레이리스트 제거 중 오류가 발생했습니다.',
+        );
+      },
+    },
+  );
+
+  const handleRemovePlaylist = (playlist: GroupPlaylistResponse) => {
+    if (isRemovingPlaylist) return;
+    if (!confirm(`'${playlist.title}'을(를) 그룹에서 제거하시겠습니까?`))
+      return;
+
+    removePlaylist(playlist.id);
+  };
+
+  // 그룹 플레이리스트 하이라이트(상단 고정, 그룹장만 가능)
+  const { mutate: toggleHighlight, isPending: isTogglingHighlight } =
+    useMutation({
+      mutationFn: ({
+        playlistId,
+        isHighlighted,
+      }: {
+        playlistId: number;
+        isHighlighted: boolean;
+      }) => highlightGroupPlaylist(groupId, playlistId, { isHighlighted }),
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ['group', groupId, 'playlists'],
+        });
+      },
+      onError: (error) => {
+        alert(
+          error instanceof APIError
+            ? error.message
+            : '하이라이트 설정 중 오류가 발생했습니다.',
+        );
+      },
+    });
+
+  const handleToggleHighlight = (playlist: GroupPlaylistResponse) => {
+    if (isTogglingHighlight) return;
+
+    toggleHighlight({
+      playlistId: playlist.id,
+      isHighlighted: !playlist.isHighlighted,
+    });
   };
 
   const leaveGroupMutation = useMutation({
@@ -347,18 +467,60 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
             </p>
           ) : (
             <div className="flex flex-row flex-wrap gap-3">
-              {playlists.map((playlist) => (
-                <Link
-                  href={`/playlist/detail/${playlist.id}`}
-                  key={playlist.id}
-                >
-                  <PlaylistCard
-                    img={playlist.image}
-                    title={playlist.title}
-                    trackCount={playlist.trackCount}
-                  />
-                </Link>
-              ))}
+              {displayPlaylists.map((playlist) => {
+                const canRemove =
+                  isLeader || playlist.owner.userId === currentUser?.id;
+
+                return (
+                  <div
+                    key={playlist.id}
+                    className={`group relative rounded-2xl ${
+                      playlist.isHighlighted ? 'bg-primary/10' : ''
+                    }`}
+                  >
+                    <Link href={`/playlist/detail/${playlist.id}`}>
+                      <PlaylistCard
+                        img={playlist.image}
+                        title={playlist.title}
+                        trackCount={playlist.trackCount}
+                      />
+                    </Link>
+
+                    {playlist.isHighlighted && (
+                      <div
+                        className="bg-primary pointer-events-none absolute -top-2 -left-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-white drop-shadow-sm"
+                        aria-label="하이라이트됨"
+                      >
+                        <Star width={15} height={15} />
+                      </div>
+                    )}
+
+                    {canRemove && (
+                      <div className="absolute right-5 bottom-5 z-10">
+                        <PlaylistCardMenu>
+                          {isLeader && (
+                            <KebabModal.Item
+                              onClick={() => handleToggleHighlight(playlist)}
+                            >
+                              {playlist.isHighlighted
+                                ? '하이라이트 해제'
+                                : '하이라이트'}
+                            </KebabModal.Item>
+                          )}
+                          {canRemove && (
+                            <KebabModal.Item
+                              variant="danger"
+                              onClick={() => handleRemovePlaylist(playlist)}
+                            >
+                              플레이리스트 제거
+                            </KebabModal.Item>
+                          )}
+                        </PlaylistCardMenu>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )
         ) : (

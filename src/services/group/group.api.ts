@@ -16,7 +16,9 @@ import type {
   GetPublicGroupsResponse,
   GroupDetailResponse,
   GroupMemberResponse,
+  GroupPlaylistResponse,
   GroupRequestResponse,
+  HighlightGroupPlaylistRequest,
   JoinGroupByCodeRequest,
   UpdateGroupRequest,
 } from './group.types';
@@ -141,6 +143,28 @@ export function editGroupPlaylists(
     `/groups/${groupId}/playlists`,
     {
       method: 'PUT',
+      body: data,
+    },
+  );
+}
+
+// 그룹 플레이리스트 개별 제거(본인이 담은 것이거나 그룹장만 가능)
+export function removeGroupPlaylist(groupId: number, playlistId: number) {
+  return clientFetch<null>(`/groups/${groupId}/playlists/${playlistId}`, {
+    method: 'DELETE',
+  });
+}
+
+// 그룹 플레이리스트 하이라이트(상단 고정, 그룹장만 가능)
+export function highlightGroupPlaylist(
+  groupId: number,
+  playlistId: number,
+  data: HighlightGroupPlaylistRequest,
+) {
+  return clientFetch<GroupPlaylistResponse>(
+    `/groups/${groupId}/playlists/${playlistId}`,
+    {
+      method: 'PATCH',
       body: data,
     },
   );
