@@ -21,6 +21,20 @@ input:-webkit-autofill:focus {
 }
 
 @theme {
+  --animate-wave: wave 1.4s ease-in-out infinite;
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: scaleY(0.32);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@theme {
   /* Accents (포인트 컬러) */
   --color-primary: #6155f5; /* 기존 accents-indigo — 메인 액션 (버튼, 링크) */
   --color-secondary: #0088ff; /* 기존 accents-blue — 보조 포인트 */

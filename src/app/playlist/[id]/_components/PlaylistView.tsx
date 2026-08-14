@@ -76,6 +76,15 @@ export default function PlaylistView({
       </div>
       <div className="mt-4">
         <div className="mt-20">
+          {items.length < 1 && (
+            <div className="flex items-center justify-center">
+              <span className="text-text-secondary">
+                {activeTab === 'liked'
+                  ? '좋아요 한 플레이리스트가 없습니다.'
+                  : '플레이리스트가 없습니다.'}
+              </span>
+            </div>
+          )}
           <PlaylistCardList data={items} />
         </div>
       </div>
