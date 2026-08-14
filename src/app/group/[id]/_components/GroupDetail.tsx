@@ -379,16 +379,21 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
                         그룹 정보 수정
                       </KebabModal.Item>
                       <KebabModal.Item onClick={handleEditPlaylists}>
-                        내 플레이리스트 편집
+                        플레이리스트 편집
                       </KebabModal.Item>
                     </>
                   ) : (
-                    <KebabModal.Item
-                      variant="danger"
-                      onClick={handleLeaveGroup}
-                    >
-                      그룹 탈퇴하기
-                    </KebabModal.Item>
+                    <>
+                      <KebabModal.Item onClick={handleEditPlaylists}>
+                        내 플레이리스트 편집
+                      </KebabModal.Item>
+                      <KebabModal.Item
+                        variant="danger"
+                        onClick={handleLeaveGroup}
+                      >
+                        그룹 탈퇴하기
+                      </KebabModal.Item>
+                    </>
                   )}
                 </KebabModal>
               )}
