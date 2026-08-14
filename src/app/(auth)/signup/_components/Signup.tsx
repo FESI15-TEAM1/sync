@@ -246,14 +246,14 @@ export default function Signup() {
           </Button>
         </form>
         <p className="mt-8 text-center text-sm text-white">
-          이미 계정이 있으신가요?
+          이미 계정이 있으신가요?{' '}
+          <Link
+            href="/login"
+            className="text-primary mt-4 inline-block self-center text-sm font-bold hover:underline"
+          >
+            로그인
+          </Link>
         </p>
-        <Link
-          href="/login"
-          className="text-primary mt-4 inline-block self-center text-sm font-bold"
-        >
-          로그인
-        </Link>
       </div>
     </div>
   );
