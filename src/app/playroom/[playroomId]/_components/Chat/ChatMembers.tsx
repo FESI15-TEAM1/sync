@@ -51,12 +51,15 @@ export default function ChatMembers({
   sendMessage,
   members,
   hostId,
+  onBeforeProfileNavigate,
 }: {
   messages: ChatKindTypes[];
   historyErrorMessage?: string | null;
   sendMessage: (message: string) => void;
   members: MemberType[];
   hostId: number | null;
+  /** 멤버 프로필로 이동하기 직전에 호출됩니다. `false` 를 반환하면 이동하지 않습니다. */
+  onBeforeProfileNavigate?: (navigate: () => void) => boolean;
 }) {
   const [currentTab, setCurrentTab] = useState<'chatting' | 'members'>(
     'chatting',
@@ -139,7 +142,11 @@ export default function ChatMembers({
         />
       ) : (
         // 멤버 탭 내용
-        <Members members={members} hostId={hostId} />
+        <Members
+          members={members}
+          hostId={hostId}
+          onBeforeProfileNavigate={onBeforeProfileNavigate}
+        />
       )}
     </div>
   );

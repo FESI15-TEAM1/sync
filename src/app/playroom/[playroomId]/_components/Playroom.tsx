@@ -174,6 +174,7 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
             sendMessage={sendMessage}
             members={members}
             hostId={playroomData?.host.userId ?? null}
+            onBeforeProfileNavigate={requestLeave}
           />
         </div>
       )}
