@@ -4,7 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 
 import { getAccessToken } from '@/services/auth/token.api';
 
-import type { ChatMessageTypes } from '../_components/Playroom';
+import type {
+  ChatMessageTypes,
+  SystemNoticeTypes,
+} from '../_components/Playroom';
 import { chatMessagesQueryKey } from './useChatMessages';
 import { playroomQueryKey } from './useGetPlayroomData';
 
@@ -20,6 +23,8 @@ export interface PlaybackState {
 
 export function useWSConnect(playroomId: number) {
   const [messages, setMessages] = useState<ChatMessageTypes[]>([]);
+  // 접속해 있는 동안의 입·퇴장 알림. 기록으로 남기지 않고 화면에만 보여줍니다.
+  const [systemNotices, setSystemNotices] = useState<SystemNoticeTypes[]>([]);
   const [playback, setPlayback] = useState<PlaybackState | null>(null);
   // 참가자가 들어올 때마다 늘어납니다. 방장이 현재 재생 상태를 다시 알리는 신호로 씁니다.
   const [memberJoinedCount, setMemberJoinedCount] = useState(0);
@@ -32,8 +37,41 @@ export function useWSConnect(playroomId: number) {
   const hasConnectedRef = useRef(false);
   // 곡이 바뀌었는지 판단하려고 마지막으로 받은 videoId 를 들고 있습니다.
   const lastVideoIdRef = useRef<string | null>(null);
+  // 알림을 어느 채팅 뒤에 끼울지 정하는 기준. 접속 후 마지막으로 받은 채팅 id 입니다.
+  const lastChatIdRef = useRef(0);
+  const noticeSeqRef = useRef(0);
 
   useEffect(() => {
+    // 입·퇴장 알림을 채팅 로그에 끼울 자리(마지막 채팅 뒤)를 붙여서 쌓아둡니다.
+    const addNotice = (
+      type: SystemNoticeTypes['type'],
+      member: { userId: number; nickname: string } | undefined,
+    ) => {
+      if (!member) return;
+
+      noticeSeqRef.current += 1;
+      const seq = noticeSeqRef.current;
+
+      setSystemNotices((prev) => [
+        ...prev,
+        {
+          key: `notice-${seq}`,
+          seq,
+          afterMessageId: lastChatIdRef.current,
+          type,
+          // 접속해 있는 동안 나간 적이 있으면 재참여로 안내합니다.
+          isRejoin:
+            type === 'joined' &&
+            prev.some(
+              (notice) =>
+                notice.type === 'left' && notice.userId === member.userId,
+            ),
+          userId: member.userId,
+          nickname: member.nickname,
+        },
+      ]);
+    };
+
     const stompClient = new Client({
       brokerURL: process.env.NEXT_PUBLIC_WS_URL,
       reconnectDelay: 5000,
@@ -52,6 +90,7 @@ export function useWSConnect(playroomId: number) {
       },
       onConnect: () => {
         // 접속 직후 나에게만 오는 스냅샷. 방의 현재 재생 상태를 여기서 처음 알게 된다
+        // 스냅샷을 우선 구독하고, 그 뒤에 방장 브로드캐스트를 구독해야 한다. 그래야 스냅샷이 늦게 도착해도 브로드캐스트가 먼저 와서 재생 상태가 꼬이는 일을 막는다.
         stompClient.subscribe(
           `/user/queue/playrooms/${playroomId}`,
           (msg: IMessage) => {
@@ -81,10 +120,16 @@ export function useWSConnect(playroomId: number) {
                 // 새 참가자는 접속 직후 스냅샷으로만 재생 상태를 받는다. 그 스냅샷이 비어
                 // 있거나 낡아 있어도 따라올 수 있도록, 방장이 지금 상태를 다시 알리게 한다.
                 setMemberJoinedCount((count) => count + 1);
-              // falls through
-              case 'member_left':
+                addNotice('joined', e.member);
                 // { member, listenerCount } - 참가자 목록과 인원수는 방 상세(REST)가 들고 있으므로
                 // 여기서 따로 쌓지 않고 다시 받아오게 한다.
+                queryClient.invalidateQueries({
+                  queryKey: playroomQueryKey(playroomId),
+                  exact: true,
+                });
+                break;
+              case 'member_left':
+                addNotice('left', e.member);
                 queryClient.invalidateQueries({
                   queryKey: playroomQueryKey(playroomId),
                   exact: true,
@@ -112,6 +157,9 @@ export function useWSConnect(playroomId: number) {
                 break;
               case 'chat_message':
                 // { id, sender, message, createdAt } - 채팅에 append
+                // 이후 도착하는 알림은 이 채팅 뒤에 놓입니다.
+                lastChatIdRef.current = Math.max(lastChatIdRef.current, e.id);
+                // 채팅 메시지 수신. 중복 수신 방지. 이미 받은 채팅이면 무시합니다.
                 setMessages((prev) =>
                   prev.some((message) => message.id === e.id)
                     ? prev
@@ -189,6 +237,7 @@ export function useWSConnect(playroomId: number) {
 
   return {
     messages,
+    systemNotices,
     sendMessage,
     playback,
     playbackControl,

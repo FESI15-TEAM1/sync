@@ -3,8 +3,9 @@ import { type SubmitEvent } from 'react';
 import SendIcon from '@/assets/icons/chat/send.svg';
 import IconButton from '@/components/IconButton';
 
-import { type ChatMessageTypes } from '../Playroom';
+import { type ChatKindTypes } from '../Playroom';
 import ChatMessage from './ChatMessage';
+import SystemNotice from './SystemNotice';
 
 export default function Chatting({
   messages,
@@ -14,7 +15,7 @@ export default function Chatting({
   handleSubmit,
   hostId,
 }: {
-  messages: ChatMessageTypes[];
+  messages: ChatKindTypes[];
   // 지난 채팅을 불러오지 못한 경우의 안내. 실시간 채팅은 그대로 동작합니다.
   historyErrorMessage?: string | null;
   chat: string;
@@ -32,15 +33,23 @@ export default function Chatting({
               {historyErrorMessage}
             </p>
           )}
-          {messages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              username={message.username}
-              userImage={message.userImage}
-              message={message.message}
-              isHostMessage={message.userId === hostId}
-            />
-          ))}
+          {messages.map((message) =>
+            message.kind === 'chat' ? (
+              <ChatMessage
+                key={`chat-${message.id}`}
+                username={message.username}
+                userImage={message.userImage}
+                message={message.message}
+                isHostMessage={message.userId === hostId}
+              />
+            ) : (
+              <SystemNotice
+                key={message.key}
+                notice={message}
+                isHost={message.userId === hostId}
+              />
+            ),
+          )}
         </div>
       </div>
       {/* 채팅 입력 인풋 */}

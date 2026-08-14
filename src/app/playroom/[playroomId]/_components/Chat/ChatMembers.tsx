@@ -5,7 +5,7 @@ import { type SubmitEvent, useState } from 'react';
 
 import SyncLogo from '@/assets/icons/syncLogo.svg';
 
-import { type ChatMessageTypes } from '../Playroom';
+import { type ChatKindTypes } from '../Playroom';
 import Chatting from './Chatting';
 import type { MemberType } from './MemberItem';
 import Members from './Members';
@@ -52,7 +52,7 @@ export default function ChatMembers({
   members,
   hostId,
 }: {
-  messages: ChatMessageTypes[];
+  messages: ChatKindTypes[];
   historyErrorMessage?: string | null;
   sendMessage: (message: string) => void;
   members: MemberType[];

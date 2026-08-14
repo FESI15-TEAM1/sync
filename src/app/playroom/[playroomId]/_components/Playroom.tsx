@@ -31,9 +31,35 @@ export type ChatMessageTypes = {
   createdAt: string;
 };
 
+/**
+ * 채팅 사이에 끼워 보여주는 입·퇴장 알림.
+ * 서버에 저장되지 않으므로 접속해 있는 동안 받은 이벤트만 보이고, 방을 나가면 사라집니다.
+ */
+export type SystemNoticeTypes = {
+  // 서버 id 가 없으므로 렌더 key 는 로컬에서 만듭니다.
+  key: string;
+  // 도착 순서. 같은 채팅 뒤에 붙는 알림끼리의 순서를 지킵니다.
+  seq: number;
+  // 이 알림이 도착했을 때 마지막으로 받은 채팅 id. 0이면 접속 후 첫 알림입니다.
+  afterMessageId: number;
+  type: 'joined' | 'left';
+  // 접속 중에 나갔다가 다시 들어온 경우입니다.
+  isRejoin: boolean;
+  userId: number;
+  nickname: string;
+};
+
+/** 채팅 로그에 순서대로 늘어놓는 항목. 실제 채팅과 시스템 알림이 섞여 있습니다.
+ * discriminated union type 으로 kind 에 따라 타입이 달라집니다.
+ */
+export type ChatKindTypes =
+  | ({ kind: 'chat' } & ChatMessageTypes)
+  | ({ kind: 'notice' } & SystemNoticeTypes);
+
 export default function Playroom({ playroomId }: { playroomId: number }) {
   const {
     messages: liveMessages,
+    systemNotices,
     sendMessage,
     playback,
     playbackControl,
@@ -50,9 +76,11 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
   const isLoginRequiredOpen = !isUserLoading && !user;
 
   // 접속 전 대화는 WebSocket 으로 오지 않으므로, 지난 채팅 기록과 합쳐서 보여줍니다.
+  // 입·퇴장 알림도 여기서 채팅 사이사이에 끼워 넣습니다.
   const { messages, errorMessage: chatHistoryErrorMessage } = useChatMessages(
     playroomId,
     liveMessages,
+    systemNotices,
   );
   // playroomId로 데이터를 가져와서 Player, Playlist, Chatting 컴포넌트에 전달합니다.
   const { playroomData, errorMessage, isPending } =
