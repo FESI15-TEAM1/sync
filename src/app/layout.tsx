@@ -49,7 +49,9 @@ export default function RootLayout({
                   <Sidebar />
                 </div>
                 <div className="max-w-full lg:ml-64">
-                  <main className="p-4">{children}</main>
+                  <main className="p-4 lg:mx-auto lg:max-w-5xl">
+                    {children}
+                  </main>
                 </div>
               </SidebarStoreProvider>
             </PlayerStoreProvider>
