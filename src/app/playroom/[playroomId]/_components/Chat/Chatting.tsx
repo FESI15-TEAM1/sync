@@ -67,7 +67,7 @@ export default function Chatting({
             type="button"
             onClick={scrollToBottom}
             variant="secondary"
-            className="border-border text-text-primary text-text-secondary hover:text-text-primary absolute bottom-3 left-1/2 -translate-x-1/2 border text-sm font-normal shadow-md"
+            className="border-border text-text-secondary hover:text-text-primary absolute bottom-3 left-1/2 -translate-x-1/2 border text-sm font-normal shadow-md"
           >
             최근 채팅으로 이동
           </Button>
