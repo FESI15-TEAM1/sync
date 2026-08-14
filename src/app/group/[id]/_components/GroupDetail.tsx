@@ -40,6 +40,9 @@ const PLAYLIST_QUERY_LIMIT = 50;
 // 커서로 끝까지 모아 전체 목록을 확보하기 위한 최대 페이지 수
 const MAX_PLAYLIST_PAGES = 10;
 
+export const groupPlaylistsQueryKey = (groupId: number) =>
+  ['group', groupId, 'playlists'] as const;
+
 async function fetchAllUserPlaylists(userId: number) {
   const items: MyPlaylistItem[] = [];
   let cursor: string | undefined;
@@ -90,6 +93,7 @@ function PlaylistCardMenu({ children }: { children: ReactNode }) {
       <IconButton
         size="sm"
         variants="secondary"
+        aria-label="플레이리스트 메뉴"
         onClick={(e) => {
           e.preventDefault();
           setIsMenuOpen((prev) => !prev);
@@ -144,7 +148,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
 
   // 그룹에 추가된 플레이리스트
   const groupPlaylistsQuery = useQuery({
-    queryKey: ['group', groupId, 'playlists'],
+    queryKey: groupPlaylistsQueryKey(groupId),
     queryFn: () => getGroupPlaylists(groupId, { limit: PLAYLIST_QUERY_LIMIT }),
   });
 
@@ -213,7 +217,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['group', groupId, 'playlists'],
+        queryKey: groupPlaylistsQueryKey(groupId),
       });
       queryClient.invalidateQueries({
         queryKey: ['user', currentUser?.id, 'playlists'],
@@ -240,8 +244,9 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
         removeGroupPlaylist(groupId, playlistId),
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: ['group', groupId, 'playlists'],
+          queryKey: groupPlaylistsQueryKey(groupId),
         });
+        router.refresh();
       },
       onError: (error) => {
         alert(
@@ -273,7 +278,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
       }) => highlightGroupPlaylist(groupId, playlistId, { isHighlighted }),
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: ['group', groupId, 'playlists'],
+          queryKey: groupPlaylistsQueryKey(groupId),
         });
       },
       onError: (error) => {
