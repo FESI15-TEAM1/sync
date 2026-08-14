@@ -20,12 +20,14 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const router = useRouter();
   const setUser = useUserStore((state) => state.setUser);
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
+      setIsSubmitting(true);
       const user = await login({ email, password });
       setUser(user);
       router.push('/');
@@ -34,6 +36,8 @@ export default function Login() {
         console.error(error.message);
         alert(error.message);
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -86,7 +90,7 @@ export default function Login() {
           // isDisabled={!email || !password || !!emailError || !!passwordError}
           isDisabled={false}
         >
-          로그인
+          {isSubmitting ? '로그인 중...' : '로그인'}
         </Button>
       </form>
 
