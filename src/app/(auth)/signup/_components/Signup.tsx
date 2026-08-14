@@ -7,8 +7,13 @@ import { type SubmitEvent } from 'react';
 
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
-import { getEmailError, getPasswordError } from '@/lib/auth-validation';
 import {
+  getEmailError,
+  getNicknameError,
+  getPasswordError,
+} from '@/lib/auth-validation';
+import {
+  checkNickname,
   confirmEmailVerification,
   requestEmailVerification,
   signup,
@@ -35,17 +40,44 @@ export default function Signup() {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingNickname, setIsCheckingNickname] = useState(false);
 
-  const handleCheckNickname = () => {
+  const handleCheckNickname = async () => {
+    if (isCheckingNickname) return;
+
     if (!nickname.trim()) {
       setNicknameError('닉네임을 입력해주세요.');
       setIsNicknameValid(false);
       return;
     }
 
-    setNicknameError('');
-    setIsNicknameValid(true);
-    alert('중복확인 되었습니다.');
+    const lengthError = getNicknameError(nickname);
+    if (lengthError) {
+      setNicknameError(lengthError);
+      setIsNicknameValid(false);
+      return;
+    }
+
+    setIsCheckingNickname(true);
+    try {
+      const { available } = await checkNickname(nickname);
+
+      if (available) {
+        setNicknameError('');
+        setIsNicknameValid(true);
+        alert('사용 가능한 닉네임입니다.');
+      } else {
+        setNicknameError('이미 사용 중인 닉네임입니다.');
+        setIsNicknameValid(false);
+      }
+    } catch (error) {
+      setIsNicknameValid(false);
+      if (error instanceof Error) {
+        alert(error.message);
+      }
+    } finally {
+      setIsCheckingNickname(false);
+    }
   };
 
   const handleCheckEmail = async () => {
@@ -153,11 +185,15 @@ export default function Signup() {
             <InputField.Input
               type="text"
               value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setNickname(value);
+                setNicknameError(getNicknameError(value));
+              }}
             />
             <InputField.Button
               onClick={handleCheckNickname}
-              disabled={!nickname}
+              disabled={!nickname || !!nicknameError || isCheckingNickname}
             >
               중복확인
             </InputField.Button>
@@ -177,7 +213,7 @@ export default function Signup() {
             />
             <InputField.Button
               onClick={handleCheckEmail}
-              disabled={!email || isSendingCode}
+              disabled={!email || !!emailError || isSendingCode}
             >
               이메일 인증
             </InputField.Button>
