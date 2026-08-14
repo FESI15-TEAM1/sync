@@ -49,6 +49,9 @@ const backdropStyle = cva(
   },
 );
 
+// 드로어가 뜨는 구간 — 데스크탑(lg)에서는 드로어 자체가 숨겨지므로 스크롤을 잠그면 안 된다.
+const DRAWER_MEDIA_QUERY = '(max-width: 1024px)';
+
 const SidebarItemStyle = cva(
   'hover:text-shadow-[0_2px_15px_var(--color-primary)] transition-all duration-300 ease-in-out',
   {
@@ -96,14 +99,21 @@ export default function Sidebar() {
   const isOpen = useSidebarStore((state) => state.isOpen);
   const close = useSidebarStore((state) => state.close);
 
+  // 모바일 드로어가 열려 있는 동안 배경 스크롤 잠금 (뷰포트가 lg로 넓어지면 바로 해제)
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    if (!isOpen) return;
+
+    const mediaQuery = window.matchMedia(DRAWER_MEDIA_QUERY);
+
+    const syncBodyOverflow = () => {
+      document.body.style.overflow = mediaQuery.matches ? 'hidden' : '';
+    };
+
+    syncBodyOverflow();
+    mediaQuery.addEventListener('change', syncBodyOverflow);
 
     return () => {
+      mediaQuery.removeEventListener('change', syncBodyOverflow);
       document.body.style.overflow = '';
     };
   }, [isOpen]);
