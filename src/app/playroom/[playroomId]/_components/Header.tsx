@@ -15,6 +15,7 @@ export default function PlayroomHeader({
   playroomDescription,
   isHost,
   onBeforeBack,
+  isHostOnline,
 }: {
   playroomId: number;
   playroomTitle: string;
@@ -22,6 +23,7 @@ export default function PlayroomHeader({
   isHost: boolean;
   /** 뒤로가기 직전에 호출됩니다. `false` 를 반환하면 이동하지 않습니다. */
   onBeforeBack?: () => boolean;
+  isHostOnline: boolean;
 }) {
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -62,7 +64,16 @@ export default function PlayroomHeader({
         onBeforeNavigate={onBeforeBack}
       />
 
-      <h1 className="text-text-primary text-base">{playroomTitle}</h1>
+      <h1 className="text-text-primary flex items-center gap-2 text-base">
+        {isHostOnline && (
+          <span className="relative flex" title="방장이 참여중!">
+            <span className="absolute top-1/2 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2 transform animate-ping rounded-full bg-red-400"></span>
+            <span className="size-1.5 rounded-full bg-red-500"></span>
+          </span>
+        )}
+        {playroomTitle}
+      </h1>
+
       {isHost ? (
         <KebabModal>
           <KebabModal.Item onClick={handleRoomEdit}>

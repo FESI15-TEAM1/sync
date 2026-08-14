@@ -87,6 +87,9 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
     useGetPlayroomData(playroomId);
 
   const isHost = playroomData?.isHost ?? false;
+  const isHostOnline = (playroomData?.members ?? []).some(
+    (member) => member.userId === playroomData?.host.userId,
+  );
 
   // 방장은 종료 요청이 성공하면 스스로 이동하므로, 안내는 참가자에게만 보여줍니다.
   const isClosedNoticeOpen = isRoomClosed && !isHost;
@@ -143,6 +146,7 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
         playroomDescription={playroomData?.description ?? ''}
         isHost={playroomData?.isHost ?? false}
         onBeforeBack={handleHeaderBeforeBack}
+        isHostOnline={isHostOnline}
       />
 
       {isPending ? (
