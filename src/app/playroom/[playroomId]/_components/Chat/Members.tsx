@@ -24,6 +24,11 @@ export default function Members({
   const router = useRouter();
   const [previewUserId, setPreviewUserId] = useState<number | null>(null);
 
+  // 방장을 맨 앞에 놓습니다. sort 는 안정 정렬이라 나머지는 서버가 준 순서 그대로입니다.
+  const sortedMembers = members
+    .slice()
+    .sort((a, b) => Number(b.userId === hostId) - Number(a.userId === hostId));
+
   // 미리보기 모달의 프로필 버튼은 앵커가 아니라 `router.push` 를 쓰는 버튼이라
   // 방장 이탈 가드의 앵커 클릭 캡처에 걸리지 않습니다. 공용 모달을 건드리지 않고
   // 여기서 캡처 단계로 가로채, 이동 여부를 가드에 먼저 물어봅니다.
@@ -52,7 +57,7 @@ export default function Members({
       onClickCapture={handleClickCapture}
     >
       <div className="grid grid-cols-2 gap-2 p-4">
-        {members.map((member) => (
+        {sortedMembers.map((member) => (
           <MemberItem
             userId={member.userId}
             username={member.username}
