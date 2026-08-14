@@ -1,10 +1,13 @@
-import { type SubmitEvent } from 'react';
+import { type SubmitEvent, useRef } from 'react';
 
 import SendIcon from '@/assets/icons/chat/send.svg';
+import Button from '@/components/Button';
 import IconButton from '@/components/IconButton';
 
-import { type ChatMessage } from '../Playroom';
-import ChatBox from './ChatMessage';
+import { useChatScroll } from '../../_hooks/Chat/useChatScroll';
+import { type ChatKindTypes } from '../Playroom';
+import ChatMessage from './ChatMessage';
+import SystemNotice from './SystemNotice';
 
 export default function Chatting({
   messages,
@@ -12,33 +15,63 @@ export default function Chatting({
   chat,
   setChat,
   handleSubmit,
+  hostId,
 }: {
-  messages: ChatMessage[];
+  messages: ChatKindTypes[];
   // 지난 채팅을 불러오지 못한 경우의 안내. 실시간 채팅은 그대로 동작합니다.
   historyErrorMessage?: string | null;
   chat: string;
   setChat: (chat: string) => void;
   handleSubmit: (e: SubmitEvent<HTMLFormElement>) => void;
+  hostId: number | null;
 }) {
+  const chatLogRef = useRef<HTMLDivElement>(null);
+  const { isScrolledUp, scrollToBottom } = useChatScroll(chatLogRef);
+
   return (
     <div className="scrollbar-track-bg-card scrollbar-thumb-text-secondary grid min-h-0 grid-rows-[1fr_auto]">
       {/* 채팅 로그 */}
-      <div className="flex min-h-0 flex-1 flex-col-reverse overflow-y-auto px-4 py-2">
-        <div className="flex h-max flex-col gap-2">
-          {historyErrorMessage && (
-            <p role="alert" className="py-2 text-center text-xs text-red-500">
-              {historyErrorMessage}
-            </p>
-          )}
-          {messages.map((message) => (
-            <ChatBox
-              key={message.id}
-              username={message.username}
-              userImage={message.userImage}
-              message={message.message}
-            />
-          ))}
+      <div className="relative min-h-0">
+        <div
+          ref={chatLogRef}
+          className="flex h-full flex-col-reverse overflow-y-auto px-4 py-2"
+        >
+          <div className="flex h-max flex-col gap-2">
+            {historyErrorMessage && (
+              <p role="alert" className="py-2 text-center text-xs text-red-500">
+                {historyErrorMessage}
+              </p>
+            )}
+            {messages.map((message) =>
+              message.kind === 'chat' ? (
+                <ChatMessage
+                  key={`chat-${message.id}`}
+                  username={message.username}
+                  userImage={message.userImage}
+                  message={message.message}
+                  isHostMessage={message.userId === hostId}
+                />
+              ) : (
+                <SystemNotice
+                  key={message.key}
+                  notice={message}
+                  isHost={message.userId === hostId}
+                />
+              ),
+            )}
+          </div>
         </div>
+        {/* 최신 채팅으로 이동 */}
+        {isScrolledUp && (
+          <Button
+            type="button"
+            onClick={scrollToBottom}
+            variant="secondary"
+            className="border-border text-text-secondary hover:text-text-primary absolute bottom-3 left-1/2 -translate-x-1/2 border text-sm font-normal shadow-md"
+          >
+            최근 채팅으로 이동
+          </Button>
+        )}
       </div>
       {/* 채팅 입력 인풋 */}
       <form
