@@ -94,33 +94,23 @@ export default function Login() {
         </Button>
       </form>
 
-      <div className="mt-8 flex justify-center gap-3">
+      <div className="mt-8 flex justify-center gap-8">
         <Button
           variant="secondary"
           type="button"
+          className="rounded-full p-0"
           onClick={() => handleSocialLogin('google')}
         >
-          <Image
-            src={Google}
-            alt="구글 로그인"
-            width={40}
-            height={40}
-            className="mr-2"
-          />
+          <Image src={Google} alt="구글 로그인" width={40} height={40} />
         </Button>
 
         <Button
           variant="secondary"
           type="button"
+          className="rounded-full p-0"
           onClick={() => handleSocialLogin('kakao')}
         >
-          <Image
-            src={Kakao}
-            alt="카카오 로그인"
-            width={40}
-            height={40}
-            className="mr-2"
-          />
+          <Image src={Kakao} alt="카카오 로그인" width={40} height={40} />
         </Button>
       </div>
 
