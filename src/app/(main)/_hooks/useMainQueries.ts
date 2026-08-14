@@ -5,6 +5,6 @@ import { getPublicPlaylists } from '@/services/playlist/playlist.api';
 export function useGetPublicPlaylists() {
   return useQuery({
     queryKey: ['publicPlaylists'],
-    queryFn: () => getPublicPlaylists(),
+    queryFn: getPublicPlaylists,
   });
 }
