@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import Link from 'next/link';
 
 import CrownIcon from '@/assets/icons/crown.svg';
 
@@ -15,14 +14,18 @@ export default function MemberItem({
   username,
   userImage,
   isHostMember,
-}: MemberType & { isHostMember: boolean }) {
+  onMemberClick,
+}: MemberType & {
+  isHostMember: boolean;
+  onMemberClick: (userId: number) => void;
+}) {
   return (
     <>
       <span className="flex items-center gap-2">
-        <Link
-          href={`/profile/${userId}`}
-          className="inline-flex items-center gap-2 *:hover:underline"
-          target="_blank"
+        <button
+          type="button"
+          onClick={() => onMemberClick(userId)}
+          className="inline-flex cursor-pointer items-center gap-2 text-left *:hover:underline"
         >
           <span className="relative h-8 w-8">
             {userImage ? (
@@ -38,7 +41,7 @@ export default function MemberItem({
           </span>
 
           <p className="text-text-primary text-sm">{username}</p>
-        </Link>
+        </button>
 
         {isHostMember && (
           <span title="방장">

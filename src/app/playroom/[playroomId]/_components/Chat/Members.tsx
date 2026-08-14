@@ -1,3 +1,9 @@
+'use client';
+
+import { useState } from 'react';
+
+import ProfilePreviewModal from '@/components/domain/user/ProfilePreviewModal';
+
 import type { MemberType } from './MemberItem';
 import MemberItem from './MemberItem';
 
@@ -8,6 +14,8 @@ export default function Members({
   members: MemberType[];
   hostId: number | null;
 }) {
+  const [previewUserId, setPreviewUserId] = useState<number | null>(null);
+
   return (
     <div className="flex h-full min-h-0 flex-col overflow-y-auto">
       <div className="grid grid-cols-2 gap-2 p-4">
@@ -18,9 +26,16 @@ export default function Members({
             userImage={member.userImage}
             key={member.userId}
             isHostMember={member.userId === hostId}
+            onMemberClick={setPreviewUserId}
           />
         ))}
       </div>
+
+      <ProfilePreviewModal
+        userId={previewUserId}
+        isOpen={previewUserId !== null}
+        onClose={() => setPreviewUserId(null)}
+      />
     </div>
   );
 }
