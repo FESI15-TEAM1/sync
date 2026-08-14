@@ -6,7 +6,7 @@ import PublicPlaylistCardList from './_components/PublicPlaylistCardList';
 
 export default function Main() {
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-12">
+    <div className="flex flex-col gap-12">
       <Section headline="현재 핫한 플레이룸🔥" list={<PublicPlayroomList />} />
       <Section
         headline="새로 생긴 플레이리스트!"
