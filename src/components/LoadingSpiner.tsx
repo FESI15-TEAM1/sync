@@ -10,13 +10,13 @@ const BAR_RADIUS = 7 * (DISPLAY_WIDTH / VIEW_WIDTH);
 
 export default function LoadingSpinner() {
   const bars = [
-    { x: 87, y: 190, h: 80, delay: 0 },
-    { x: 123, y: 160, h: 140, delay: 0.12 },
-    { x: 159, y: 120, h: 220, delay: 0.24 },
-    { x: 195, y: 90, h: 220, delay: 0.36 },
-    { x: 231, y: 145, h: 170, delay: 0.48 },
-    { x: 267, y: 110, h: 210, delay: 0.6 },
-    { x: 303, y: 180, h: 100, delay: 0.72 },
+    { x: 87, y: 190, h: 80 },
+    { x: 123, y: 160, h: 140 },
+    { x: 159, y: 120, h: 220 },
+    { x: 195, y: 90, h: 220 },
+    { x: 231, y: 145, h: 170 },
+    { x: 267, y: 110, h: 210 },
+    { x: 303, y: 180, h: 100 },
   ];
 
   return (
@@ -57,7 +57,6 @@ export default function LoadingSpinner() {
             width: `${(BAR_WIDTH / VIEW_WIDTH) * 100}%`,
             height: `${(bar.h / VIEW_HEIGHT) * 100}%`,
             borderRadius: `${BAR_RADIUS}px`,
-            // animationDelay: `${START_DELAY + bar.delay}s`,
             animationFillMode: 'backwards',
             willChange: 'transform',
           }}

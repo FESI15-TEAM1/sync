@@ -77,9 +77,11 @@ export default function PlaylistView({
       <div className="mt-4">
         <div className="mt-20">
           {items.length < 1 && (
-            <div className="flex h-full items-center justify-center">
+            <div className="flex items-center justify-center">
               <span className="text-text-secondary">
-                좋아요 한 플레이리스트 가 없습니다.
+                {activeTab === 'liked'
+                  ? '좋아요 한 플레이리스트가 없습니다.'
+                  : '플레이리스트가 없습니다.'}
               </span>
             </div>
           )}
