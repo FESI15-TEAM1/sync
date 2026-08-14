@@ -8,6 +8,7 @@ import type { LikePlaylistResponse } from '@/services/playlist/playlistCard.type
 import type {
   GetUserPlaylistsParams,
   MyplaylistResponse,
+  PublicPlaylistResponse,
 } from '@/services/playlist/playlistCard.type';
 
 export const getPlaylistDetail = (id: number | string) => {
@@ -92,4 +93,8 @@ export const deleteLiked = (playlistId: string) => {
 };
 export const getLikedPlaylist = () => {
   return clientFetch<LikePlaylistResponse>('/users/me/liked-playlists');
+};
+
+export const getPublicPlaylists = () => {
+  return clientFetch<PublicPlaylistResponse>(`/playlists/public`);
 };
