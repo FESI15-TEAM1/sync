@@ -7,6 +7,7 @@
 
 body {
   font-family: var(--font-noto-sans), var(--font-pretendard);
+  word-break: keep-all;
 }
 
 /* 자동 완성시 배경 바뀌는 거 방지용 */
