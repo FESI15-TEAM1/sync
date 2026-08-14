@@ -14,11 +14,14 @@ export default function PlayroomHeader({
   playroomTitle,
   playroomDescription,
   isHost,
+  onBeforeBack,
 }: {
   playroomId: number;
   playroomTitle: string;
   playroomDescription: string;
   isHost: boolean;
+  /** 뒤로가기 직전에 호출됩니다. `false` 를 반환하면 이동하지 않습니다. */
+  onBeforeBack?: () => boolean;
 }) {
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -53,7 +56,11 @@ export default function PlayroomHeader({
 
   return (
     <div className="mx-2 flex items-center justify-between">
-      <BackButton staticUrl="/stage" fallbackUrl="/stage" />
+      <BackButton
+        staticUrl="/stage"
+        fallbackUrl="/stage"
+        onBeforeNavigate={onBeforeBack}
+      />
 
       <h1 className="text-text-primary text-base">{playroomTitle}</h1>
       {isHost ? (

@@ -14,8 +14,10 @@ import {
   playroomQueryKey,
   useGetPlayroomData,
 } from '../_hooks/useGetPlayroomData';
+import { useHostLeaveGuard } from '../_hooks/useHostLeaveGuard';
 import { useWSConnect } from '../_hooks/useWSConnect';
 import PlayroomHeader from './Header';
+import HostLeaveModal from './Modal/HostLeaveModal';
 import LoginRequiredModal from './Modal/LoginRequiredModal';
 import RoomClosedModal from './Modal/RoomClosedModal';
 
@@ -61,6 +63,14 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
   // 방장은 종료 요청이 성공하면 스스로 이동하므로, 안내는 참가자에게만 보여줍니다.
   const isClosedNoticeOpen = isRoomClosed && !isHost;
 
+  // 방장이 페이지를 벗어나면 재생 동기화가 끊기므로, 이동을 감지해 먼저 안내합니다.
+  // 이미 종료된 방은 동기화할 것이 없으므로 막지 않습니다.
+  const { isLeaveNoticeOpen, requestLeave, confirmLeave, cancelLeave } =
+    useHostLeaveGuard(isHost && !isRoomClosed);
+
+  const handleHeaderBeforeBack = () =>
+    requestLeave(() => router.push('/stage'));
+
   const handleClosedNoticeConfirm = () => {
     // 종료된 방은 더 이상 조회할 수 없으므로 상세·채팅 캐시를 통째로 지웁니다.
     queryClient.removeQueries({ queryKey: playroomQueryKey(playroomId) });
@@ -104,6 +114,7 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
         playroomTitle={playroomData?.title ?? ''}
         playroomDescription={playroomData?.description ?? ''}
         isHost={playroomData?.isHost ?? false}
+        onBeforeBack={handleHeaderBeforeBack}
       />
 
       {isPending ? (
@@ -142,6 +153,13 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
       <RoomClosedModal
         isOpen={isClosedNoticeOpen}
         onConfirm={handleClosedNoticeConfirm}
+      />
+
+      {/* 방장이 페이지를 벗어나려 할 때의 동기화 종료 안내 */}
+      <HostLeaveModal
+        isOpen={isLeaveNoticeOpen}
+        onCancel={cancelLeave}
+        onConfirm={confirmLeave}
       />
 
       {/* 비회원 로그인 요구 안내 */}
