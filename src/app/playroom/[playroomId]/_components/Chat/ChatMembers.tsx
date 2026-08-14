@@ -80,7 +80,7 @@ export default function ChatMembers({
 
   // 멤버 수 표시 패널 스타일
   const listenerPanelStyles = cva(
-    'text-text-primary border-border absolute top-8.5 right-0 flex items-center gap-1 rounded-bl-xl border-b border-l px-2 py-1 text-center',
+    'text-text-primary border-border absolute top-8.5 right-0 flex items-center gap-1 rounded-bl-xl border-b border-l px-2 py-1 text-center z-10 bg-bg-card',
     {
       variants: {
         currentTab: {
