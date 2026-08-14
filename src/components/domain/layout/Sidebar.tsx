@@ -49,6 +49,18 @@ const backdropStyle = cva(
   },
 );
 
+const SidebarItemStyle = cva(
+  'hover:text-shadow-[0_2px_15px_var(--color-primary)] transition-all duration-300 ease-in-out',
+  {
+    variants: {
+      isCurrent: {
+        true: 'font-bold',
+        false: 'inline-block',
+      },
+    },
+  },
+);
+
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const user = useUserStore((state) => state.user);
@@ -68,7 +80,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               key={href}
               href={href}
               aria-current={isCurrent ? 'page' : undefined}
-              className={isCurrent ? 'font-bold' : 'inline-block'}
+              className={SidebarItemStyle({ isCurrent })}
               onClick={onNavigate}
             >
               {label}
