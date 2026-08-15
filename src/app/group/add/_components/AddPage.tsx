@@ -152,6 +152,7 @@ export default function AddPage({
           <InputField.Input
             value={groupName}
             placeholder="그룹 이름을 입력해주세요."
+            maxLength={50}
             onChange={(e) => setGroupName(e.target.value)}
           />
         </InputField>
@@ -160,6 +161,7 @@ export default function AddPage({
           label="그룹 소개"
           value={groupDescription}
           placeholder="그룹 소개를 입력해주세요."
+          maxLength={200}
           onChange={(e) => setGroupDescription(e.target.value)}
         />
 
