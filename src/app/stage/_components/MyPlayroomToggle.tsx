@@ -14,7 +14,7 @@ export default function MyPlayroomToggle({
   onChange,
 }: MyPlayroomToggleProps) {
   return (
-    <div className="sticky top-0 z-10 flex items-center justify-end py-3">
+    <div className="sticky top-0 z-10 flex items-center justify-end pb-3">
       <Toggle
         checked={isMineOnly}
         onChange={onChange}
