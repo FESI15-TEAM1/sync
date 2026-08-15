@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { type SubmitEvent } from 'react';
 
 import Button from '@/components/Button';
@@ -13,11 +13,12 @@ import {
   getPasswordError,
 } from '@/lib/auth-validation';
 import {
-  checkNickname,
   confirmEmailVerification,
   requestEmailVerification,
   signup,
 } from '@/services/auth/auth.api';
+
+import { useCheckNicknameMutation } from '../_hooks/useCheckNicknameMutation';
 
 export default function Signup() {
   const router = useRouter();
@@ -40,7 +41,12 @@ export default function Signup() {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCheckingNickname, setIsCheckingNickname] = useState(false);
+
+  const { checkNicknameMutate, isCheckingNickname } =
+    useCheckNicknameMutation();
+
+  // 확인 응답이 오는 사이 닉네임이 바뀌었는지 비교하기 위한 최신값 참조
+  const nicknameRef = useRef(nickname);
 
   const handleCheckNickname = async () => {
     if (isCheckingNickname) return;
@@ -58,9 +64,11 @@ export default function Signup() {
       return;
     }
 
-    setIsCheckingNickname(true);
+    const nicknameAtRequest = nickname;
     try {
-      const { available } = await checkNickname(nickname);
+      const { available } = await checkNicknameMutate(nicknameAtRequest);
+      // 응답을 받는 사이 닉네임이 바뀌었다면 이 응답은 버립니다.
+      if (nicknameRef.current !== nicknameAtRequest) return;
 
       if (available) {
         setNicknameError('');
@@ -71,12 +79,11 @@ export default function Signup() {
         setIsNicknameValid(false);
       }
     } catch (error) {
+      if (nicknameRef.current !== nicknameAtRequest) return;
       setIsNicknameValid(false);
       if (error instanceof Error) {
         alert(error.message);
       }
-    } finally {
-      setIsCheckingNickname(false);
     }
   };
 
@@ -188,7 +195,9 @@ export default function Signup() {
               onChange={(e) => {
                 const value = e.target.value;
                 setNickname(value);
+                nicknameRef.current = value;
                 setNicknameError(getNicknameError(value));
+                setIsNicknameValid(false);
               }}
             />
             <InputField.Button

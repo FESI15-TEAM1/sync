@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { type SubmitEvent } from 'react';
 
@@ -11,34 +10,20 @@ import Kakao from '@/assets/images/kakao-login.png';
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import { getEmailError } from '@/lib/auth-validation';
-import { APIError } from '@/lib/http/error';
-import { useUserStore } from '@/providers/user-store-provider';
-import { login } from '@/services/auth/auth.api';
+
+import { useLoginMutation } from '../_hooks/useLoginMutation';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const router = useRouter();
-  const setUser = useUserStore((state) => state.setUser);
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
+  const { loginMutate, isSubmitting } = useLoginMutation();
+
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    try {
-      setIsSubmitting(true);
-      const user = await login({ email, password });
-      setUser(user);
-      router.push('/');
-    } catch (error) {
-      if (error instanceof APIError) {
-        console.error(error.message);
-        alert(error.message);
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
+    loginMutate({ email, password });
   };
 
   function handleSocialLogin(provider: 'kakao' | 'google') {
@@ -88,7 +73,7 @@ export default function Login() {
           className="mt-6"
           type="submit"
           // isDisabled={!email || !password || !!emailError || !!passwordError}
-          isDisabled={false}
+          isDisabled={isSubmitting}
         >
           {isSubmitting ? '로그인 중...' : '로그인'}
         </Button>
