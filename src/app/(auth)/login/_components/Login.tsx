@@ -23,6 +23,11 @@ export default function Login() {
 
   const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!email || !password || !!emailError || !!passwordError) {
+      return;
+    }
+
     loginMutate({ email, password });
   };
 
@@ -72,8 +77,13 @@ export default function Login() {
         <Button
           className="mt-6"
           type="submit"
-          // isDisabled={!email || !password || !!emailError || !!passwordError}
-          isDisabled={isSubmitting}
+          isDisabled={
+            !email ||
+            !password ||
+            !!emailError ||
+            !!passwordError ||
+            isSubmitting
+          }
         >
           {isSubmitting ? '로그인 중...' : '로그인'}
         </Button>

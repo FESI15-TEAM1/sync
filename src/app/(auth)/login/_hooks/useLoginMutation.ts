@@ -10,20 +10,19 @@ export function useLoginMutation() {
   const router = useRouter();
   const setUser = useUserStore((state) => state.setUser);
 
-  const {
-    mutate: loginMutate,
-    isPending: isSubmitting,
-  } = useMutation({
+  const { mutate: loginMutate, isPending: isSubmitting } = useMutation({
     mutationFn: (data: LoginRequest) => login(data),
     onSuccess: (user) => {
       setUser(user);
       router.push('/');
     },
     onError: (error) => {
+      console.error(error);
       if (error instanceof APIError) {
-        console.error(error.message);
         alert(error.message);
+        return;
       }
+      alert('로그인 요청 중 오류가 발생했습니다.');
     },
   });
 
