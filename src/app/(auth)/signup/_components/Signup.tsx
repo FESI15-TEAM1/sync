@@ -2,17 +2,23 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { type SubmitEvent } from 'react';
 
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
-import { getEmailError, getPasswordError } from '@/lib/auth-validation';
+import {
+  getEmailError,
+  getNicknameError,
+  getPasswordError,
+} from '@/lib/auth-validation';
 import {
   confirmEmailVerification,
   requestEmailVerification,
   signup,
 } from '@/services/auth/auth.api';
+
+import { useCheckNicknameMutation } from '../_hooks/useCheckNicknameMutation';
 
 export default function Signup() {
   const router = useRouter();
@@ -36,16 +42,49 @@ export default function Signup() {
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleCheckNickname = () => {
+  const { checkNicknameMutate, isCheckingNickname } =
+    useCheckNicknameMutation();
+
+  // 확인 응답이 오는 사이 닉네임이 바뀌었는지 비교하기 위한 최신값 참조
+  const nicknameRef = useRef(nickname);
+
+  const handleCheckNickname = async () => {
+    if (isCheckingNickname) return;
+
     if (!nickname.trim()) {
       setNicknameError('닉네임을 입력해주세요.');
       setIsNicknameValid(false);
       return;
     }
 
-    setNicknameError('');
-    setIsNicknameValid(true);
-    alert('중복확인 되었습니다.');
+    const lengthError = getNicknameError(nickname);
+    if (lengthError) {
+      setNicknameError(lengthError);
+      setIsNicknameValid(false);
+      return;
+    }
+
+    const nicknameAtRequest = nickname;
+    try {
+      const { available } = await checkNicknameMutate(nicknameAtRequest);
+      // 응답을 받는 사이 닉네임이 바뀌었다면 이 응답은 버립니다.
+      if (nicknameRef.current !== nicknameAtRequest) return;
+
+      if (available) {
+        setNicknameError('');
+        setIsNicknameValid(true);
+        alert('사용 가능한 닉네임입니다.');
+      } else {
+        setNicknameError('이미 사용 중인 닉네임입니다.');
+        setIsNicknameValid(false);
+      }
+    } catch (error) {
+      if (nicknameRef.current !== nicknameAtRequest) return;
+      setIsNicknameValid(false);
+      if (error instanceof Error) {
+        alert(error.message);
+      }
+    }
   };
 
   const handleCheckEmail = async () => {
@@ -153,11 +192,17 @@ export default function Signup() {
             <InputField.Input
               type="text"
               value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setNickname(value);
+                nicknameRef.current = value;
+                setNicknameError(getNicknameError(value));
+                setIsNicknameValid(false);
+              }}
             />
             <InputField.Button
               onClick={handleCheckNickname}
-              disabled={!nickname}
+              disabled={!nickname || !!nicknameError || isCheckingNickname}
             >
               중복확인
             </InputField.Button>
@@ -177,7 +222,7 @@ export default function Signup() {
             />
             <InputField.Button
               onClick={handleCheckEmail}
-              disabled={!email || isSendingCode}
+              disabled={!email || !!emailError || isSendingCode}
             >
               이메일 인증
             </InputField.Button>
@@ -246,14 +291,14 @@ export default function Signup() {
           </Button>
         </form>
         <p className="mt-8 text-center text-sm text-white">
-          이미 계정이 있으신가요?
+          이미 계정이 있으신가요?{' '}
+          <Link
+            href="/login"
+            className="text-primary mt-4 inline-block self-center text-sm font-bold hover:underline"
+          >
+            로그인
+          </Link>
         </p>
-        <Link
-          href="/login"
-          className="text-primary mt-4 inline-block self-center text-sm font-bold"
-        >
-          로그인
-        </Link>
       </div>
     </div>
   );

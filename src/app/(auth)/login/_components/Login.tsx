@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { type SubmitEvent } from 'react';
 
@@ -11,9 +10,8 @@ import Kakao from '@/assets/images/kakao-login.png';
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 import { getEmailError } from '@/lib/auth-validation';
-import { APIError } from '@/lib/http/error';
-import { useUserStore } from '@/providers/user-store-provider';
-import { login } from '@/services/auth/auth.api';
+
+import { useLoginMutation } from '../_hooks/useLoginMutation';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -21,20 +19,16 @@ export default function Login() {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  const router = useRouter();
-  const setUser = useUserStore((state) => state.setUser);
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
+  const { loginMutate, isSubmitting } = useLoginMutation();
+
+  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    try {
-      const user = await login({ email, password });
-      setUser(user);
-      router.push('/');
-    } catch (error) {
-      if (error instanceof APIError) {
-        console.error(error.message);
-        alert(error.message);
-      }
+
+    if (!email || !password || !!emailError || !!passwordError) {
+      return;
     }
+
+    loginMutate({ email, password });
   };
 
   function handleSocialLogin(provider: 'kakao' | 'google') {
@@ -83,40 +77,35 @@ export default function Login() {
         <Button
           className="mt-6"
           type="submit"
-          // isDisabled={!email || !password || !!emailError || !!passwordError}
-          isDisabled={false}
+          isDisabled={
+            !email ||
+            !password ||
+            !!emailError ||
+            !!passwordError ||
+            isSubmitting
+          }
         >
-          로그인
+          {isSubmitting ? '로그인 중...' : '로그인'}
         </Button>
       </form>
 
-      <div className="mt-8 flex justify-center gap-3">
+      <div className="mt-8 flex justify-center gap-8">
         <Button
           variant="secondary"
           type="button"
-          onClick={() => handleSocialLogin('kakao')}
+          className="rounded-full p-0"
+          onClick={() => handleSocialLogin('google')}
         >
-          <Image
-            src={Kakao}
-            alt="카카오 로그인"
-            width={40}
-            height={40}
-            className="mr-2"
-          />
+          <Image src={Google} alt="구글 로그인" width={40} height={40} />
         </Button>
 
         <Button
           variant="secondary"
           type="button"
-          onClick={() => handleSocialLogin('google')}
+          className="rounded-full p-0"
+          onClick={() => handleSocialLogin('kakao')}
         >
-          <Image
-            src={Google}
-            alt="구글 로그인"
-            width={40}
-            height={40}
-            className="mr-2"
-          />
+          <Image src={Kakao} alt="카카오 로그인" width={40} height={40} />
         </Button>
       </div>
 
