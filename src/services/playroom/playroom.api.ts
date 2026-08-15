@@ -30,6 +30,22 @@ export const getPlayrooms = ({ cursor, limit }: GetPlayroomsParams = {}) => {
 };
 
 /**
+ * 라이브 중(isLive === true)인 플레이룸만 추려서 조회합니다.
+ * 백엔드에 isLive 필터 파라미터가 없어, 목록을 받아온 뒤 클라이언트에서 걸러냅니다.
+ * 필터링은 받아온 페이지 안에서만 일어나므로 nextCursor 는 원본 응답 값을 그대로 넘깁니다.
+ */
+export const getMainPlayrooms = async (
+  params: GetPlayroomsParams = {},
+): Promise<GetPlayroomsResponse> => {
+  const data = await getPlayrooms(params);
+
+  return {
+    ...data,
+    items: data.items.filter((playroom) => playroom.isLive),
+  };
+};
+
+/**
  * 내가 방장인 플레이룸을 최신순으로 조회합니다. 회원 전용이라 비회원이면 401 입니다.
  * 개설 상한(5개)이 한 페이지를 넘지 않아 커서 파라미터가 없습니다.
  */
