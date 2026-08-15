@@ -158,7 +158,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     id: item.id,
     title: item.title,
     trackCount: item.trackCount,
-    artist: item.owner.nickname,
+    owner: item.owner.nickname,
     image: item.image,
     ownerId: item.owner.userId,
   }));
@@ -177,7 +177,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
       id: item.id,
       title: item.title,
       trackCount: item.trackCount,
-      artist: currentUser?.nickname ?? '',
+      owner: currentUser?.nickname ?? '',
       image: item.image,
       ownerId: currentUser?.id ?? 0,
     }));

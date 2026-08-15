@@ -11,7 +11,7 @@ import Modal from '@/components/Modal';
 export type EditablePlaylist = {
   id: number;
   title: string;
-  artist: string;
+  owner: string;
   trackCount: number;
   image?: string;
   ownerId: number;
@@ -42,7 +42,7 @@ function PlaylistRow({
         img={playlist.image}
         videoId={String(playlist.id)}
         title={playlist.title}
-        artist={playlist.artist}
+        artist={playlist.owner}
         Button={
           canRemove ? (
             <IconButton
@@ -177,7 +177,7 @@ function PlaylistEditModalContent({
                   img={playlist.image}
                   videoId={String(playlist.id)}
                   title={playlist.title}
-                  artist={playlist.artist}
+                  artist={playlist.owner}
                   Button={
                     <IconButton
                       type="button"
