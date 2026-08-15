@@ -9,6 +9,7 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import More2Icon from '@/assets/icons/more2.svg';
 import Star from '@/assets/icons/star.svg';
 import Button from '@/components/Button';
+import ConfirmModal from '@/components/ConfirmModal';
 import KebabModal from '@/components/domain/KebabModal';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import IconButton from '@/components/IconButton';
@@ -238,6 +239,12 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   };
 
   // 그룹 플레이리스트 개별 제거(본인이 담은 것이거나 그룹장만 가능)
+  const [removeTarget, setRemoveTarget] =
+    useState<GroupPlaylistResponse | null>(null);
+  const [removeErrorMessage, setRemoveErrorMessage] = useState<string | null>(
+    null,
+  );
+
   const { mutate: removePlaylist, isPending: isRemovingPlaylist } = useMutation(
     {
       mutationFn: (playlistId: number) =>
@@ -247,9 +254,10 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
           queryKey: groupPlaylistsQueryKey(groupId),
         });
         router.refresh();
+        setRemoveTarget(null);
       },
       onError: (error) => {
-        alert(
+        setRemoveErrorMessage(
           error instanceof APIError
             ? error.message
             : '플레이리스트 제거 중 오류가 발생했습니다.',
@@ -260,10 +268,19 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
 
   const handleRemovePlaylist = (playlist: GroupPlaylistResponse) => {
     if (isRemovingPlaylist) return;
-    if (!confirm(`'${playlist.title}'을(를) 그룹에서 제거하시겠습니까?`))
-      return;
+    setRemoveErrorMessage(null);
+    setRemoveTarget(playlist);
+  };
 
-    removePlaylist(playlist.id);
+  const handleConfirmRemovePlaylist = () => {
+    if (!removeTarget) return;
+    removePlaylist(removeTarget.id);
+  };
+
+  const handleCloseRemoveModal = () => {
+    if (isRemovingPlaylist) return;
+    setRemoveTarget(null);
+    setRemoveErrorMessage(null);
   };
 
   // 그룹 플레이리스트 하이라이트(상단 고정, 그룹장만 가능)
@@ -457,6 +474,19 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
           groupName={groupInfo.name}
           onClose={() => setIsLeaveGroupOpen(false)}
           onConfirm={handleConfirmLeave}
+        />
+
+        {/* 플레이리스트 제거 확인 모달 */}
+        <ConfirmModal
+          isOpen={removeTarget !== null}
+          title={`'${removeTarget?.title}'을(를) 그룹에서 제거하시겠습니까?`}
+          confirmLabel="제거하기"
+          confirmingLabel="제거하는 중..."
+          isConfirming={isRemovingPlaylist}
+          errorMessage={removeErrorMessage}
+          destructive
+          onConfirm={handleConfirmRemovePlaylist}
+          onClose={handleCloseRemoveModal}
         />
       </div>
       <GroupDetailTabs activeTab={activeTab} onChange={setActiveTab} />
