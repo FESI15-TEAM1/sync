@@ -3,6 +3,7 @@ import { type SubmitEvent, useRef } from 'react';
 import SendIcon from '@/assets/icons/chat/send.svg';
 import Button from '@/components/Button';
 import IconButton from '@/components/IconButton';
+import { PLAYROOM_CHAT_MAX_LENGTH } from '@/constants/playroom';
 
 import { useChatScroll } from '../../_hooks/Chat/useChatScroll';
 import { type ChatKindTypes } from '../Playroom';
@@ -67,7 +68,7 @@ export default function Chatting({
             type="button"
             onClick={scrollToBottom}
             variant="secondary"
-            className="border-border text-text-secondary hover:text-text-primary absolute bottom-3 left-1/2 -translate-x-1/2 border text-sm font-normal shadow-md"
+            className="border-border bg-bg-card text-text-secondary hover:text-text-primary absolute bottom-3 left-1/2 z-3 -translate-x-1/2 border text-sm font-normal shadow-md"
           >
             최근 채팅으로 이동
           </Button>
@@ -84,6 +85,7 @@ export default function Chatting({
           onChange={(event) => setChat(event.target.value)}
           className="border-border bg-input text-text-primary placeholder:text-text-secondary outline-primary flex w-full justify-between gap-2 rounded-full border px-4 py-3 text-sm shadow-none focus:outline-2"
           placeholder="채팅 입력"
+          maxLength={PLAYROOM_CHAT_MAX_LENGTH}
         />
         <IconButton variants="primary" size="lg" type="submit">
           <SendIcon width={20} height={20} className="text-text-primary" />
