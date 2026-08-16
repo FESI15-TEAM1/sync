@@ -4,15 +4,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
-import More2Icon from '@/assets/icons/more2.svg';
+import CopyIcon from '@/assets/icons/copy.svg';
 import Star from '@/assets/icons/star.svg';
 import Button from '@/components/Button';
 import ConfirmModal from '@/components/ConfirmModal';
 import KebabModal from '@/components/domain/KebabModal';
 import PlaylistCard from '@/components/domain/PlaylistCard';
-import IconButton from '@/components/IconButton';
 import { APIError } from '@/lib/http/error';
 import { useUserStore } from '@/providers/user-store-provider';
 import {
@@ -34,6 +33,7 @@ import type { MyPlaylistItem } from '@/services/playlist/playlistCard.type';
 import GroupDetailTabs, { type DetailTab } from './GroupDetailTabs';
 import GroupLeaveModal from './GroupLeaveModal';
 import GroupMemberList from './GroupMemberList';
+import PlaylistCardMenu from './PlaylistCardMenu';
 import PlaylistEditModal, { type EditablePlaylist } from './PlaylistEditModal';
 
 // 그룹 상세 화면에서 한 번에 다룰 플레이리스트 최대 개수(스펙상 페이지 최대치)
@@ -68,53 +68,6 @@ type GroupDetailProps = {
   group: GroupDetailResponse;
 };
 
-// 플레이리스트 카드 전용 케밥 메뉴(more2 아이콘, 카드 하단에 위치)
-function PlaylistCardMenu({ children }: { children: ReactNode }) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isMenuOpen) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (!menuRef.current?.contains(e.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isMenuOpen]);
-
-  return (
-    <div className="relative shrink-0" ref={menuRef}>
-      <IconButton
-        size="sm"
-        variants="secondary"
-        aria-label="플레이리스트 메뉴"
-        onClick={(e) => {
-          e.preventDefault();
-          setIsMenuOpen((prev) => !prev);
-        }}
-      >
-        <More2Icon width={22} height={22} />
-      </IconButton>
-
-      {isMenuOpen && (
-        <div
-          className="absolute right-0 bottom-8 z-10 flex w-max min-w-40 flex-col rounded-lg bg-zinc-800 p-2"
-          onClick={() => setIsMenuOpen(false)}
-        >
-          {children}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export type EditableGroupInfo = {
   name: string;
   description: string;
@@ -140,6 +93,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     coverImage: group.image,
   };
   const [saveErrorMessage, setSaveErrorMessage] = useState<string | null>(null);
+  const [showCopyToast, setShowCopyToast] = useState(false);
 
   // 그룹 멤버 목록
   const groupMembersQuery = useQuery({
@@ -194,6 +148,17 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   //그룹 정보 수정
   const handleEditGroupInfo = () => {
     router.push(`/group/${groupId}/edit`);
+  };
+  //초대코드 복사
+  const handleCopyInviteCode = async () => {
+    if (!group.inviteCode) return;
+
+    await navigator.clipboard.writeText(group.inviteCode);
+    setShowCopyToast(true);
+
+    setTimeout(() => {
+      setShowCopyToast(false);
+    }, 2000);
   };
   //플레이리스트 편집
   const handleEditPlaylists = () => {
@@ -366,6 +331,11 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
 
   return (
     <>
+      <div
+        className={`bg-bg-card fixed top-25 left-1/2 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white transition-all duration-300 ${showCopyToast ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0'} `}
+      >
+        초대코드가 복사되었습니다.
+      </div>
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-5 py-6">
         <div className="flex items-start gap-4">
           {groupInfo.coverImage ? (
@@ -419,9 +389,19 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
               멤버 {group.memberCount}명 · 플레이리스트 {group.playlistCount}개
             </p>
             {group.inviteCode && (
-              <p className="text-text-secondary mt-0.5 text-sm">
-                초대코드 {group.inviteCode}
-              </p>
+              <div className="mt-0.5 flex items-center gap-1">
+                <p className="text-text-secondary text-sm">
+                  초대코드 {group.inviteCode}
+                </p>
+                <button
+                  type="button"
+                  aria-label="초대코드 복사"
+                  onClick={handleCopyInviteCode}
+                  className="text-text-secondary hover:text-text-primary cursor-pointer"
+                >
+                  <CopyIcon width={15} height={15} />
+                </button>
+              </div>
             )}
           </div>
         </div>
