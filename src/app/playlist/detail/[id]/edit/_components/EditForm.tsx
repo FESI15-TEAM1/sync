@@ -8,6 +8,7 @@ import { type ChangeEvent, useEffect, useState } from 'react';
 import TrackSearchSection from '@/app/playlist/add/_components/TrackSearchSection';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
+import ReorderableTrackList from '@/components/domain/playlists/ReorderableTrackList';
 import IconButton from '@/components/IconButton';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
@@ -22,8 +23,6 @@ import type {
 import { updatePlaylist } from '@/services/playlist/playlist.api';
 import { requestUploadUrl } from '@/services/upload/upload.api';
 import type { UploadUrlRequest } from '@/services/upload/upload.types';
-
-import ReorderableTrackList from './ReorderableTrackList';
 
 export default function EditForm() {
   const params = useParams();
