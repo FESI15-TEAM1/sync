@@ -4,8 +4,10 @@ import Image from 'next/image';
 import { type ChangeEvent, useEffect, useState } from 'react';
 
 export default function PlaylistThumbnailField({
+  initialImage,
   onFileSelect,
 }: {
+  initialImage?: string;
   onFileSelect: (file: File) => void;
 }) {
   const [preview, setPreview] = useState<string | null>(null);
@@ -25,6 +27,8 @@ export default function PlaylistThumbnailField({
     onFileSelect(file);
   };
 
+  const displayImage = preview ?? initialImage;
+
   return (
     <div className="relative h-40 w-40">
       <label
@@ -32,13 +36,13 @@ export default function PlaylistThumbnailField({
         aria-label="플레이리스트 썸네일 선택"
         className="border-border bg-bg-primary flex h-full w-full cursor-pointer items-center justify-center overflow-hidden rounded-2xl border"
       >
-        {preview ? (
+        {displayImage ? (
           <Image
-            src={preview}
+            src={displayImage}
             alt="플레이리스트 썸네일"
             fill
             className="overflow-hidden rounded-2xl object-cover p-2"
-            unoptimized
+            unoptimized={Boolean(preview)}
           />
         ) : null}
         <span
