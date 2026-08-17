@@ -75,6 +75,7 @@ function ReorderableTrackItem({
         </span>
       </div>
       <IconButton
+        type="button"
         className="border-border text-text-secondary hover:text-text-primary flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full border text-sm"
         size="sm"
         onClick={onRemove}

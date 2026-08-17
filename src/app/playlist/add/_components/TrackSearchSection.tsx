@@ -37,7 +37,9 @@ export default function TrackSearchSection({
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && searchValue) search(searchValue);
+              if (e.key !== 'Enter') return;
+              e.preventDefault();
+              if (searchValue) search(searchValue);
             }}
             placeholder="아티스트 명 또는 곡 이름을 검색하세요."
           ></InputField.Input>
@@ -61,6 +63,7 @@ export default function TrackSearchSection({
               onTrackClick={onAddTrack}
               Button={
                 <IconButton
+                  type="button"
                   className="border-border text-text-secondary hover:text-text-primary flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full border text-sm"
                   size="sm"
                 >
@@ -71,6 +74,7 @@ export default function TrackSearchSection({
           </div>
           <div className="flex w-full items-center justify-center gap-3">
             <Button
+              type="button"
               variant="outline"
               size="sm"
               isDisabled={!hasPrevPage}
@@ -80,6 +84,7 @@ export default function TrackSearchSection({
             </Button>
             <span className="text-text-secondary text-sm">{page + 1}</span>
             <Button
+              type="button"
               variant="outline"
               size="sm"
               isDisabled={!hasNextPage || isSearching}
