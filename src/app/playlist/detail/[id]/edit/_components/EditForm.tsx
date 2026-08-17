@@ -1,20 +1,14 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import {
-  type ChangeEvent,
-  type SubmitEvent,
-  useEffect,
-  useState,
-} from 'react';
+import { type SubmitEvent, useState } from 'react';
 
+import PlaylistThumbnailField from '@/app/playlist/add/_components/PlaylistThumbnailField';
 import TrackSearchSection from '@/app/playlist/add/_components/TrackSearchSection';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import ReorderableTrackList from '@/components/domain/playlists/ReorderableTrackList';
-import IconButton from '@/components/IconButton';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
 import Toggle from '@/components/Toggle';
@@ -73,7 +67,6 @@ function EditPlaylistForm({
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const [preview, setPreview] = useState<string | null>(null);
   const [form, setForm] = useState<UpdatePlaylistRequest>(() => ({
     title: playlist.title,
     description: playlist.description,
@@ -85,21 +78,6 @@ function EditPlaylistForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const addedVideoIds = new Set(form.tracks.map((track) => track.videoId));
-
-  // preview가 바뀌기 직전(다음 파일 선택 시)과 언마운트 시 모두 이전 blob URL을 해제한다.
-  useEffect(() => {
-    return () => {
-      if (preview) URL.revokeObjectURL(preview);
-    };
-  }, [preview]);
-
-  const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImgFile(file);
-    setPreview(URL.createObjectURL(file));
-  };
 
   const handleAddTrack = (track: PlaylistTrack) => {
     setForm((prev) => ({ ...prev, tracks: [...prev.tracks, track] }));
@@ -167,36 +145,10 @@ function EditPlaylistForm({
 
       <fieldset disabled={isSubmitting} className="contents">
         {/* 이미지 색션 */}
-        <div className="relative h-40 w-40">
-          <label
-            htmlFor="thumbnail"
-            className="border-border bg-bg-primary flex h-full w-full cursor-pointer items-center justify-center overflow-hidden rounded-2xl border"
-          >
-            {preview || form.image ? (
-              <Image
-                src={preview ?? form.image}
-                alt="플레이리스트 썸네일"
-                fill
-                className="overflow-hidden rounded-2xl object-cover p-2"
-              />
-            ) : null}
-          </label>
-          <input
-            id="thumbnail"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAvatarChange}
-          />
-          <IconButton
-            type="button"
-            variants="primary"
-            size="sm"
-            className="text-text-primary absolute -right-2 -bottom-2"
-          >
-            +
-          </IconButton>
-        </div>
+        <PlaylistThumbnailField
+          initialImage={form.image}
+          onFileSelect={setImgFile}
+        />
 
         {/* 플레이리스트 이름 색션 */}
         <InputField className="w-full">

@@ -1,7 +1,6 @@
 'use client';
 
 import { Reorder, useDragControls } from 'motion/react';
-import { tr } from 'motion/react-m';
 import Image from 'next/image';
 
 import Grip from '@/assets/icons/grip.svg';
