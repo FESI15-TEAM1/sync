@@ -1,3 +1,4 @@
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import type { CommentItemsType } from '@/app/playlist/detail/[id]/_components/CommentItemList';
@@ -5,14 +6,23 @@ import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
 
 export async function GET(
-  _req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { searchParams } = req.nextUrl;
+    const cursor = searchParams.get('cursor');
+    const limit = searchParams.get('limit');
+
+    const queryParams: Record<string, string> = {};
+    if (cursor) queryParams.cursor = cursor;
+    if (limit) queryParams.limit = limit;
+
     const data = await serverFetch<CommentItemsType>(
       `/playlists/${(await params).id}/comments`,
       {
         method: 'GET',
+        params: queryParams,
       },
     );
 
