@@ -14,6 +14,12 @@ export default function TrackList({
   onTrackClick?: (track: PlaylistTrack) => void;
   Button?: ReactNode | ((track: PlaylistTrack) => ReactNode);
 }) {
+  if (trackList.length === 0) {
+    return (
+      <p className="text-text-secondary p-2 text-sm">추가된 곡이 없습니다.</p>
+    );
+  }
+
   return (
     <div className="p-2">
       {trackList.map((track) => {

@@ -36,6 +36,9 @@ export default function TrackSearchSection({
           <InputField.Input
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && searchValue) search(searchValue);
+            }}
             placeholder="아티스트 명 또는 곡 이름을 검색하세요."
           ></InputField.Input>
           <InputField.Button
