@@ -93,9 +93,13 @@ export default function PlaylistDetailView({
     return () => setIsPlaying(false);
   }, [setIsPlaying]);
 
-  if (isPlaylistPending)
-    return <div className="text-text-primary font-bold">로딩중...</div>;
-  if (playlistError) return <div>에러남</div>;
+  if (isPlaylistPending) return <PlaylistDetailSkeleton />;
+  if (playlistError)
+    return (
+      <div className="text-text-primary flex min-h-[60vh] w-full items-center justify-center font-bold">
+        플레이리스트를 불러오지 못했습니다.
+      </div>
+    );
 
   const handleTogglePlay = () => {
     if (isPlaying) playerRef.current?.pause();
@@ -183,9 +187,11 @@ export default function PlaylistDetailView({
           />
         </div>
       </div>
-      <p className="bg-bg-card text-text-primary rounded-xl p-4">
-        {playlist.description}
-      </p>
+      {playlist.description && (
+        <p className="bg-bg-card text-text-primary rounded-xl p-4">
+          {playlist.description}
+        </p>
+      )}
       {userid == String(playlist.owner.userId) ? (
         ''
       ) : (
@@ -242,6 +248,30 @@ export default function PlaylistDetailView({
         isOpen={isOwnerPreviewOpen}
         onClose={() => setIsOwnerPreviewOpen(false)}
       />
+    </div>
+  );
+}
+
+function PlaylistDetailSkeleton() {
+  return (
+    <div className="flex max-w-7xl flex-col gap-10 p-2">
+      <div className="flex items-center gap-4">
+        <div className="bg-border size-35 shrink-0 animate-pulse rounded-2xl" />
+        <div className="flex flex-col gap-3">
+          <div className="bg-border h-6 w-40 animate-pulse rounded" />
+          <div className="bg-border h-4 w-24 animate-pulse rounded" />
+        </div>
+      </div>
+      <div className="bg-border h-16 w-full animate-pulse rounded-xl" />
+      <div className="bg-bg-card flex flex-col gap-2 rounded-xl p-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            style={{ animationDelay: `${i * 100}ms` }}
+            className="bg-border h-14 w-full animate-pulse rounded-xl"
+          />
+        ))}
+      </div>
     </div>
   );
 }

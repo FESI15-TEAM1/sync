@@ -29,6 +29,7 @@ export default function AddForm() {
     tracks: [],
   });
   const [imgFile, setImgFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const addedVideoIds = new Set(form.tracks.map((track) => track.videoId));
@@ -43,6 +44,8 @@ export default function AddForm() {
     }));
   };
   const handleSubmit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       let image = form.image;
 
@@ -72,6 +75,8 @@ export default function AddForm() {
           router.replace('/login');
         }
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -120,8 +125,12 @@ export default function AddForm() {
         onRemoveTrack={handleDeleteTrack}
       />
 
-      <Button className="w-full" onClick={handleSubmit}>
-        저장하기
+      <Button
+        className="w-full"
+        onClick={handleSubmit}
+        isDisabled={isSubmitting}
+      >
+        {isSubmitting ? '저장 중...' : '저장하기'}
       </Button>
     </div>
   );

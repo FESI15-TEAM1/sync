@@ -42,10 +42,28 @@ export default function CommentsSection({
     error: deleteError,
   } = useDeleteCommentMutation(playlistId);
 
-  if (isCommentsPending)
-    return <div className="text-text-primary font-bold">로딩중...</div>;
+  if (isCommentsPending) {
+    return (
+      <div className="flex flex-col gap-4">
+        <h4 className="text-text-primary text-xl font-bold">댓글</h4>
+        <div className="flex flex-col gap-2">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div
+              key={i}
+              style={{ animationDelay: `${i * 100}ms` }}
+              className="bg-border h-14 w-full animate-pulse rounded-xl"
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (commentsError)
-    return <div>댓글을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</div>;
+    return (
+      <p role="alert" className="text-sm text-red-500">
+        댓글을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+      </p>
+    );
 
   const handleSubmitComment = () => {
     if (!commentContent.trim() || isSubmittingComment) return;
@@ -74,6 +92,9 @@ export default function CommentsSection({
         <InputField.Input
           placeholder="댓글을 입력해 주세요."
           onChange={(e) => setCommentContent(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSubmitComment();
+          }}
           value={commentContent}
         />
         <InputField.Button
