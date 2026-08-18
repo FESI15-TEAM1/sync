@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import SyncLogo from '@/assets/icons/syncLogo.svg';
 import Button from '@/components/Button';
+import BackButton from '@/components/common/BackButton';
 import KebabModal from '@/components/domain/KebabModal';
 import { Modal } from '@/components/Modal';
 import { useToggleFollowMutation } from '@/hooks/useToggleFollowMutation';
@@ -133,6 +134,7 @@ export default function Profile(props: ProfileProps) {
   return (
     <>
       <div className="mx-auto flex flex-1 flex-col gap-6 px-5 py-6">
+        <BackButton />
         <div className="flex flex-col gap-5">
           {isOwn ? (
             <div className="flex flex-col items-end gap-1">
