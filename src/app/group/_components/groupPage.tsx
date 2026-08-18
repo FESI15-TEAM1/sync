@@ -7,11 +7,13 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useProcessGroupRequest } from '@/app/group/_hooks/useProcessGroupRequest';
 import Button from '@/components/Button';
+import ConfirmModal from '@/components/ConfirmModal';
 import GroupList from '@/components/domain/group/GroupList';
 import { useGroupRequestsQuery } from '@/hooks/useGroupRequestsQuery';
 import { formatTimeAgo } from '@/lib/formatITimeAgo';
 import { APIError } from '@/lib/http/error';
 import { getGroups } from '@/services/group/group.api';
+import type { GroupRequestResponse } from '@/services/group/group.types';
 
 import InviteSelectModal from './InviteSelectModal';
 import JoinByCodeModal from './JoinByCodeModal';
@@ -28,6 +30,9 @@ export default function GroupPage() {
     null,
   );
   const [isJoinByCodeOpen, setIsJoinByCodeOpen] = useState(false);
+  const [rejectTarget, setRejectTarget] = useState<GroupRequestResponse | null>(
+    null,
+  );
 
   const {
     data: groupsData,
@@ -55,7 +60,8 @@ export default function GroupPage() {
     (request) => request.status === 'pending',
   );
 
-  const { mutate: processGroupRequest } = useProcessGroupRequest();
+  const { mutate: processGroupRequest, isPending: isProcessingRequest } =
+    useProcessGroupRequest();
 
   const isGroupsAuthError =
     isGroupsError &&
@@ -87,8 +93,21 @@ export default function GroupPage() {
     return () => observer.disconnect();
   }, [hasNextPage, isGroupsFetching, isFetchNextPageError, fetchNextPage]);
 
-  const handleReject = (id: number) => {
-    processGroupRequest({ requestId: id, payload: { status: 'rejected' } });
+  const handleReject = (request: GroupRequestResponse) => {
+    setRejectTarget(request);
+  };
+
+  const handleConfirmReject = () => {
+    if (!rejectTarget) return;
+    processGroupRequest(
+      { requestId: rejectTarget.id, payload: { status: 'rejected' } },
+      { onSuccess: () => setRejectTarget(null) },
+    );
+  };
+
+  const handleCloseRejectModal = () => {
+    if (isProcessingRequest) return;
+    setRejectTarget(null);
   };
 
   const handleAccept = (id: number) => {
@@ -165,7 +184,7 @@ export default function GroupPage() {
                   isDisabled={false}
                   size="md"
                   type="button"
-                  onClick={() => handleReject(request.id)}
+                  onClick={() => handleReject(request)}
                   className="text-text-secondary hover:text-text-primary cursor-pointer rounded-full px-4 py-1.5 text-sm transition-colors"
                 >
                   거절
@@ -275,6 +294,18 @@ export default function GroupPage() {
       <JoinByCodeModal
         isOpen={isJoinByCodeOpen}
         onClose={() => setIsJoinByCodeOpen(false)}
+      />
+
+      <ConfirmModal
+        isOpen={rejectTarget !== null}
+        title="정말 거절하시겠습니까?"
+        description={`${rejectTarget?.requester.nickname}님의 요청을 거절합니다.`}
+        confirmLabel="거절"
+        confirmingLabel="거절하는 중..."
+        isConfirming={isProcessingRequest}
+        destructive
+        onConfirm={handleConfirmReject}
+        onClose={handleCloseRejectModal}
       />
     </div>
   );
