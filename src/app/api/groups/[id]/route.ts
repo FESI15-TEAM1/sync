@@ -1,5 +1,9 @@
 import type { NextRequest } from 'next/server';
 
+import {
+  GROUP_DESCRIPTION_MAX_LENGTH,
+  GROUP_TITLE_MAX_LENGTH,
+} from '@/constants/group';
 import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
 import type {
@@ -34,6 +38,25 @@ export async function PATCH(
 
     const { title, description, image, isPublic } = (body ??
       {}) as Partial<UpdateGroupRequest>;
+
+    if (typeof title === 'string' && title.length > GROUP_TITLE_MAX_LENGTH) {
+      return errorResponse(
+        400,
+        'VALIDATION_ERROR',
+        `그룹 이름은 ${GROUP_TITLE_MAX_LENGTH}자 이하로 입력해주세요.`,
+      );
+    }
+
+    if (
+      typeof description === 'string' &&
+      description.length > GROUP_DESCRIPTION_MAX_LENGTH
+    ) {
+      return errorResponse(
+        400,
+        'VALIDATION_ERROR',
+        `그룹 소개는 ${GROUP_DESCRIPTION_MAX_LENGTH}자 이하로 입력해주세요.`,
+      );
+    }
 
     const payload: UpdateGroupRequest = {
       ...(typeof title === 'string' ? { title } : {}),

@@ -8,37 +8,7 @@ import Button from '@/components/Button';
 import Input from '@/components/Input';
 import Modal from '@/components/Modal';
 import { APIError } from '@/lib/http/error';
-import { getPublicGroups, joinGroupByCode } from '@/services/group/group.api';
-
-// 그룹 목록 페이지에는 groupId가 없고, 코드만으로 그룹을 찾는 백엔드 엔드포인트도
-// 없습니다. 대신 공개 그룹들을 돌면서 입력한 코드로 가입을 순서대로 시도해
-// 일치하는 그룹을 찾습니다(비공개 그룹은 목록에 아예 노출되지 않아 이 방식으로는
-// 찾을 수 없습니다).
-const PUBLIC_GROUP_SEARCH_LIMIT = 50;
-
-async function joinPublicGroupByCode(inviteCode: string) {
-  const { items: groups } = await getPublicGroups({
-    limit: PUBLIC_GROUP_SEARCH_LIMIT,
-  });
-
-  for (const group of groups) {
-    try {
-      await joinGroupByCode(group.id, { inviteCode });
-      return group.id;
-    } catch (error) {
-      if (error instanceof APIError && error.code === 'INVALID_INVITE_CODE') {
-        continue;
-      }
-      throw error;
-    }
-  }
-
-  throw new APIError(
-    400,
-    'INVALID_INVITE_CODE',
-    '초대코드가 올바르지 않습니다.',
-  );
-}
+import { joinGroupByInviteCode } from '@/services/group/group.api';
 
 type JoinByCodeModalProps = {
   isOpen: boolean;
@@ -61,11 +31,11 @@ export default function JoinByCodeModal({
   };
 
   const { mutate: joinByCode, isPending } = useMutation({
-    mutationFn: joinPublicGroupByCode,
-    onSuccess: (groupId) => {
+    mutationFn: (inviteCode: string) => joinGroupByInviteCode({ inviteCode }),
+    onSuccess: (group) => {
       queryClient.invalidateQueries({ queryKey: ['groups'] });
       handleClose();
-      router.push(`/group/${groupId}`);
+      router.push(`/group/${group.id}`);
     },
     onError: (error) => {
       setErrorMessage(
