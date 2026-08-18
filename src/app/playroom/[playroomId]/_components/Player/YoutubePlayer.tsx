@@ -54,16 +54,17 @@ export default function YoutubePlayer({
   };
 
   /**
-   * 유튜브 플레이어는 iframe 으로 명령을 보내는데, 아직 iframe 이 붙지 않은 상태에서 명령을 보내면 예외를 던진다. 이때는 조용히 무시한다.
+   * 유튜브 플레이어는 iframe 으로 명령을 보내는데, 아직 iframe 이 붙지 않은 상태에서 명령을 보내면 예외를 던진다. 이때는 조용히 무시하고 false 를 돌려준다.
    */
   const runCommand = (command: (player: YouTubeEvent['target']) => void) => {
     const player = playerRef.current;
-    if (!player) return;
+    if (!player) return false;
 
     try {
       command(player);
+      return true;
     } catch {
-      return;
+      return false;
     }
   };
 
@@ -84,13 +85,19 @@ export default function YoutubePlayer({
   useImperativeHandle(ref, () => ({
     play: () => runCommand((player) => player.playVideo()),
     pause: () => runCommand((player) => player.pauseVideo()),
+    // 명령이 실패하면 iframe 에는 이전 곡이 그대로 남으므로, 성공했을 때만 식별자를 갈아끼운다.
+    // 먼저 갱신하면 동기화 쪽에서 곡이 이미 바뀐 줄 알고 엉뚱한 곡에 탐색·재생만 건다.
     loadVideo: (id, startSeconds) => {
-      loadedVideoIdRef.current = id;
-      runCommand((player) => player.loadVideoById(id, startSeconds));
+      const isLoaded = runCommand((player) =>
+        player.loadVideoById(id, startSeconds),
+      );
+      if (isLoaded) loadedVideoIdRef.current = id;
     },
     cueVideo: (id, startSeconds) => {
-      loadedVideoIdRef.current = id;
-      runCommand((player) => player.cueVideoById(id, startSeconds));
+      const isCued = runCommand((player) =>
+        player.cueVideoById(id, startSeconds),
+      );
+      if (isCued) loadedVideoIdRef.current = id;
     },
     seekTo: (seconds) => runCommand((player) => player.seekTo(seconds, true)),
     mute: () => runCommand((player) => player.mute()),
