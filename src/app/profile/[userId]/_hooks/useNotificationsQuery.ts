@@ -16,14 +16,14 @@ import {
 } from '@/services/notifications/notifications.api';
 
 export const notificationQueryKeys = {
-  all: ['notification'] as const,
+  all: ['notifications'] as const,
   userId: (userId: number) => [...notificationQueryKeys.all, userId] as const,
   list: (userId: number) =>
     [...notificationQueryKeys.all, userId, 'list'] as const,
   recentUnread: (userId: number) =>
     [...notificationQueryKeys.all, userId, 'recentUnread'] as const,
   unReadCount: (userId: number) =>
-    [...notificationQueryKeys.all, 'unReadCount', userId] as const,
+    [...notificationQueryKeys.all, userId, 'unReadCount'] as const,
 };
 
 // Profile 페이지 전용 — 무한스크롤로 전체 알림을 커서 기반 페이지네이션한다.
@@ -81,7 +81,7 @@ export function useRecentUnreadNotificationsQuery(
   return query;
 }
 
-export function useMarkNotificationRead(userId: number) {
+export function useMarkNotificationRead() {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -90,10 +90,10 @@ export function useMarkNotificationRead(userId: number) {
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: notificationQueryKeys.userId(userId),
+        queryKey: notificationQueryKeys.all,
       });
       queryClient.invalidateQueries({
-        queryKey: notificationQueryKeys.unReadCount(userId),
+        queryKey: notificationQueryKeys.all,
       });
     },
     onError: (error) => {
@@ -103,7 +103,7 @@ export function useMarkNotificationRead(userId: number) {
     },
   });
 }
-export function useMarkNotificationReadAll(userId: number) {
+export function useMarkNotificationReadAll() {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -111,10 +111,10 @@ export function useMarkNotificationReadAll(userId: number) {
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: notificationQueryKeys.userId(userId),
+        queryKey: notificationQueryKeys.all,
       });
       queryClient.invalidateQueries({
-        queryKey: notificationQueryKeys.unReadCount(userId),
+        queryKey: notificationQueryKeys.all,
       });
     },
     onError: (error) => {
