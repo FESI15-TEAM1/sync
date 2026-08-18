@@ -1,8 +1,6 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { type ChangeEvent, type SubmitEvent, useEffect, useState } from 'react';
 
 import defaultCover from '@/assets/images/default.png';
@@ -11,38 +9,17 @@ import BackButton from '@/components/common/BackButton';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
-import { APIError } from '@/lib/http/error';
-import {
-  deleteGroup,
-  editGroupPlaylists,
-  updateGroup,
-} from '@/services/group/group.api';
 import type { MyPlaylistItem } from '@/services/playlist/playlistCard.type';
-import { requestUploadUrl } from '@/services/upload/upload.api';
-import type { UploadUrlRequest } from '@/services/upload/upload.types';
 
 import GroupDeleteModal from '../../_components/GroupDeleteModal';
-
-const SUBMIT_ERROR_MESSAGE =
-  '그룹 수정에 실패했습니다. 잠시 후 다시 시도해주세요.';
-
-const ALLOWED_COVER_IMAGE_TYPES: UploadUrlRequest['contentType'][] = [
-  'image/png',
-  'image/jpeg',
-  'image/webp',
-  'image/gif',
-];
+import { useDeleteGroupMutation } from '../_hooks/useDeleteGroupMutation';
+import {
+  isAllowedCoverImageType,
+  useUpdateGroupMutation,
+} from '../_hooks/useUpdateGroupMutation';
 
 const UNSUPPORTED_IMAGE_TYPE_MESSAGE =
   'PNG, JPEG, WEBP, GIF 형식의 이미지만 업로드할 수 있습니다.';
-
-function isAllowedCoverImageType(
-  type: string,
-): type is UploadUrlRequest['contentType'] {
-  return ALLOWED_COVER_IMAGE_TYPES.includes(
-    type as UploadUrlRequest['contentType'],
-  );
-}
 
 type EditPageProps = {
   groupId: string;
@@ -66,9 +43,6 @@ export default function EditPage({
   initialSelectedPlaylistIds,
   lockedPlaylistIds,
 }: EditPageProps) {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [isDeleteGroupOpen, setIsDeleteGroupOpen] = useState(false);
@@ -114,69 +88,19 @@ export default function EditPage({
     );
   };
 
-  const { mutate: submitGroup, isPending: isSubmitting } = useMutation({
-    mutationFn: async () => {
-      let image: string | undefined;
+  const { mutate: submitGroup, isPending: isSubmitting } =
+    useUpdateGroupMutation({ onError: setErrorMessage });
 
-      if (coverFile && isAllowedCoverImageType(coverFile.type)) {
-        const { uploadUrl, fileUrl } = await requestUploadUrl({
-          domain: 'group',
-          contentType: coverFile.type,
-        });
-
-        const putResponse = await fetch(uploadUrl, {
-          method: 'PUT',
-          headers: { 'Content-Type': coverFile.type },
-          body: coverFile,
-        });
-        if (!putResponse.ok) {
-          throw new Error('이미지 업로드에 실패했습니다.');
-        }
-
-        image = fileUrl;
-      }
-
-      await Promise.all([
-        updateGroup(groupId, {
-          title: trimmedName,
-          description: trimmedDescription,
-          isPublic,
-          ...(image ? { image } : {}),
-        }),
-        editGroupPlaylists(Number(groupId), {
-          playlistIds: [...selectedPlaylists, ...lockedPlaylistIds],
-        }),
-      ]);
-    },
-    onSuccess: () => {
-      router.push(`/group/${groupId}`);
-    },
-    onError: (error) => {
-      setErrorMessage(
-        error instanceof APIError ? error.message : SUBMIT_ERROR_MESSAGE,
-      );
-    },
-  });
-
-  const deleteGroupMutation = useMutation({
-    mutationFn: () => deleteGroup(Number(groupId)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
-      router.push('/group');
-    },
-    onError: (error) => {
+  const deleteGroupMutation = useDeleteGroupMutation({
+    onError: (message) => {
       setIsDeleteGroupOpen(false);
-      setErrorMessage(
-        error instanceof APIError
-          ? error.message
-          : '그룹 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.',
-      );
+      setErrorMessage(message);
     },
   });
 
   const handleConfirmDelete = () => {
     if (isSubmitting || deleteGroupMutation.isPending) return;
-    deleteGroupMutation.mutate();
+    deleteGroupMutation.mutate(Number(groupId));
   };
 
   const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
@@ -185,7 +109,14 @@ export default function EditPage({
     if (!trimmedName || !trimmedDescription || hasNoPlaylists) return;
 
     setErrorMessage(null);
-    submitGroup();
+    submitGroup({
+      groupId,
+      title: trimmedName,
+      description: trimmedDescription,
+      isPublic,
+      coverFile,
+      playlistIds: [...selectedPlaylists, ...lockedPlaylistIds],
+    });
   };
 
   return (
