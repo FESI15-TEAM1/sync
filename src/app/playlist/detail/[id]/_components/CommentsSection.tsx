@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import CommentItemList from '@/app/playlist/detail/[id]/_components/CommentItemList';
 import {
@@ -13,10 +13,8 @@ import Button from '@/components/Button';
 import ProfilePreviewModal from '@/components/domain/user/ProfilePreviewModal';
 import InputField from '@/components/InputField';
 import Modal from '@/components/Modal';
+import { useLoadMoreObserver } from '@/hooks/useLoadMoreObserver';
 import { APIError } from '@/lib/http/error';
-
-// 목록 끝에 닿기 전에 미리 다음 페이지를 불러와 스크롤이 끊기지 않게 합니다.
-const LOAD_MORE_ROOT_MARGIN = '200px';
 
 export default function CommentsSection({
   playlistId,
@@ -39,41 +37,11 @@ export default function CommentsSection({
 
   const items = data?.pages.flatMap((page) => page.items) ?? [];
 
-  // 최신 댓글이 위, 아래로 스크롤할수록 과거 댓글이 이어붙는다. 입력창은 목록 위에
-  // 고정된 위치라 페이지가 추가로 로드돼도 밀리지 않는다.
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-
-  // fetch가 끝날 때마다 옵저버를 새로 만들면, sentinel이 여전히 화면(+rootMargin) 안에
-  // 있을 때 생성 직후 바로 한 번 더 콜백이 와서 다음 페이지를 중복/연쇄 요청하게 된다.
-  // 그래서 옵저버는 hasNextPage가 바뀔 때만(=sentinel이 뜨고 사라질 때만) 만들고,
-  // fetchNextPage는 매 렌더 재생성될 수 있으므로 의존성에 넣지 않고 ref로 최신 값만
-  // 참조한다. fetch 중복 방지도 React state가 아니라 호출 즉시 동기적으로 세팅되는
-  // ref로 한다 — state는 리렌더를 거쳐야 반영되므로 그 사이 한 번 더 트리거될 수 있다.
-  const isFetchingRef = useRef(false);
-  const fetchNextPageRef = useRef(fetchNextPage);
-  useEffect(() => {
-    fetchNextPageRef.current = fetchNextPage;
+  const loadMoreRef = useLoadMoreObserver({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
   });
-
-  useEffect(() => {
-    const target = loadMoreRef.current;
-    if (!target || !hasNextPage) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !isFetchingRef.current) {
-          isFetchingRef.current = true;
-          fetchNextPageRef.current().finally(() => {
-            isFetchingRef.current = false;
-          });
-        }
-      },
-      { rootMargin: LOAD_MORE_ROOT_MARGIN },
-    );
-    observer.observe(target);
-
-    return () => observer.disconnect();
-  }, [hasNextPage]);
 
   const { mutate: submitComment, isPending: isSubmittingComment } =
     useAddCommentMutation(playlistId);

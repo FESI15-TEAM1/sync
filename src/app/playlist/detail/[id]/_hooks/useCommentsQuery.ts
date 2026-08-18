@@ -25,9 +25,7 @@ export function useCommentsQuery(playlistId: string) {
         params: pageParam ? { cursor: pageParam } : undefined,
       }),
     initialPageParam: undefined as string | undefined,
-    // 이미 사용한 cursor를 다시 next로 내보내면(레이스로 fetchNextPage가 여러 번
-    // 겹쳐 불렸을 때 등) 같은 페이지를 중복으로 이어붙이게 된다. allPageParams에
-    // 이미 있는 값이면 더 불러올 페이지가 없는 것으로 처리해 방어한다.
+
     getNextPageParam: (lastPage, _allPages, _lastPageParam, allPageParams) => {
       const next = lastPage.nextCursor || undefined;
       if (next === undefined || allPageParams.includes(next)) return undefined;
