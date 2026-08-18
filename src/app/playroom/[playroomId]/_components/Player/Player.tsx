@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useRef, useState } from 'react';
 
+import { decodeHtml } from '@/lib/decodeHtml';
 import type { Track } from '@/services/playlist/PlatylistDetail.type';
 
 import { useAutoplayFallback } from '../../_hooks/Player/useAutoplayFallback';
@@ -138,9 +139,10 @@ export default function Player({
   };
 
   const handlePlayNextTrack = () => {
-    const nextTrack = tracks[currentIndex + 1];
+    // 마지막 곡 다음은 첫 곡이다. 플레이리스트를 끝까지 들어도 멈추지 않고 처음부터 다시 돈다.
+    const nextTrack = tracks[currentIndex + 1] ?? tracks[0];
 
-    // 마지막 곡이면 멈추고 처음으로 되감는다.
+    // 트랙 목록을 아직 못 받았으면 넘길 곳이 없으므로 멈추고 되감는다.
     if (!nextTrack) {
       seekPlayerTo(0);
       playerRef.current?.pause();
@@ -171,7 +173,7 @@ export default function Player({
     'bg-disabled aspect-square max-w-25 object-cover lg:max-w-none';
 
   return (
-    <div className="bg-bg-card border-border box-border flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-center lg:gap-2 lg:py-5 lg:py-8">
+    <div className="bg-bg-card border-border box-border flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-center lg:gap-2 lg:py-8">
       {/* thumbnail image */}
       <div className="relative h-25 w-25 overflow-hidden rounded-2xl lg:h-60 lg:w-60">
         {thumbnail ? (
@@ -183,7 +185,9 @@ export default function Player({
 
       {/* song title */}
       <h2 className="text-base font-bold text-white lg:pt-2">
-        {currentTrack?.title ?? '방장의 재생을 기다리는 중이에요⏱️'}
+        {currentTrack?.title
+          ? decodeHtml(currentTrack.title)
+          : '방장의 재생을 기다리는 중이에요⏱️'}
       </h2>
 
       {/* song artist */}

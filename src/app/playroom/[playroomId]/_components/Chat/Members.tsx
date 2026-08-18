@@ -56,7 +56,7 @@ export default function Members({
       className="scrollbar-thumb-text-secondary flex h-full min-h-0 scrollbar-track-transparent flex-col overflow-y-auto"
       onClickCapture={handleClickCapture}
     >
-      <div className="grid grid-cols-2 gap-2 p-4">
+      <div className="xs:grid-cols-2 grid grid-cols-1 gap-2 p-4">
         {sortedMembers.map((member) => (
           <MemberItem
             userId={member.userId}

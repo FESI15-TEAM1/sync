@@ -51,7 +51,9 @@ export default function ChatMessage({
             username
           )}
         </p>
-        <p className="text-text-secondary py-0.5 text-xs">{message}</p>
+        <p className="text-text-secondary py-0.5 text-xs break-all">
+          {message}
+        </p>
       </span>
     </>
   );

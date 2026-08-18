@@ -24,7 +24,9 @@ export function decodeHtml(value: string) {
     if (entity[0] === '#') {
       const isHex = entity[1] === 'x' || entity[1] === 'X';
       const code = parseInt(entity.slice(isHex ? 2 : 1), isHex ? 16 : 10);
-      return Number.isNaN(code) ? match : String.fromCodePoint(code);
+      return Number.isInteger(code) && code >= 0 && code <= 0x10ffff
+        ? String.fromCodePoint(code)
+        : match;
     }
     return NAMED_ENTITIES[entity] ?? match;
   });

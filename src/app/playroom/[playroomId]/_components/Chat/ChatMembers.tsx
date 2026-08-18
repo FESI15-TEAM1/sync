@@ -101,58 +101,62 @@ export default function ChatMembers({
   );
 
   return (
-    <div className="border-border bg-bg-card relative grid h-full min-h-0 grid-rows-[auto_1fr] overflow-hidden rounded-xl border">
-      {/* 탭 버튼 */}
-      <div className="grid grid-cols-2 text-center">
-        <TabButton
-          tabname="채팅"
-          isActive={currentTab === 'chatting'}
-          onClick={() => setCurrentTab('chatting')}
-        />
-        <TabButton
-          tabname="멤버"
-          isActive={currentTab === 'members'}
-          onClick={() => setCurrentTab('members')}
-        />
+    <div className="h-full min-h-0">
+      <div className="border-border bg-bg-card relative grid h-full min-h-72 grid-rows-[auto_1fr] overflow-hidden rounded-xl border">
+        {/* 탭 버튼 */}
+        <div className="grid grid-cols-2 text-center">
+          <TabButton
+            tabname="채팅"
+            isActive={currentTab === 'chatting'}
+            onClick={() => setCurrentTab('chatting')}
+          />
+          <TabButton
+            tabname="멤버"
+            isActive={currentTab === 'members'}
+            onClick={() => setCurrentTab('members')}
+          />
+        </div>
+
+        {/* 현재 참여자 수 패널 */}
+        <span className={listenerPanelStyles({ currentTab })}>
+          <SyncLogo
+            width={20}
+            height={20}
+            key={members.length}
+            style={{
+              animation: 'var(--animate-ping)',
+              animationFillMode: 'both',
+              animationDirection: 'alternate',
+              animationDuration: '300ms',
+              animationTimingFunction: 'ease-out',
+              animationIterationCount: 2,
+            }}
+          />
+          <span>{members.length}</span>
+        </span>
+
+        {/* 탭 내용 */}
+        {currentTab === 'chatting' ? (
+          // 채팅 탭 내용
+          <Chatting
+            messages={messages}
+            historyErrorMessage={historyErrorMessage}
+            chat={chat}
+            setChat={setChat}
+            handleSubmit={handleSubmit}
+            hostId={hostId}
+          />
+        ) : (
+          // 멤버 탭 내용
+          <Members
+            members={members}
+            hostId={hostId}
+            onBeforeProfileNavigate={onBeforeProfileNavigate}
+          />
+        )}
       </div>
 
-      {/* 현재 참여자 수 패널 */}
-      <span className={listenerPanelStyles({ currentTab })}>
-        <SyncLogo
-          width={20}
-          height={20}
-          key={members.length}
-          style={{
-            animation: 'var(--animate-ping)',
-            animationFillMode: 'both',
-            animationDirection: 'alternate',
-            animationDuration: '300ms',
-            animationTimingFunction: 'ease-out',
-            animationIterationCount: 2,
-          }}
-        />
-        <span>{members.length}</span>
-      </span>
-
-      {/* 탭 내용 */}
-      {currentTab === 'chatting' ? (
-        // 채팅 탭 내용
-        <Chatting
-          messages={messages}
-          historyErrorMessage={historyErrorMessage}
-          chat={chat}
-          setChat={setChat}
-          handleSubmit={handleSubmit}
-          hostId={hostId}
-        />
-      ) : (
-        // 멤버 탭 내용
-        <Members
-          members={members}
-          hostId={hostId}
-          onBeforeProfileNavigate={onBeforeProfileNavigate}
-        />
-      )}
+      <div className="h-4"></div>
     </div>
   );
 }
