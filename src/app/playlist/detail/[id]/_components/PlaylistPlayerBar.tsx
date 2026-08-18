@@ -7,6 +7,8 @@ import PauseIcon from '@/assets/icons/pause.svg';
 import PlayIcon from '@/assets/icons/play.svg';
 import SkipNextIcon from '@/assets/icons/skip-next.svg';
 import SkipPreviousIcon from '@/assets/icons/skip-previous.svg';
+import SpeakerMuteIcon from '@/assets/icons/speaker-mute.svg';
+import SpeakerWaveIcon from '@/assets/icons/speaker-wave.svg';
 import StopIcon from '@/assets/icons/stop.svg';
 import defaultImg from '@/assets/images/default.png';
 import IconButton from '@/components/IconButton';
@@ -25,22 +27,30 @@ export default function PlaylistPlayerBar({
   isPlaying,
   currentTime,
   duration,
+  volume,
+  isMuted,
   onTogglePlay,
   onPrevious,
   onNext,
   onStop,
   onSeek,
+  onVolumeChange,
+  onToggleMute,
 }: {
   track: CurrentTrack;
   isVisible: boolean;
   isPlaying: boolean;
   currentTime: number;
   duration: number;
+  volume: number;
+  isMuted: boolean;
   onTogglePlay: () => void;
   onPrevious: () => void;
   onNext: () => void;
   onStop: () => void;
   onSeek: (time: number) => void;
+  onVolumeChange: (volume: number) => void;
+  onToggleMute: () => void;
 }) {
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -59,6 +69,15 @@ export default function PlaylistPlayerBar({
       1,
     );
     onSeek(ratio * duration);
+  };
+
+  const handleVolumeSeek = (e: PointerEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const ratio = Math.min(
+      Math.max((e.clientX - rect.left) / rect.width, 0),
+      1,
+    );
+    onVolumeChange(Math.round(ratio * 100));
   };
 
   return (
@@ -121,7 +140,33 @@ export default function PlaylistPlayerBar({
           </span>
         </div>
 
-        <div className="flex-1" />
+        <div className="flex flex-1 justify-end">
+          <div className="flex items-center gap-2 rounded-full px-3 py-1.5">
+            <IconButton
+              size="md"
+              onClick={onToggleMute}
+              title={isMuted ? '음소거 해제' : '음소거'}
+            >
+              {isMuted || volume === 0 ? (
+                <SpeakerMuteIcon />
+              ) : (
+                <SpeakerWaveIcon />
+              )}
+            </IconButton>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={isMuted ? 0 : volume}
+              onChange={(e) => onVolumeChange(Number(e.target.value))}
+              aria-label="볼륨"
+              className="accent-primary bg-bg-card h-1 w-20 cursor-pointer"
+            />
+            <span className="text-text-secondary w-8 shrink-0 text-right text-xs">
+              {isMuted ? 0 : volume}%
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );

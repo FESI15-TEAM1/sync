@@ -13,16 +13,23 @@ export type PlaylistPlayerHandle = {
   seekTo: (seconds: number) => void;
   getCurrentTime: () => number;
   getDuration: () => number;
+  setVolume: (volume: number) => void;
+  mute: () => void;
+  unMute: () => void;
 };
 
 export default function PlaylistPlayer({
   videoId,
   autoPlay,
+  volume,
+  isMuted,
   onEnded,
   ref,
 }: {
   videoId: string;
   autoPlay: boolean;
+  volume: number;
+  isMuted: boolean;
   onEnded: () => void;
   ref?: Ref<PlaylistPlayerHandle>;
 }) {
@@ -48,10 +55,15 @@ export default function PlaylistPlayer({
     seekTo: (seconds) => playerRef.current?.seekTo(seconds, true),
     getCurrentTime: () => playerRef.current?.getCurrentTime() ?? 0,
     getDuration: () => playerRef.current?.getDuration() ?? 0,
+    setVolume: (v) => playerRef.current?.setVolume(v),
+    mute: () => playerRef.current?.mute(),
+    unMute: () => playerRef.current?.unMute(),
   }));
 
   const handleReady = (e: YouTubeEvent<number>) => {
     playerRef.current = e.target;
+    e.target.setVolume(volume);
+    if (isMuted) e.target.mute();
   };
 
   const handleStateChange = (e: YouTubeEvent<number>) => {
