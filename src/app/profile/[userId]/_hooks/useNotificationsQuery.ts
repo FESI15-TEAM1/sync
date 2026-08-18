@@ -15,10 +15,21 @@ import {
   markNotificationReadAll,
 } from '@/services/notifications/notifications.api';
 
+export const notificationQueryKeys = {
+  all: ['notification'] as const,
+  userId: (userId: number) => [...notificationQueryKeys.all, userId] as const,
+  list: (userId: number) =>
+    [...notificationQueryKeys.all, userId, 'list'] as const,
+  recentUnread: (userId: number) =>
+    [...notificationQueryKeys.all, userId, 'recentUnread'] as const,
+  unReadCount: (userId: number) =>
+    [...notificationQueryKeys.all, 'unReadCount', userId] as const,
+};
+
 // Profile 페이지 전용 — 무한스크롤로 전체 알림을 커서 기반 페이지네이션한다.
 export function useNotificationRequestQuery(userId: number, isOwn: boolean) {
   return useInfiniteQuery({
-    queryKey: ['notifications', userId, 'list'],
+    queryKey: notificationQueryKeys.list(userId),
     queryFn: ({ pageParam }: { pageParam?: string }) =>
       getNotifications(pageParam),
     initialPageParam: undefined as string | undefined,
@@ -33,7 +44,7 @@ export function useRecentUnreadNotificationsQuery(
   isOwn: boolean,
 ) {
   return useQuery({
-    queryKey: ['notifications', userId, 'recent-unread'],
+    queryKey: notificationQueryKeys.recentUnread(userId),
     queryFn: () => getNotifications(),
     enabled: !!userId && isOwn,
     // 모달은 열릴 때(마운트될 때)마다 최신 안읽은 알림을 다시 받아온다
@@ -59,9 +70,11 @@ export function useMarkNotificationRead(userId: number) {
       markNotificationRead(notificationId),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
       queryClient.invalidateQueries({
-        queryKey: ['notifications', 'unread-count', userId],
+        queryKey: notificationQueryKeys.userId(userId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: notificationQueryKeys.unReadCount(userId),
       });
     },
     onError: (error) => {
@@ -78,9 +91,11 @@ export function useMarkNotificationReadAll(userId: number) {
     mutationFn: () => markNotificationReadAll(),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
       queryClient.invalidateQueries({
-        queryKey: ['notifications', 'unread-count', userId],
+        queryKey: notificationQueryKeys.userId(userId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: notificationQueryKeys.unReadCount(userId),
       });
     },
     onError: (error) => {
@@ -98,9 +113,11 @@ export function useDeleteNotification(notificationId: number, userId: number) {
     mutationFn: () => deleteNotification(notificationId),
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
       queryClient.invalidateQueries({
-        queryKey: ['notifications', 'unread-count', userId],
+        queryKey: notificationQueryKeys.userId(userId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: notificationQueryKeys.unReadCount(userId),
       });
     },
     onError: (error) => {
