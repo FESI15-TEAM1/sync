@@ -246,14 +246,14 @@ export default function Profile(props: ProfileProps) {
           <div className="flex justify-between">
             {isOwn ? (
               <Link href="/group" className="text-center">
-                <p className="text-text-primary font-bold">
+                <p className="text-text-primary font-bold hover:underline">
                   {props.profile.groupCount}
                 </p>
                 <p className="text-text-secondary mt-1 text-xs">내 그룹</p>
               </Link>
             ) : null}
             <Link href={`/playlist/${profile.id}`} className="text-center">
-              <p className="text-text-primary font-bold">
+              <p className="text-text-primary font-bold hover:underline">
                 {profile.playlistCount}
               </p>
               <p className="text-text-secondary mt-1 text-xs">플레이리스트</p>
@@ -262,14 +262,16 @@ export default function Profile(props: ProfileProps) {
               href={`/profile/${profile.id}/follow`}
               className="text-center"
             >
-              <p className="text-text-primary font-bold">{followerCount}</p>
+              <p className="text-text-primary font-bold hover:underline">
+                {followerCount}
+              </p>
               <p className="text-text-secondary mt-1 text-xs">팔로우</p>
             </Link>
             <Link
               href={`/profile/${profile.id}/follow?tab=following`}
               className="text-center"
             >
-              <p className="text-text-primary font-bold">
+              <p className="text-text-primary font-bold hover:underline">
                 {profile.followingCount}
               </p>
               <p className="text-text-secondary mt-1 text-xs">팔로잉</p>
