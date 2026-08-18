@@ -41,9 +41,7 @@ export default function Profile(props: ProfileProps) {
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useNotificationRequestQuery(profile.id, isOwn);
-  const { mutate: notificationReadAll } = useMarkNotificationReadAll(
-    profile.id,
-  );
+  const { mutate: notificationReadAll } = useMarkNotificationReadAll();
   const { mutate: toggleFollow, isPending: isTogglingFollow } =
     useToggleFollowMutation();
 
