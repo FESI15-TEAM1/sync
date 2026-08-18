@@ -84,6 +84,80 @@ function getNotificationContent(item: NotificationItem) {
           </>
         ),
       };
+    case 'GROUP_JOIN_ACCEPTED':
+      return {
+        href: `/group/${item.sourceId}`,
+        subject,
+        detail: (
+          <>
+            {item.sourceName && (
+              <>
+                <span className="font-bold">
+                  &apos;{item.sourceName}&apos;
+                </span>{' '}
+              </>
+            )}
+            그룹 참여 요청을 <span className="font-bold">수락</span>
+            했습니다.
+          </>
+        ),
+      };
+    case 'GROUP_JOIN_REJECTED':
+      return {
+        href: `/group`,
+        subject,
+        detail: (
+          <>
+            {item.sourceName && (
+              <>
+                <span className="font-bold">
+                  &apos;{item.sourceName}&apos;
+                </span>{' '}
+              </>
+            )}
+            그룹 참여 요청을 <span className="font-bold">거절</span>
+            했습니다.
+          </>
+        ),
+      };
+    case 'GROUP_CREATE_ACCEPTED':
+      return {
+        // sourceId는 새로 만들어진 그룹
+        href: `/group/${item.sourceId}`,
+        subject,
+        detail: (
+          <>
+            {item.sourceName && (
+              <>
+                <span className="font-bold">
+                  &apos;{item.sourceName}&apos;
+                </span>{' '}
+              </>
+            )}
+            그룹 생성 요청을 <span className="font-bold">수락</span>
+            했습니다.
+          </>
+        ),
+      };
+    case 'GROUP_CREATE_REJECTED':
+      return {
+        // 그룹이 생성되지 않아 상세로 보낼 곳이 없음 — 목록으로 이동
+        href: `/group`,
+        subject,
+        detail: (
+          <>
+            {item.sourceName && (
+              <>
+                <span className="font-bold">
+                  &apos;{item.sourceName}&apos;
+                </span>{' '}
+              </>
+            )}
+            그룹 생성 요청을 <span className="font-bold">거절</span>
+            했습니다.
+          </>
+        ),
+      };
   }
 }
 
