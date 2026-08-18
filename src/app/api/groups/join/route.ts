@@ -25,10 +25,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { inviteCode } = (body ?? {}) as Partial<JoinGroupByInviteCodeRequest>;
+    const { inviteCode } = (body ??
+      {}) as Partial<JoinGroupByInviteCodeRequest>;
 
     if (typeof inviteCode !== 'string' || inviteCode.length === 0) {
-      return errorResponse(400, 'VALIDATION_ERROR', 'inviteCode는 필수입니다.');
+      return errorResponse(400, 'VALIDATION_ERROR', '초대코드는 필수입니다.');
     }
 
     const data = await serverFetch<GroupDetailResponse>('/groups/join', {

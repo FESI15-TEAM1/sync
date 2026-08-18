@@ -212,16 +212,37 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   const handleEditGroupInfo = () => {
     router.push(`/group/${groupId}/edit`);
   };
+  const copyToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [copyErrorMessage, setCopyErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyToastTimerRef.current) clearTimeout(copyToastTimerRef.current);
+    };
+  }, []);
   //초대코드 복사
   const handleCopyInviteCode = async () => {
     if (!group.inviteCode) return;
 
-    await navigator.clipboard.writeText(group.inviteCode);
-    setShowCopyToast(true);
+    try {
+      await navigator.clipboard.writeText(group.inviteCode);
+      //복사 성공
+      setCopyErrorMessage(null);
+      setShowCopyToast(true);
 
-    setTimeout(() => {
+      //기존 타이머 제거
+      if (copyToastTimerRef.current) {
+        clearTimeout(copyToastTimerRef.current);
+      }
+      //2초 후 토스트 숨기기
+      copyToastTimerRef.current = setTimeout(() => {
+        setShowCopyToast(false);
+      }, 2000);
+    } catch {
+      //복사 실패
+      setCopyErrorMessage('초대코드 복사에 실패했습니다. 직접 복사해주세요.');
       setShowCopyToast(false);
-    }, 2000);
+    }
   };
   //플레이리스트 편집
   const handleEditPlaylists = () => {
@@ -424,9 +445,12 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   return (
     <>
       <div
+        role="status"
+        aria-live="polite"
+        aria-hidden={!showCopyToast}
         className={`bg-bg-card fixed top-25 left-1/2 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white transition-all duration-300 ${showCopyToast ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0'} `}
       >
-        초대코드가 복사되었습니다.
+        {showCopyToast ? '초대코드가 복사되었습니다.' : ''}
       </div>
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-5 py-6">
         <div className="flex items-start gap-4">

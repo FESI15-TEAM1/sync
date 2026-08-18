@@ -6,7 +6,11 @@ import More2Icon from '@/assets/icons/more2.svg';
 import IconButton from '@/components/IconButton';
 
 // 플레이리스트 카드 전용 케밥 메뉴(more2 아이콘, 카드 하단에 위치)
-export default function PlaylistCardMenu({ children }: { children: ReactNode }) {
+export default function PlaylistCardMenu({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
@@ -19,10 +23,15 @@ export default function PlaylistCardMenu({ children }: { children: ReactNode }) 
         setIsMenuOpen(false);
       }
     };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMenuOpen(false);
+    };
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isMenuOpen]);
 
