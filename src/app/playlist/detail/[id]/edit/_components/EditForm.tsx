@@ -38,13 +38,25 @@ export default function EditForm() {
     queryFn: () => clientFetch<PlaylistDetail>(`/playlists/${id}`),
   });
 
-  if (isPending) {
-    return <div className="text-text-primary font-bold">로딩중...</div>;
-  }
+  if (isPending) return <EditFormSkeleton />;
   if (playlist) return <EditPlaylistForm id={id} playlist={playlist} />;
 
   if (error)
-    return <div className="text-text-primary font-bold">{error.message}</div>;
+    return (
+      <div className="text-text-primary flex min-h-[60vh] w-full items-center justify-center font-bold">
+        {error.message}
+      </div>
+    );
+}
+
+function EditFormSkeleton() {
+  return (
+    <div className="flex w-4xl flex-col items-center gap-6">
+      <div className="bg-border size-40 animate-pulse rounded-2xl" />
+      <div className="bg-border h-10 w-full animate-pulse rounded-md" />
+      <div className="bg-border h-24 w-full animate-pulse rounded-md" />
+    </div>
+  );
 }
 
 function EditPlaylistForm({
@@ -66,6 +78,7 @@ function EditPlaylistForm({
     tracks: playlist.tracks,
   }));
   const [imgFile, setImgFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const addedVideoIds = new Set(form.tracks.map((track) => track.videoId));
 
@@ -95,6 +108,8 @@ function EditPlaylistForm({
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       let finalForm = form;
 
@@ -128,6 +143,8 @@ function EditPlaylistForm({
           router.push('/login');
         }
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -215,8 +232,12 @@ function EditPlaylistForm({
           }
         />
       </div>
-      <Button className="w-full" onClick={handleSubmit}>
-        저장하기
+      <Button
+        className="w-full"
+        onClick={handleSubmit}
+        isDisabled={isSubmitting}
+      >
+        {isSubmitting ? '저장 중...' : '저장하기'}
       </Button>
     </div>
   );

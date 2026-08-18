@@ -1,6 +1,5 @@
 'use client';
 
-import clsx from 'clsx';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -8,6 +7,7 @@ import { useLikedPlaylistsQuery } from '@/app/playlist/detail/[id]/_hooks/useLik
 import BackButton from '@/components/common/BackButton';
 import PlaylistCardList from '@/components/domain/playlists/PlaylistCardList';
 import IconButton from '@/components/IconButton';
+import Toggle from '@/components/Toggle';
 import type {
   MyPlaylistItem,
   Playlist,
@@ -38,55 +38,36 @@ export default function PlaylistView({
   const items = activeTab === 'mine' ? myData : likedPlaylists.items;
 
   return (
-    <div className="text-text-primary relative flex flex-col items-center justify-center p-2">
+    <div className="text-text-primary relative flex flex-col items-center justify-center gap-6 p-2">
       <div className="flex w-full items-center justify-between gap-3">
         <div className="flex justify-center gap-6">
           <BackButton />
-          <span>{userNickname}</span>
         </div>
       </div>
-      <div className="flex justify-between gap-10">
-        <button
-          type="button"
-          onClick={() => setTab('mine')}
-          className={clsx(
-            'm-auto text-2xl font-bold transition-colors',
-            activeTab === 'mine' ? 'text-text-primary' : 'text-text-secondary',
-          )}
-        >
-          MINE
-        </button>
+      <div className="ml-5 flex w-full items-center justify-between gap-3">
+        <h3 className="text-xl font-bold">{userNickname} 님의 플레이리스트</h3>
+
         {isOwner && (
-          <>
-            <span className="text-text-secondary text-2xl">|</span>
-            <button
-              type="button"
-              onClick={() => setTab('liked')}
-              className={clsx(
-                'm-auto text-2xl font-bold transition-colors',
-                activeTab === 'liked'
-                  ? 'text-text-primary'
-                  : 'text-text-secondary',
-              )}
-            >
-              LIKED
-            </button>
-          </>
+          <Toggle
+            checked={activeTab === 'liked'}
+            onChange={(checked) => setTab(checked ? 'liked' : 'mine')}
+            checkedLabel="LIKED"
+            uncheckedLabel="MINE"
+            ariaLabel="플레이리스트 목록 전환"
+          />
         )}
       </div>
-      <div className="mt-4">
-        <div className="mt-20">
-          {items.length < 1 && (
-            <div className="flex items-center justify-center">
-              <span className="text-text-secondary">
-                {activeTab === 'liked'
-                  ? '좋아요 한 플레이리스트가 없습니다.'
-                  : '플레이리스트가 없습니다.'}
-              </span>
-            </div>
-          )}
-          <PlaylistCardList data={items} />
-        </div>
+      <div className="w-full">
+        {items.length < 1 && (
+          <div className="flex items-center justify-center">
+            <span className="text-text-secondary">
+              {activeTab === 'liked'
+                ? '좋아요 한 플레이리스트가 없습니다.'
+                : '플레이리스트가 없습니다.'}
+            </span>
+          </div>
+        )}
+        <PlaylistCardList data={items} />
       </div>
       <IconButton
         variants="primary"
