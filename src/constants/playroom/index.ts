@@ -10,12 +10,6 @@ export const PLAYROOM_CHAT_MAX_LENGTH = 100;
 
 /**
  * (메인)
- * 플레이룸 노출 개수
+ * 플레이룸 노출 개수. 라이브 목록 조회 limit 으로도 그대로 씁니다.
  */
 export const MAIN_PLAYROOM_COUNT = 3;
-
-/**
- * (메인)
- * 라이브가 끝난 방이 섞여 들어와 걸러지더라도 3개를 채울 수 있도록 여유분을 받아옵니다.
- */
-export const MAIN_PLAYROOM_FETCH_LIMIT = 30;

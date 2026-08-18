@@ -1,3 +1,4 @@
+import { MAIN_PLAYROOM_COUNT } from '@/constants/playroom';
 import { clientFetch } from '@/lib/http/client-fetch';
 import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 
@@ -30,19 +31,16 @@ export const getPlayrooms = ({ cursor, limit }: GetPlayroomsParams = {}) => {
 };
 
 /**
- * 라이브 중(isLive === true)인 플레이룸만 추려서 조회합니다.
- * 백엔드에 isLive 필터 파라미터가 없어, 목록을 받아온 뒤 클라이언트에서 걸러냅니다.
- * 필터링은 받아온 페이지 안에서만 일어나므로 nextCursor 는 원본 응답 값을 그대로 넘깁니다.
+ * 메인에 노출할 라이브 플레이룸을 청취자 많은 순(같으면 최신순)으로 조회합니다.
+ * 라이브 여부는 "방장이 지금 접속해 있는가"라 목록 정렬과 무관하므로,
+ * 전체 목록을 받아 클라이언트에서 거르지 않고 서버가 걸러주는 전용 엔드포인트를 씁니다.
+ * 커서를 쓰지 않는 엔드포인트라 nextCursor 는 항상 null 입니다.
  */
-export const getMainPlayrooms = async (
-  params: GetPlayroomsParams = {},
-): Promise<GetPlayroomsResponse> => {
-  const data = await getPlayrooms(params);
-
-  return {
-    ...data,
-    items: data.items.filter((playroom) => playroom.isLive),
-  };
+export const getMainPlayrooms = (limit: number = MAIN_PLAYROOM_COUNT) => {
+  return clientFetch<GetPlayroomsResponse>('/playrooms/live', {
+    method: 'GET',
+    params: { limit: String(limit) },
+  });
 };
 
 /**
