@@ -20,6 +20,7 @@ import type {
   GroupRequestResponse,
   HighlightGroupPlaylistRequest,
   JoinGroupByCodeRequest,
+  JoinGroupByInviteCodeRequest,
   UpdateGroupRequest,
 } from './group.types';
 
@@ -126,9 +127,17 @@ export function getGroupMembers(
   });
 }
 
-// 초대코드로 그룹 즉시 가입
+// 초대코드로 그룹 즉시 가입(그룹 ID를 아는 경우)
 export function joinGroupByCode(groupId: number, data: JoinGroupByCodeRequest) {
   return clientFetch<GroupMemberResponse>(`/groups/${groupId}/members`, {
+    method: 'POST',
+    body: data,
+  });
+}
+
+// 초대코드로 그룹 즉시 가입(그룹 ID 불필요, 공개·비공개 모두 가능)
+export function joinGroupByInviteCode(data: JoinGroupByInviteCodeRequest) {
+  return clientFetch<GroupDetailResponse>('/groups/join', {
     method: 'POST',
     body: data,
   });

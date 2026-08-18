@@ -173,10 +173,13 @@ export interface GetGroupMembersResponse {
   nextCursor: string | null;
 }
 
-// POST /groups/{groupId}/members — 초대코드로 그룹 즉시 가입
+// POST /groups/{groupId}/members — 초대코드로 그룹 즉시 가입(그룹 ID를 아는 경우)
 export interface JoinGroupByCodeRequest {
   inviteCode: string;
 }
+
+// POST /groups/join — 초대코드로 그룹 즉시 가입(그룹 ID 불필요, 공개·비공개 모두 가능)
+export type JoinGroupByInviteCodeRequest = JoinGroupByCodeRequest;
 
 export type EditGroupPlaylistsResponse = GroupPlaylistResponse[];
 

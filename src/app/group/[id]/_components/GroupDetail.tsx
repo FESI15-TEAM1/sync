@@ -24,6 +24,7 @@ import {
   requestJoinGroup,
 } from '@/services/group/group.api';
 import type {
+  GetGroupPlaylistsResponse,
   GroupDetailResponse,
   GroupPlaylistResponse,
 } from '@/services/group/group.types';
@@ -248,33 +249,60 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     setRemoveErrorMessage(null);
   };
 
-  // 그룹 플레이리스트 하이라이트(상단 고정, 그룹장만 가능)
-  const { mutate: toggleHighlight, isPending: isTogglingHighlight } =
-    useMutation({
-      mutationFn: ({
-        playlistId,
-        isHighlighted,
-      }: {
-        playlistId: number;
-        isHighlighted: boolean;
-      }) => highlightGroupPlaylist(groupId, playlistId, { isHighlighted }),
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: groupPlaylistsQueryKey(groupId),
-        });
-      },
-      onError: (error) => {
-        alert(
-          error instanceof APIError
-            ? error.message
-            : '하이라이트 설정 중 오류가 발생했습니다.',
+  // 그룹 플레이리스트 하이라이트(상단 고정, 그룹장만 가능) — 낙관적 업데이트
+  const { mutate: toggleHighlight } = useMutation({
+    mutationFn: ({
+      playlistId,
+      isHighlighted,
+    }: {
+      playlistId: number;
+      isHighlighted: boolean;
+    }) => highlightGroupPlaylist(groupId, playlistId, { isHighlighted }),
+    onMutate: async ({ playlistId, isHighlighted }) => {
+      await queryClient.cancelQueries({
+        queryKey: groupPlaylistsQueryKey(groupId),
+      });
+
+      const previousPlaylists =
+        queryClient.getQueryData<GetGroupPlaylistsResponse>(
+          groupPlaylistsQueryKey(groupId),
         );
-      },
-    });
+
+      queryClient.setQueryData<GetGroupPlaylistsResponse>(
+        groupPlaylistsQueryKey(groupId),
+        (old) =>
+          old && {
+            ...old,
+            items: old.items.map((item) =>
+              item.id === playlistId ? { ...item, isHighlighted } : item,
+            ),
+          },
+      );
+
+      return { previousPlaylists };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousPlaylists) {
+        queryClient.setQueryData(
+          groupPlaylistsQueryKey(groupId),
+          context.previousPlaylists,
+        );
+      }
+
+      alert(
+        error instanceof APIError
+          ? error.message
+          : '하이라이트 설정 중 오류가 발생했습니다.',
+      );
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: groupPlaylistsQueryKey(groupId),
+      });
+    },
+  });
 
   const handleToggleHighlight = (playlist: GroupPlaylistResponse) => {
-    if (isTogglingHighlight) return;
-
     toggleHighlight({
       playlistId: playlist.id,
       isHighlighted: !playlist.isHighlighted,
