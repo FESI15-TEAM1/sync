@@ -139,9 +139,9 @@ export default function PlaylistPlayerBar({
               title={isMuted ? '음소거 해제' : '음소거'}
             >
               {isMuted || volume === 0 ? (
-                <SpeakerMuteIcon />
+                <SpeakerMuteIcon className="text-text-primary size-8" />
               ) : (
-                <SpeakerWaveIcon />
+                <SpeakerWaveIcon className="text-text-primary size-8" />
               )}
             </IconButton>
             <input
