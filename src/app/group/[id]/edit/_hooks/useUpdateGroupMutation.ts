@@ -3,7 +3,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
-import { APIError } from '@/lib/http/error';
 import { editGroupPlaylists, updateGroup } from '@/services/group/group.api';
 import { requestUploadUrl } from '@/services/upload/upload.api';
 import type { UploadUrlRequest } from '@/services/upload/upload.types';
@@ -71,7 +70,10 @@ export function useUpdateGroupMutation({
         image = fileUrl;
       }
 
-      await Promise.all([
+      // updateGroup(PATCH)과 editGroupPlaylists(PUT)는 둘 다 절대값을 세팅하는
+      // 멱등 요청이다. allSettled로 어느 쪽이 실패했는지 구분해 안내하면,
+      // 성공한 쪽을 다시 보내도 값이 그대로 유지되어 재시도만으로 정합성이 맞는다.
+      const [groupResult, playlistsResult] = await Promise.allSettled([
         updateGroup(groupId, {
           title,
           description,
@@ -81,15 +83,32 @@ export function useUpdateGroupMutation({
         editGroupPlaylists(Number(groupId), { playlistIds }),
       ]);
 
+      if (
+        groupResult.status === 'rejected' &&
+        playlistsResult.status === 'rejected'
+      ) {
+        throw groupResult.reason;
+      }
+
+      if (groupResult.status === 'rejected') {
+        throw new Error(
+          '그룹 정보 저장에 실패했습니다. 플레이리스트는 반영되었으니 다시 시도해주세요.',
+        );
+      }
+
+      if (playlistsResult.status === 'rejected') {
+        throw new Error(
+          '플레이리스트 저장에 실패했습니다. 그룹 정보는 반영되었으니 다시 시도해주세요.',
+        );
+      }
+
       return groupId;
     },
     onSuccess: (groupId) => {
       router.push(`/group/${groupId}`);
     },
     onError: (error) => {
-      onError(
-        error instanceof APIError ? error.message : SUBMIT_ERROR_MESSAGE,
-      );
+      onError(error instanceof Error ? error.message : SUBMIT_ERROR_MESSAGE);
     },
   });
 }
