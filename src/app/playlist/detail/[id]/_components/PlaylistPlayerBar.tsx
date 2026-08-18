@@ -71,15 +71,6 @@ export default function PlaylistPlayerBar({
     onSeek(ratio * duration);
   };
 
-  const handleVolumeSeek = (e: PointerEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const ratio = Math.min(
-      Math.max((e.clientX - rect.left) / rect.width, 0),
-      1,
-    );
-    onVolumeChange(Math.round(ratio * 100));
-  };
-
   return (
     <div
       className={`bg-bg-card border-border fixed bottom-0 left-0 z-40 w-full border-t transition-transform duration-300 lg:pl-64 ${shown ? 'translate-y-0' : 'pointer-events-none translate-y-full'}`}
