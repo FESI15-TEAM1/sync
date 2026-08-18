@@ -42,6 +42,7 @@ function PlaylistRow({
         img={playlist.image}
         videoId={String(playlist.id)}
         title={playlist.title}
+        // Track은 아티스트 필드를 쓰지만, 여기서는 플레이리스트 소유자(owner)를 표시한다.
         artist={playlist.owner}
         Button={
           canRemove ? (
@@ -177,6 +178,7 @@ function PlaylistEditModalContent({
                   img={playlist.image}
                   videoId={String(playlist.id)}
                   title={playlist.title}
+                  // Track은 아티스트 필드를 쓰지만, 여기서는 플레이리스트 소유자(owner)를 표시한다.
                   artist={playlist.owner}
                   Button={
                     <IconButton
