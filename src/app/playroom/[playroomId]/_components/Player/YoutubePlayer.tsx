@@ -14,6 +14,8 @@ export type YoutubePlayerHandle = {
   /** 음소거 재생은 자동재생 정책에 막히지 않으므로, 소리 없이라도 따라가야 할 때 쓴다. */
   mute: () => void;
   unMute: () => void;
+  /** 0~100 사이의 볼륨. 음소거 상태에서는 값만 저장되고 소리는 나지 않는다. */
+  setVolume: (volume: number) => void;
   getCurrentTime: () => number;
   getDuration: () => number;
   /** 유튜브 플레이어 상태 코드. -1(시작 전)·5(큐만 올림)에서는 seekTo 가 먹지 않는다. */
@@ -51,23 +53,52 @@ export default function YoutubePlayer({
     },
   };
 
+  /**
+   * 유튜브 플레이어는 iframe 으로 명령을 보내는데, 아직 iframe 이 붙지 않은 상태에서 명령을 보내면 예외를 던진다. 이때는 조용히 무시한다.
+   */
+  const runCommand = (command: (player: YouTubeEvent['target']) => void) => {
+    const player = playerRef.current;
+    if (!player) return;
+
+    try {
+      command(player);
+    } catch {
+      return;
+    }
+  };
+
+  const readValue = <T,>(
+    read: (player: YouTubeEvent['target']) => T,
+    fallback: T,
+  ): T => {
+    const player = playerRef.current;
+    if (!player) return fallback;
+
+    try {
+      return read(player);
+    } catch {
+      return fallback;
+    }
+  };
+
   useImperativeHandle(ref, () => ({
-    play: () => playerRef.current?.playVideo(),
-    pause: () => playerRef.current?.pauseVideo(),
+    play: () => runCommand((player) => player.playVideo()),
+    pause: () => runCommand((player) => player.pauseVideo()),
     loadVideo: (id, startSeconds) => {
       loadedVideoIdRef.current = id;
-      playerRef.current?.loadVideoById(id, startSeconds);
+      runCommand((player) => player.loadVideoById(id, startSeconds));
     },
     cueVideo: (id, startSeconds) => {
       loadedVideoIdRef.current = id;
-      playerRef.current?.cueVideoById(id, startSeconds);
+      runCommand((player) => player.cueVideoById(id, startSeconds));
     },
-    seekTo: (seconds) => playerRef.current?.seekTo(seconds, true),
-    mute: () => playerRef.current?.mute(),
-    unMute: () => playerRef.current?.unMute(),
-    getCurrentTime: () => playerRef.current?.getCurrentTime() ?? 0,
-    getDuration: () => playerRef.current?.getDuration() ?? 0,
-    getPlayerState: () => playerRef.current?.getPlayerState() ?? -1,
+    seekTo: (seconds) => runCommand((player) => player.seekTo(seconds, true)),
+    mute: () => runCommand((player) => player.mute()),
+    unMute: () => runCommand((player) => player.unMute()),
+    setVolume: (volume) => runCommand((player) => player.setVolume(volume)),
+    getCurrentTime: () => readValue((player) => player.getCurrentTime(), 0),
+    getDuration: () => readValue((player) => player.getDuration(), 0),
+    getPlayerState: () => readValue((player) => player.getPlayerState(), -1),
     getLoadedVideoId: () => loadedVideoIdRef.current,
   }));
 
