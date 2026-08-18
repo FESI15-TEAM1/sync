@@ -20,14 +20,17 @@ export default function Textarea({
   minResize,
   ...props
 }: TextareaProps) {
-  const textareaStyle = cva(fieldStyle, {
-    variants: {
-      resizable: {
-        true: 'resize-y',
-        false: 'resize-none',
+  const textareaStyle = cva(
+    `${fieldStyle} scrollbar-thumb-text-secondary scrollbar-track-transparent`,
+    {
+      variants: {
+        resizable: {
+          true: 'resize-y',
+          false: 'resize-none',
+        },
       },
     },
-  });
+  );
   return (
     <div className="flex w-full flex-col gap-1">
       {typeof label === 'string' ? (
