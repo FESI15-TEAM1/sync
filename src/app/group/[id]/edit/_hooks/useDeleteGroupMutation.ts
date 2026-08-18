@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
+import { groupsQueryKey } from '@/app/group/_hooks/useGroupsQuery';
 import { APIError } from '@/lib/http/error';
 import { deleteGroup } from '@/services/group/group.api';
 
@@ -17,7 +18,7 @@ export function useDeleteGroupMutation({
   return useMutation({
     mutationFn: (groupId: number) => deleteGroup(groupId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      queryClient.invalidateQueries({ queryKey: groupsQueryKey() });
       router.push('/group');
     },
     onError: (error) => {

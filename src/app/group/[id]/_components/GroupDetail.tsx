@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import { groupsQueryKey } from '@/app/group/_hooks/useGroupsQuery';
 import CopyIcon from '@/assets/icons/copy.svg';
 import Star from '@/assets/icons/star.svg';
 import Button from '@/components/Button';
@@ -400,7 +401,7 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
       return leaveGroup(groupId, currentUser.id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      queryClient.invalidateQueries({ queryKey: groupsQueryKey() });
       setIsLeaveGroupOpen(false);
       router.push('/group');
     },

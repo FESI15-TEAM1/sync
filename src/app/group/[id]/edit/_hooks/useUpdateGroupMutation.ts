@@ -1,8 +1,10 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
+import { groupsQueryKey } from '@/app/group/_hooks/useGroupsQuery';
+import { groupPlaylistsQueryKey } from '@/app/group/[id]/_components/GroupDetail';
 import { editGroupPlaylists, updateGroup } from '@/services/group/group.api';
 import { requestUploadUrl } from '@/services/upload/upload.api';
 import type { UploadUrlRequest } from '@/services/upload/upload.types';
@@ -40,6 +42,7 @@ export function useUpdateGroupMutation({
   onError: (message: string) => void;
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({
@@ -105,6 +108,10 @@ export function useUpdateGroupMutation({
       return groupId;
     },
     onSuccess: (groupId) => {
+      queryClient.invalidateQueries({ queryKey: groupsQueryKey() });
+      queryClient.invalidateQueries({
+        queryKey: groupPlaylistsQueryKey(Number(groupId)),
+      });
       router.push(`/group/${groupId}`);
     },
     onError: (error) => {
