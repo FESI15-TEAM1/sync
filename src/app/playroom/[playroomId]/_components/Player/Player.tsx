@@ -9,9 +9,11 @@ import { useAutoplayFallback } from '../../_hooks/Player/useAutoplayFallback';
 import { useHostPlaybackPublisher } from '../../_hooks/Player/useHostPlaybackPublisher';
 import { usePlaybackProgress } from '../../_hooks/Player/usePlaybackProgress';
 import { usePlayerSync } from '../../_hooks/Player/usePlayerSync';
+import { useVolume } from '../../_hooks/Player/useVolume';
 import type { PlaybackState } from '../../_hooks/useWSConnect';
 import Controller from './Controller';
 import PlayProgressBar from './PlayProgressBar';
+import VolumeControl from './VolumeControl';
 import WaitingDots from './WaitingDots';
 import YoutubePlayer, { type YoutubePlayerHandle } from './YoutubePlayer';
 
@@ -87,6 +89,12 @@ export default function Player({
     isPlaying,
   });
 
+  const { volume, isMuted, changeVolume, toggleMute, applyVolume } = useVolume({
+    playerRef,
+    isPlayerReady,
+    isMutedForAutoplay,
+  });
+
   const publishPlayback = useHostPlaybackPublisher({
     playerRef,
     isHost,
@@ -95,6 +103,12 @@ export default function Player({
     memberJoinedCount,
     onPlaybackChange,
   });
+
+  // 플레이어가 새로 준비될 때마다 재생 상태를 맞추고, 이 브라우저의 볼륨 설정도 다시 얹는다.
+  const handleReady = () => {
+    handlePlayerReady();
+    applyVolume();
+  };
 
   /* ------------------------------ 방장: 조작하기 ------------------------------ */
 
@@ -157,7 +171,7 @@ export default function Player({
     'bg-disabled aspect-square max-w-25 object-cover lg:max-w-none';
 
   return (
-    <div className="bg-bg-card border-border box-border flex flex-col items-center gap-2 rounded-xl border px-2 py-5 text-center lg:py-8">
+    <div className="bg-bg-card border-border box-border flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-center lg:gap-2 lg:py-5 lg:py-8">
       {/* thumbnail image */}
       <div className="relative h-25 w-25 overflow-hidden rounded-2xl lg:h-60 lg:w-60">
         {thumbnail ? (
@@ -168,7 +182,7 @@ export default function Player({
       </div>
 
       {/* song title */}
-      <h2 className="pt-2 text-base font-bold text-white">
+      <h2 className="text-base font-bold text-white lg:pt-2">
         {currentTrack?.title ?? '방장의 재생을 기다리는 중이에요⏱️'}
       </h2>
 
@@ -196,9 +210,17 @@ export default function Player({
       {/* control access notice */}
       <span className="text-text-secondary text-center text-xs">
         {isMutedForAutoplay
-          ? '음소거로 재생 중이에요. 화면을 한 번 클릭하면 소리가 켜져요'
+          ? '음소거로 재생 중이에요. 화면을 한 번 클릭하면 소리가 켜져요'
           : '재생 컨트롤은 방장만 가능해요'}
       </span>
+
+      {/* volume control */}
+      <VolumeControl
+        volume={volume}
+        isMuted={isMuted}
+        onVolumeChange={changeVolume}
+        onToggleMute={toggleMute}
+      />
 
       {/* 실제 재생을 담당하는 숨겨진 iframe. 재생할 곡이 정해진 뒤에만 마운트한다.
           곡 정보(제목·썸네일)를 몰라도 videoId 만 있으면 재생은 할 수 있다. */}
@@ -207,7 +229,7 @@ export default function Player({
           ref={playerRef}
           videoId={currentVideoId}
           onPlayingChange={setIsPlaying}
-          onReady={handlePlayerReady}
+          onReady={handleReady}
           // 참가자는 곡이 끝나도 스스로 넘기지 않는다. 다음 곡은 방장의 playback_sync 로만 바뀐다.
           onEnded={isHost ? handlePlayNextTrack : undefined}
         />
