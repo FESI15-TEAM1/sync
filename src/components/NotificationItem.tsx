@@ -9,6 +9,22 @@ import {
 import defaultImg from '@/assets/images/default.png';
 import { formatTimeAgo } from '@/lib/formatITimeAgo';
 import type { NotificationItem } from '@/services/notifications/notifications.type';
+// "내 그룹 '이름'"처럼 리소스 종류 + 이름을 함께 보여줌. 이름이 없으면(리소스 삭제 등) 종류만 남김
+// mine이 false면 "내"를 붙이지 않음 — 처리 결과 알림(수락/거절)은 내 소유가 아닌 리소스를 가리킴
+function mySource(label: string, sourceName: string | null, mine = true) {
+  return (
+    <>
+      {mine ? `내 ${label}` : label}
+      {sourceName && (
+        <>
+          {' '}
+          <span className="font-bold">&apos;{sourceName}&apos;</span>
+        </>
+      )}
+    </>
+  );
+}
+
 function getNotificationContent(item: NotificationItem) {
   const name =
     item.actorCount > 1
@@ -27,8 +43,8 @@ function getNotificationContent(item: NotificationItem) {
         subject,
         detail: (
           <>
-            내 플레이리스트에 <span className="font-bold">댓글</span>을
-            남겼습니다.
+            {mySource('플레이리스트', item.sourceName)}에{' '}
+            <span className="font-bold">댓글</span>을 남겼습니다.
           </>
         ),
       };
@@ -38,7 +54,8 @@ function getNotificationContent(item: NotificationItem) {
         subject,
         detail: (
           <>
-            내 <span className="font-bold">플레이리스트를 좋아합니다.</span>
+            {mySource('플레이리스트', item.sourceName)}에{' '}
+            <span className="font-bold">좋아요</span>를 눌렀습니다.
           </>
         ),
       };
@@ -68,7 +85,8 @@ function getNotificationContent(item: NotificationItem) {
         subject,
         detail: (
           <>
-            내 <span className="font-bold">그룹 참여</span>를 요청했습니다.
+            {mySource('그룹', item.sourceName)}{' '}
+            <span className="font-bold">참여</span>를 요청했습니다.
           </>
         ),
       };
@@ -79,8 +97,8 @@ function getNotificationContent(item: NotificationItem) {
         subject,
         detail: (
           <>
-            내 플레이리스트로 <span className="font-bold">그룹 생성</span>을
-            요청했습니다.
+            {mySource('플레이리스트', item.sourceName)}에서{' '}
+            <span className="font-bold">그룹 생성</span>을 요청했습니다.
           </>
         ),
       };
@@ -90,15 +108,8 @@ function getNotificationContent(item: NotificationItem) {
         subject,
         detail: (
           <>
-            {item.sourceName && (
-              <>
-                <span className="font-bold">
-                  &apos;{item.sourceName}&apos;
-                </span>{' '}
-              </>
-            )}
-            그룹 참여 요청을 <span className="font-bold">수락</span>
-            했습니다.
+            {mySource('그룹', item.sourceName, false)} 참여 요청을{' '}
+            <span className="font-bold">수락</span>했습니다.
           </>
         ),
       };
@@ -108,15 +119,8 @@ function getNotificationContent(item: NotificationItem) {
         subject,
         detail: (
           <>
-            {item.sourceName && (
-              <>
-                <span className="font-bold">
-                  &apos;{item.sourceName}&apos;
-                </span>{' '}
-              </>
-            )}
-            그룹 참여 요청을 <span className="font-bold">거절</span>
-            했습니다.
+            {mySource('그룹', item.sourceName, false)} 참여 요청을{' '}
+            <span className="font-bold">거절</span>했습니다.
           </>
         ),
       };
@@ -127,15 +131,8 @@ function getNotificationContent(item: NotificationItem) {
         subject,
         detail: (
           <>
-            {item.sourceName && (
-              <>
-                <span className="font-bold">
-                  &apos;{item.sourceName}&apos;
-                </span>{' '}
-              </>
-            )}
-            그룹 생성 요청을 <span className="font-bold">수락</span>
-            했습니다.
+            {mySource('그룹', item.sourceName, false)} 생성 요청을{' '}
+            <span className="font-bold">수락</span>했습니다.
           </>
         ),
       };
@@ -146,15 +143,8 @@ function getNotificationContent(item: NotificationItem) {
         subject,
         detail: (
           <>
-            {item.sourceName && (
-              <>
-                <span className="font-bold">
-                  &apos;{item.sourceName}&apos;
-                </span>{' '}
-              </>
-            )}
-            그룹 생성 요청을 <span className="font-bold">거절</span>
-            했습니다.
+            {mySource('플레이리스트', item.sourceName, false)}에서 요청한 그룹
+            생성이 <span className="font-bold">거절</span>되었습니다.
           </>
         ),
       };
