@@ -7,6 +7,7 @@ import Grip from '@/assets/icons/grip.svg';
 import Minus from '@/assets/icons/minus.svg';
 import defaultImage from '@/assets/images/default.png';
 import IconButton from '@/components/IconButton';
+import { decodeHtml } from '@/lib/decodeHtml';
 import type { PlaylistTrack } from '@/services/playlist/playlist';
 
 export default function ReorderableTrackList({
@@ -44,6 +45,7 @@ function ReorderableTrackItem({
   onRemove: () => void;
 }) {
   const dragControls = useDragControls();
+  const title = decodeHtml(track.title);
 
   return (
     <Reorder.Item
@@ -69,12 +71,11 @@ function ReorderableTrackItem({
         className="flex-none rounded-lg"
       />
       <div className="grow">
-        <h3 className="text-text-primary">{track.title}</h3>
-        <span className="text-text-secondary text-[12px]">
-          {track.artist}
-        </span>
+        <h3 className="text-text-primary">{title}</h3>
+        <span className="text-text-secondary text-[12px]">{track.artist}</span>
       </div>
       <IconButton
+        type="button"
         className="border-border text-text-secondary hover:text-text-primary flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full border text-sm"
         size="sm"
         onClick={onRemove}
