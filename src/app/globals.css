@@ -52,4 +52,7 @@ input:-webkit-autofill:focus {
   /* Text */
   --color-text-primary: #ffffff;
   --color-text-secondary: #b3b3b3;
+
+  /* xsmall breakpoint 추가 */
+  --breakpoint-xs: 30rem; /* 480px */
 }

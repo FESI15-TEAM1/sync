@@ -171,7 +171,7 @@ export default function Player({
     'bg-disabled aspect-square max-w-25 object-cover lg:max-w-none';
 
   return (
-    <div className="bg-bg-card border-border box-border flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-center lg:gap-2 lg:py-5 lg:py-8">
+    <div className="bg-bg-card border-border box-border flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-center lg:gap-2 lg:py-8">
       {/* thumbnail image */}
       <div className="relative h-25 w-25 overflow-hidden rounded-2xl lg:h-60 lg:w-60">
         {thumbnail ? (

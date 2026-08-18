@@ -65,7 +65,7 @@ export default function PlayroomHeader({
         onBeforeNavigate={onBeforeBack}
       />
 
-      <h1 className="text-text-primary flex items-center gap-2 text-base">
+      <h1 className="text-text-primary flex items-center gap-2 text-center text-base">
         {isHostOnline && <LiveHeartbeat size="md" />}
         {playroomTitle}
       </h1>
