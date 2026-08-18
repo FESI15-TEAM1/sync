@@ -138,9 +138,10 @@ export default function Player({
   };
 
   const handlePlayNextTrack = () => {
-    const nextTrack = tracks[currentIndex + 1];
+    // 마지막 곡 다음은 첫 곡이다. 플레이리스트를 끝까지 들어도 멈추지 않고 처음부터 다시 돈다.
+    const nextTrack = tracks[currentIndex + 1] ?? tracks[0];
 
-    // 마지막 곡이면 멈추고 처음으로 되감는다.
+    // 트랙 목록을 아직 못 받았으면 넘길 곳이 없으므로 멈추고 되감는다.
     if (!nextTrack) {
       seekPlayerTo(0);
       playerRef.current?.pause();
