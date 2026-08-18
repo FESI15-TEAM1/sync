@@ -43,6 +43,9 @@ export default function AddForm() {
       tracks: prev.tracks.filter((item) => item.videoId !== track.videoId),
     }));
   };
+  const handleReorderTracks = (tracks: PlaylistTrack[]) => {
+    setForm((prev) => ({ ...prev, tracks }));
+  };
   const handleSubmit = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
@@ -122,6 +125,7 @@ export default function AddForm() {
 
       <AddedTracksSection
         tracks={form.tracks}
+        onReorder={handleReorderTracks}
         onRemoveTrack={handleDeleteTrack}
       />
 

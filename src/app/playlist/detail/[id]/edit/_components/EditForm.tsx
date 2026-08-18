@@ -6,10 +6,9 @@ import { useParams, useRouter } from 'next/navigation';
 import { type ChangeEvent, useEffect, useState } from 'react';
 
 import TrackSearchSection from '@/app/playlist/add/_components/TrackSearchSection';
-import Minus from '@/assets/icons/minus.svg';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
-import TrackList from '@/components/domain/playlists/TrackList';
+import ReorderableTrackList from '@/components/domain/playlists/ReorderableTrackList';
 import IconButton from '@/components/IconButton';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
@@ -105,6 +104,9 @@ function EditPlaylistForm({
       ...prev,
       tracks: prev.tracks.filter((item) => item.videoId !== track.videoId),
     }));
+  };
+  const handleReorderTracks = (tracks: PlaylistTrack[]) => {
+    setForm((prev) => ({ ...prev, tracks }));
   };
 
   const handleSubmit = async () => {
@@ -219,17 +221,10 @@ function EditPlaylistForm({
       {/* 추가된곡 색션 */}
       <span className="text-text-secondary">추가된곡</span>
       <div className="w-full">
-        <TrackList
-          trackList={form.tracks}
-          onTrackClick={handleDeleteTrack}
-          Button={
-            <IconButton
-              className="border-border text-text-secondary hover:text-text-primary flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full border text-sm"
-              size="sm"
-            >
-              <Minus color="text-text-secondary" />
-            </IconButton>
-          }
+        <ReorderableTrackList
+          tracks={form.tracks}
+          onReorder={handleReorderTracks}
+          onRemoveTrack={handleDeleteTrack}
         />
       </div>
       <Button
