@@ -39,6 +39,8 @@ export default function PlaylistDetailView({
   const playerRef = useRef<PlaylistPlayerHandle | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(100);
+  const [isMuted, setIsMuted] = useState(false);
   const [isOwnerPreviewOpen, setIsOwnerPreviewOpen] = useState(false);
   const { id } = useParams<{ id: string }>();
 
@@ -153,6 +155,28 @@ export default function PlaylistDetailView({
     setCurrentTime(time);
   };
 
+  const handleVolumeChange = (nextVolume: number) => {
+    setVolume(nextVolume);
+    playerRef.current?.setVolume(nextVolume);
+    if (nextVolume === 0) {
+      setIsMuted(true);
+      playerRef.current?.mute();
+    } else if (isMuted) {
+      setIsMuted(false);
+      playerRef.current?.unMute();
+    }
+  };
+
+  const handleToggleMute = () => {
+    if (isMuted) {
+      setIsMuted(false);
+      playerRef.current?.unMute();
+    } else {
+      setIsMuted(true);
+      playerRef.current?.mute();
+    }
+  };
+
   return (
     <div
       className={`flex max-w-7xl flex-col gap-10 p-2 ${currentTrack ? 'pb-24' : ''}`}
@@ -224,6 +248,8 @@ export default function PlaylistDetailView({
           ref={playerRef}
           videoId={currentTrack.videoId}
           autoPlay={isPlaying}
+          volume={volume}
+          isMuted={isMuted}
           onEnded={handleEnd}
         />
       )}
@@ -234,11 +260,15 @@ export default function PlaylistDetailView({
           isPlaying={isPlaying}
           currentTime={currentTime}
           duration={duration}
+          volume={volume}
+          isMuted={isMuted}
           onTogglePlay={handleTogglePlay}
           onPrevious={handlePrevious}
           onNext={handleEnd}
           onStop={stop}
           onSeek={handleSeek}
+          onVolumeChange={handleVolumeChange}
+          onToggleMute={handleToggleMute}
         />
       )}
       <CommentsSection playlistId={id} userid={userid} />
