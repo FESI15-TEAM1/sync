@@ -230,6 +230,9 @@ export default function EditPage({
           placeholder="그룹 소개를 입력해주세요."
           maxLength={200}
           onChange={(e) => setGroupDescription(e.target.value)}
+          resizable
+          minResize="6rem"
+          maxResize="16rem"
         />
 
         <fieldset className="flex flex-col gap-2">
