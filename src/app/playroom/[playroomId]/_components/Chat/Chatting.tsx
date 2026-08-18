@@ -87,7 +87,12 @@ export default function Chatting({
           placeholder="채팅 입력"
           maxLength={PLAYROOM_CHAT_MAX_LENGTH}
         />
-        <IconButton variants="primary" size="lg" type="submit">
+        <IconButton
+          variants="primary"
+          size="lg"
+          type="submit"
+          className="shrink-0"
+        >
           <SendIcon width={20} height={20} className="text-text-primary" />
         </IconButton>
       </form>
