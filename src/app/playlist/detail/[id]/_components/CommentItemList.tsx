@@ -2,7 +2,7 @@ import CommentItem from '@/app/playlist/detail/[id]/_components/CommentItem';
 
 export interface CommentItemsType {
   items: CommentItemType[];
-  nextCursor: string;
+  nextCursor: string | null;
 }
 
 export interface CommentItemType {
@@ -17,14 +17,14 @@ export interface CommentItemType {
 }
 
 export default function CommentItemList({
-  comments,
+  items,
   userid,
   onEditSave,
   isSaving,
   onDeleteRequest,
   onProfileClick,
 }: {
-  comments: CommentItemsType;
+  items: CommentItemType[];
   userid: string | null;
   onEditSave: (commentId: number, content: string) => Promise<unknown>;
   onDeleteRequest: (commentId: number) => void;
@@ -33,7 +33,7 @@ export default function CommentItemList({
 }) {
   return (
     <div className="flex flex-col gap-3">
-      {[...comments.items].reverse().map((item) => {
+      {items.map((item) => {
         return (
           <CommentItem
             key={item.id}

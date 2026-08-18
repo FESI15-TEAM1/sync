@@ -5,23 +5,20 @@ import type { SubmitEvent } from 'react';
 import { useState } from 'react';
 
 import Button from '@/components/Button';
+import LiveHeartbeat from '@/components/domain/playroom/LiveHeartbeat';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
-import { type MyPlaylistItem } from '@/services/playlist/playlistCard.type';
+import {
+  PLAYROOM_DESCRIPTION_MAX_LENGTH,
+  PLAYROOM_TITLE_MAX_LENGTH,
+} from '@/constants/playroom';
 import { hashTagToArray } from '@/utils/playroom/hashTag';
 
 import { usePostPlayroom } from '../_hooks/usePostPlayroom';
+import DescriptionHint from './DescriptionHint';
 import PlaylistSelector from './PlaylistSelector';
 
-// 백엔드 스펙(PlayroomCreateRequest)과 동일한 길이 제한
-const TITLE_MAX_LENGTH = 100;
-const DESCRIPTION_MAX_LENGTH = 500;
-
-export default function AddForm({
-  playlists,
-}: {
-  playlists: MyPlaylistItem[];
-}) {
+export default function AddForm() {
   const router = useRouter();
 
   const [title, setTitle] = useState('');
@@ -52,11 +49,16 @@ export default function AddForm({
   return (
     <div className="mt-4 flex flex-col gap-4">
       {/* headline */}
-      <h2 className="text-xl font-bold text-white">플레이룸 시작하기</h2>
+      <h2 className="text-2xl font-bold text-white">플레이룸 시작하기</h2>
 
       {/* live type notice */}
-      <div className="bg-bg-card text-text-secondary flex items-center justify-center rounded-lg py-2 text-xs font-semibold">
-        🔴 라이브
+      <div className="text-text-secondary py-2 text-left text-sm font-normal">
+        <span className="text-text-primary inline-flex items-center gap-1 align-bottom">
+          <LiveHeartbeat size="md" /> 라이브
+        </span>
+        가 시작됩니다!
+        <br /> 내가 방장이 되어 나의 플레이리스트를 재생하고 다함께 청취할 수
+        있습니다!
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -64,20 +66,23 @@ export default function AddForm({
         <InputField>
           <InputField.Label>제목</InputField.Label>
           <InputField.Input
-            placeholder="예: 금귀인 내가 말아주는 플레이리스트!"
+            placeholder="제목을 입력해주세요."
             value={title}
-            maxLength={TITLE_MAX_LENGTH}
+            maxLength={PLAYROOM_TITLE_MAX_LENGTH}
             onChange={(e) => setTitle(e.target.value)}
           />
         </InputField>
 
         {/* set playroom description */}
         <Textarea
-          label="내용"
-          placeholder="플레이룸을 설명하는 내용입니다."
+          label={<DescriptionHint />}
+          placeholder="설명을 입력해주세요. 플레이룸 설명은 목록에서만 나타납니다."
           value={description}
-          maxLength={DESCRIPTION_MAX_LENGTH}
+          maxLength={PLAYROOM_DESCRIPTION_MAX_LENGTH}
           onChange={(e) => setDescription(e.target.value)}
+          resizable={true}
+          minResize="66px"
+          maxResize="100px"
         />
 
         {/* pick playlist */}
@@ -86,7 +91,6 @@ export default function AddForm({
         </h3>
 
         <PlaylistSelector
-          playlists={playlists}
           selectedPlaylistId={selectedPlaylistId}
           onSelect={setSelectedPlaylistId}
         />

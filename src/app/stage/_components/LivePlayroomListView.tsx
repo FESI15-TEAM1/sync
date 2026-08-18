@@ -23,9 +23,7 @@ export default function LivePlayroomListView() {
   if (isPending) {
     return (
       <StatusContainer>
-        <p className="text-text-secondary">
-          현재 라이브 중인 플레이룸을 불러오는 중입니다!
-        </p>
+        <p className="text-disabled">생성된 플레이룸을 불러오는 중입니다!</p>
       </StatusContainer>
     );
   }
@@ -56,8 +54,11 @@ export default function LivePlayroomListView() {
   if (playrooms.length === 0) {
     return (
       <StatusContainer>
-        <p className="text-text-primary">
+        <p className="text-text-secondary text-center">
           현재 라이브 중인 플레이룸이 존재하지 않습니다.
+          <br /> 우측 하단의{' '}
+          <span className="text-text-primary font-bold">플러스 버튼</span>을
+          눌러 플레이룸을 생성해보세요!
         </p>
       </StatusContainer>
     );

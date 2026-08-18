@@ -2,14 +2,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { MouseEvent } from 'react';
 
-import defaultImg from '@/assets/images/default.png';
-import { formatTimeAgo } from '@/lib/formatITimeAgo';
-import type { NotificationItem } from '@/services/notifications/notifications.type';
-
 import {
   useDeleteNotification,
   useMarkNotificationRead,
-} from '../_hooks/useNotificationsQuery';
+} from '@/app/profile/[userId]/_hooks/useNotificationsQuery';
+import defaultImg from '@/assets/images/default.png';
+import { formatTimeAgo } from '@/lib/formatITimeAgo';
+import type { NotificationItem } from '@/services/notifications/notifications.type';
 function getNotificationContent(item: NotificationItem) {
   const name =
     item.actorCount > 1
@@ -126,8 +125,8 @@ export default function NotificationItem({
           />
         </div>
 
-        <div className="min-w-0 flex-1">
-          <p className="text-text-primary text-sm leading-snug break-keep">
+        <div className="min-w-0 flex-1 text-left">
+          <p className="text-text-primary line-clamp-2 text-sm leading-snug break-keep">
             {subject}
             {detail}
           </p>
@@ -148,10 +147,10 @@ export default function NotificationItem({
         aria-label="알림 삭제"
         onClick={handleDelete}
         disabled={isPending}
-        className={`text-text-primary mr-4 flex size-6 shrink-0 items-center justify-center rounded-full opacity-0 transition-all group-hover:opacity-100 ${
+        className={`text-text-primary hover:border-text-primary mr-4 flex size-6 shrink-0 items-center justify-center rounded-full opacity-0 transition-all group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2${
           isPending
             ? 'cursor-not-allowed bg-gray-400'
-            : 'cursor-pointer bg-red-500'
+            : 'border-disabled cursor-pointer border-2'
         }`}
       >
         <span aria-hidden>×</span>

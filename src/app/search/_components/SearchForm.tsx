@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 
 import SearchBar from '@/components/domain/layout/SearchBar';
+import LoadingSpinner from '@/components/LoadingSpiner';
 
 import { useGetSearchDataQuery } from '../_hooks/useSearchHooks';
 import SearchGroupList from './SearchGroupList';
@@ -27,8 +28,9 @@ export default function SearchForm() {
     <div className="flex w-full flex-col gap-8 p-4">
       <SearchBar />
       {isPending ? (
-        <div className="text-text-primary flex min-h-[60vh] w-full items-center justify-center font-bold">
-          로딩중..
+        <div className="flex min-h-[60vh] w-full flex-col items-center justify-center gap-5">
+          <LoadingSpinner />
+          <span className="text-text-primary">Loading...</span>
         </div>
       ) : !data || !hasResults ? (
         <div className="text-text-primary flex min-h-[60vh] w-full items-center justify-center font-bold">

@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  type InfiniteData,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 
 import type { CommentItemsType } from '@/app/playlist/detail/[id]/_components/CommentItemList';
 import { clientFetch } from '@/lib/http/client-fetch';
@@ -13,11 +18,53 @@ export const commentsQueryKey = (playlistId: string) =>
   ['playlists', playlistId, 'comments'] as const;
 
 export function useCommentsQuery(playlistId: string) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: commentsQueryKey(playlistId),
-    queryFn: () =>
-      clientFetch<CommentItemsType>(`/playlists/${playlistId}/comments`),
+    queryFn: ({ pageParam }) =>
+      clientFetch<CommentItemsType>(`/playlists/${playlistId}/comments`, {
+        params: pageParam ? { cursor: pageParam } : undefined,
+      }),
+    initialPageParam: undefined as string | undefined,
+    // 이미 사용한 cursor를 다시 next로 내보내면(레이스로 fetchNextPage가 여러 번
+    // 겹쳐 불렸을 때 등) 같은 페이지를 중복으로 이어붙이게 된다. allPageParams에
+    // 이미 있는 값이면 더 불러올 페이지가 없는 것으로 처리해 방어한다.
+    getNextPageParam: (lastPage, _allPages, _lastPageParam, allPageParams) => {
+      const next = lastPage.nextCursor || undefined;
+      if (next === undefined || allPageParams.includes(next)) return undefined;
+      return next;
+    },
   });
+}
+
+function updateCommentInCache(
+  old: InfiniteData<CommentItemsType> | undefined,
+  commentId: number,
+  content: string,
+) {
+  if (!old) return old;
+  return {
+    ...old,
+    pages: old.pages.map((page) => ({
+      ...page,
+      items: page.items.map((item) =>
+        item.id === commentId ? { ...item, content } : item,
+      ),
+    })),
+  };
+}
+
+function removeCommentFromCache(
+  old: InfiniteData<CommentItemsType> | undefined,
+  commentId: number,
+) {
+  if (!old) return old;
+  return {
+    ...old,
+    pages: old.pages.map((page) => ({
+      ...page,
+      items: page.items.filter((item) => item.id !== commentId),
+    })),
+  };
 }
 export function useAddCommentMutation(playlistId: string) {
   const queryClient = useQueryClient();
@@ -53,21 +100,13 @@ export function useEditCommentMutation(playlistId: string) {
       await queryClient.cancelQueries({
         queryKey: commentsQueryKey(playlistId),
       });
-      const previousComments = queryClient.getQueryData<CommentItemsType>(
-        commentsQueryKey(playlistId),
-      );
+      const previousComments = queryClient.getQueryData<
+        InfiniteData<CommentItemsType>
+      >(commentsQueryKey(playlistId));
 
-      queryClient.setQueryData<CommentItemsType>(
+      queryClient.setQueryData<InfiniteData<CommentItemsType>>(
         commentsQueryKey(playlistId),
-        (old) =>
-          old
-            ? {
-                ...old,
-                items: old.items.map((item) =>
-                  item.id === commentId ? { ...item, content } : item,
-                ),
-              }
-            : old,
+        (old) => updateCommentInCache(old, commentId, content),
       );
 
       return { previousComments };
@@ -96,19 +135,13 @@ export function useDeleteCommentMutation(playlistId: string) {
       await queryClient.cancelQueries({
         queryKey: commentsQueryKey(playlistId),
       });
-      const previousComments = queryClient.getQueryData<CommentItemsType>(
-        commentsQueryKey(playlistId),
-      );
+      const previousComments = queryClient.getQueryData<
+        InfiniteData<CommentItemsType>
+      >(commentsQueryKey(playlistId));
 
-      queryClient.setQueryData<CommentItemsType>(
+      queryClient.setQueryData<InfiniteData<CommentItemsType>>(
         commentsQueryKey(playlistId),
-        (old) =>
-          old
-            ? {
-                ...old,
-                items: old.items.filter((item) => item.id !== commentId),
-              }
-            : old,
+        (old) => removeCommentFromCache(old, commentId),
       );
 
       return { previousComments };

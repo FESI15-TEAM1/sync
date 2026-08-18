@@ -6,7 +6,7 @@ export default async function PlaylistDeatilPage() {
   const userId = await getCurrentUserId();
 
   return (
-    <div className="flex justify-center p-6">
+    <div className="m-auto max-w-5xl">
       <PlaylistDetailView userid={userId} />
     </div>
   );
