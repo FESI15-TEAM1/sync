@@ -24,6 +24,13 @@ import type {
   UpdateGroupRequest,
 } from './group.types';
 
+// 그룹 상세 조회
+export function getGroup(groupId: number | string) {
+  return clientFetch<GroupDetailResponse>(`/groups/${groupId}`, {
+    method: 'GET',
+  });
+}
+
 // 그룹 생성
 export function createGroup(data: CreateGroupRequest) {
   return clientFetch<CreateGroupResponse>('/groups', {

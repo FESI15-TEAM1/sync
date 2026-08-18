@@ -1,109 +1,72 @@
-import { redirect } from 'next/navigation';
+'use client';
 
-import { APIError } from '@/lib/http/error';
-import { serverFetch } from '@/lib/http/server-fetch';
-import type {
-  GetGroupPlaylistsResponse,
-  GroupDetailResponse,
-  GroupPlaylistItem,
-} from '@/services/group/group.types';
-import type {
-  MyPlaylistItem,
-  MyplaylistResponse,
-} from '@/services/playlist/playlistCard.type';
-import type { MyProfile } from '@/services/user/user.types';
+import { useParams } from 'next/navigation';
+
+import { useMyPlaylistsQuery } from '@/app/group/_hooks/useMyPlaylistsQuery';
+import { useGroupQuery } from '@/app/group/[id]/_hooks/useGroupQuery';
+import { useUserStore } from '@/providers/user-store-provider';
 
 import EditPage from './_components/EditPage';
+import { useAllGroupPlaylistsQuery } from './_hooks/useAllGroupPlaylistsQuery';
 
-// 스펙상 한 페이지 최대 개수. 커서로 끝까지 모아 전체 목록을 확보한다.
-const PAGE_SIZE = '50';
-const MAX_PAGES = 10;
+export default function EditGroupPage() {
+  const { id } = useParams<{ id: string }>();
+  const groupId = Number(id);
 
-async function getMyPlaylists(userId: number) {
-  const playlists: MyPlaylistItem[] = [];
-  let cursor: string | null = null;
+  const currentUser = useUserStore((state) => state.user);
+  const isUserLoading = useUserStore((state) => state.isLoading);
 
-  for (let page = 0; page < MAX_PAGES; page++) {
-    const data: MyplaylistResponse = await serverFetch<MyplaylistResponse>(
-      `/users/${userId}/playlists`,
-      {
-        method: 'GET',
-        params: {
-          limit: PAGE_SIZE,
-          ...(cursor ? { cursor } : {}),
-        },
-      },
+  const groupQuery = useGroupQuery(id);
+  const myPlaylistsQuery = useMyPlaylistsQuery(
+    currentUser?.id,
+    currentUser !== null,
+  );
+  const groupPlaylistsQuery = useAllGroupPlaylistsQuery(groupId);
+
+  const isLoading =
+    isUserLoading ||
+    !currentUser ||
+    groupQuery.isPending ||
+    myPlaylistsQuery.isPending ||
+    groupPlaylistsQuery.isPending;
+
+  if (isLoading) {
+    return (
+      <p className="text-text-secondary mx-auto max-w-md px-5 py-10 text-center text-sm">
+        불러오는 중입니다...
+      </p>
     );
-
-    playlists.push(...data.items);
-
-    if (!data.nextCursor) break;
-    cursor = data.nextCursor;
   }
 
-  return playlists;
-}
+  const group = groupQuery.data;
 
-async function getGroupPlaylists(groupId: string) {
-  const playlists: GroupPlaylistItem[] = [];
-  let cursor: string | null = null;
-
-  for (let page = 0; page < MAX_PAGES; page++) {
-    const data: GetGroupPlaylistsResponse =
-      await serverFetch<GetGroupPlaylistsResponse>(
-        `/groups/${groupId}/playlists`,
-        {
-          method: 'GET',
-          params: {
-            limit: PAGE_SIZE,
-            ...(cursor ? { cursor } : {}),
-          },
-        },
-      );
-
-    playlists.push(...data.items);
-
-    if (!data.nextCursor) break;
-    cursor = data.nextCursor;
+  if (
+    groupQuery.isError ||
+    myPlaylistsQuery.isError ||
+    groupPlaylistsQuery.isError ||
+    !group
+  ) {
+    return (
+      <p
+        role="alert"
+        className="mx-auto max-w-md px-5 py-10 text-center text-sm text-red-500"
+      >
+        그룹 정보를 불러오는데 실패했습니다.
+      </p>
+    );
   }
 
-  return playlists;
-}
-
-export default async function EditGroupPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-
-  let user: MyProfile;
-  let group: GroupDetailResponse;
-
-  try {
-    user = await serverFetch<MyProfile>('/users/me', { method: 'GET' });
-    group = await serverFetch<GroupDetailResponse>(`/groups/${id}`, {
-      method: 'GET',
-    });
-  } catch (error) {
-    if (error instanceof APIError && error.status === 401) redirect('/login');
-    throw error;
-  }
-
-  const [myPlaylists, groupPlaylists] = await Promise.all([
-    getMyPlaylists(user.id),
-    getGroupPlaylists(id),
-  ]);
+  const groupPlaylists = groupPlaylistsQuery.data ?? [];
 
   // 그룹장은 편집 범위가 그룹 전체라 다른 멤버가 담은 항목까지 최종 목록에 포함해야
   // 유지된다(빠지면 제거됨). 참여자는 본인 것만 다루므로 잠글 필요가 없다.
-  const isOwner = group.owner.userId === user.id;
+  const isOwner = group.owner.userId === currentUser.id;
   const myGroupPlaylistIds = groupPlaylists
-    .filter((playlist) => playlist.owner.userId === user.id)
+    .filter((playlist) => playlist.owner.userId === currentUser.id)
     .map((playlist) => playlist.id);
   const lockedPlaylistIds = isOwner
     ? groupPlaylists
-        .filter((playlist) => playlist.owner.userId !== user.id)
+        .filter((playlist) => playlist.owner.userId !== currentUser.id)
         .map((playlist) => playlist.id)
     : [];
 
@@ -116,7 +79,7 @@ export default async function EditGroupPage({
         image: group.image,
         isPublic: group.isPublic,
       }}
-      playlists={myPlaylists}
+      playlists={myPlaylistsQuery.data ?? []}
       initialSelectedPlaylistIds={myGroupPlaylistIds}
       lockedPlaylistIds={lockedPlaylistIds}
     />

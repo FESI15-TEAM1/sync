@@ -17,6 +17,31 @@ function errorResponse(status: number, code: string, message: string) {
   return Response.json({ error: { code, message } }, { status });
 }
 
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+
+    const data = await serverFetch<GroupDetailResponse>(`/groups/${id}`, {
+      method: 'GET',
+    });
+
+    return Response.json(data, { status: 200 });
+  } catch (error) {
+    if (error instanceof APIError) {
+      return errorResponse(error.status, error.code, error.message);
+    }
+
+    return errorResponse(
+      500,
+      'INTERNAL_SERVER_ERROR',
+      '서버 오류가 발생했습니다.',
+    );
+  }
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
