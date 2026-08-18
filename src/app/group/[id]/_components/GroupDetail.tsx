@@ -1,10 +1,16 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  type InfiniteData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import CopyIcon from '@/assets/icons/copy.svg';
 import Star from '@/assets/icons/star.svg';
@@ -41,6 +47,10 @@ import PlaylistEditModal, { type EditablePlaylist } from './PlaylistEditModal';
 const PLAYLIST_QUERY_LIMIT = 50;
 // 커서로 끝까지 모아 전체 목록을 확보하기 위한 최대 페이지 수
 const MAX_PLAYLIST_PAGES = 10;
+// 그룹 플레이리스트 무한 스크롤 한 페이지 개수
+const PLAYLIST_PAGE_SIZE = 20;
+// 바닥에 닿기 전에 미리 다음 페이지를 불러와 스크롤이 끊기지 않게 합니다.
+const LOAD_MORE_ROOT_MARGIN = '200px';
 
 export const groupPlaylistsQueryKey = (groupId: number) =>
   ['group', groupId, 'playlists'] as const;
@@ -102,15 +112,67 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     queryFn: () => getGroupMembers(groupId, { limit: PLAYLIST_QUERY_LIMIT }),
   });
 
-  // 그룹에 추가된 플레이리스트
-  const groupPlaylistsQuery = useQuery({
+  // 그룹에 추가된 플레이리스트(커서 기반 무한 스크롤)
+  const {
+    data: groupPlaylistsData,
+    isPending: isGroupPlaylistsPending,
+    isError: isGroupPlaylistsError,
+    fetchNextPage: fetchNextPlaylistsPage,
+    hasNextPage: hasNextPlaylistsPage,
+    isFetching: isFetchingPlaylists,
+    isFetchingNextPage: isFetchingNextPlaylistsPage,
+    isFetchNextPageError: isFetchNextPlaylistsPageError,
+  } = useInfiniteQuery({
     queryKey: groupPlaylistsQueryKey(groupId),
-    queryFn: () => getGroupPlaylists(groupId, { limit: PLAYLIST_QUERY_LIMIT }),
+    queryFn: ({ pageParam }) =>
+      getGroupPlaylists(groupId, {
+        cursor: pageParam,
+        limit: PLAYLIST_PAGE_SIZE,
+      }),
+    initialPageParam: undefined as string | undefined,
+    // nextCursor가 null이면 마지막 페이지입니다.
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 
-  const playlists: EditablePlaylist[] = (
-    groupPlaylistsQuery.data?.items ?? []
-  ).map((item) => ({
+  // 목록 끝의 감지용 요소가 화면에 들어오면 다음 페이지를 이어서 불러옵니다.
+  const playlistsLoadMoreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const target = playlistsLoadMoreRef.current;
+    // 다음 페이지 요청이 실패한 뒤에는 자동 재요청이 반복되지 않도록 재시도 버튼으로만 이어받습니다.
+    if (
+      !target ||
+      !hasNextPlaylistsPage ||
+      isFetchingPlaylists ||
+      isFetchNextPlaylistsPageError
+    )
+      return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isFetchingPlaylists)
+          fetchNextPlaylistsPage();
+      },
+      { rootMargin: LOAD_MORE_ROOT_MARGIN },
+    );
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [
+    hasNextPlaylistsPage,
+    isFetchingPlaylists,
+    isFetchNextPlaylistsPageError,
+    fetchNextPlaylistsPage,
+  ]);
+
+  const handleRetryFetchPlaylists = () => {
+    fetchNextPlaylistsPage();
+  };
+
+  const groupPlaylistItems: GroupPlaylistResponse[] =
+    groupPlaylistsData?.pages.flatMap((page) => page.items) ?? [];
+
+  const playlists: EditablePlaylist[] = groupPlaylistItems.map((item) => ({
     id: item.id,
     title: item.title,
     trackCount: item.trackCount,
@@ -139,11 +201,11 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
     }));
 
   const isPlaylistsLoading =
-    groupPlaylistsQuery.isPending ||
+    isGroupPlaylistsPending ||
     ((isLeader || group.isMember) && myPlaylistsQuery.isPending);
 
   // 하이라이트된 플레이리스트를 상단에 고정해서 보여준다
-  const displayPlaylists = [...(groupPlaylistsQuery.data?.items ?? [])].sort(
+  const displayPlaylists = [...groupPlaylistItems].sort(
     (a, b) => Number(b.isHighlighted) - Number(a.isHighlighted),
   );
   //그룹 정보 수정
@@ -263,19 +325,21 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
         queryKey: groupPlaylistsQueryKey(groupId),
       });
 
-      const previousPlaylists =
-        queryClient.getQueryData<GetGroupPlaylistsResponse>(
-          groupPlaylistsQueryKey(groupId),
-        );
+      const previousPlaylists = queryClient.getQueryData<
+        InfiniteData<GetGroupPlaylistsResponse>
+      >(groupPlaylistsQueryKey(groupId));
 
-      queryClient.setQueryData<GetGroupPlaylistsResponse>(
+      queryClient.setQueryData<InfiniteData<GetGroupPlaylistsResponse>>(
         groupPlaylistsQueryKey(groupId),
         (old) =>
           old && {
             ...old,
-            items: old.items.map((item) =>
-              item.id === playlistId ? { ...item, isHighlighted } : item,
-            ),
+            pages: old.pages.map((page) => ({
+              ...page,
+              items: page.items.map((item) =>
+                item.id === playlistId ? { ...item, isHighlighted } : item,
+              ),
+            })),
           },
       );
 
@@ -500,71 +564,103 @@ export default function GroupDetail({ groupId, group }: GroupDetailProps) {
       <GroupDetailTabs activeTab={activeTab} onChange={setActiveTab} />
       <div className="mx-auto mt-4 w-full max-w-md px-5">
         {activeTab === 'playlists' ? (
-          groupPlaylistsQuery.isPending ? (
+          isGroupPlaylistsPending ? (
             <p className="text-text-secondary text-sm">
               플레이리스트를 불러오는 중입니다...
             </p>
-          ) : groupPlaylistsQuery.isError ? (
+          ) : isGroupPlaylistsError ? (
             <p role="alert" className="text-sm text-red-500">
               플레이리스트를 불러오는데 실패했습니다.
             </p>
           ) : (
-            <div className="flex flex-row flex-wrap gap-3">
-              {displayPlaylists.map((playlist) => {
-                const canRemove =
-                  isLeader || playlist.owner.userId === currentUser?.id;
+            <>
+              <div className="flex flex-row flex-wrap gap-3">
+                {displayPlaylists.map((playlist) => {
+                  const canRemove =
+                    isLeader || playlist.owner.userId === currentUser?.id;
 
-                return (
-                  <div
-                    key={playlist.id}
-                    className={`group relative rounded-2xl ${
-                      playlist.isHighlighted ? 'bg-primary/10' : ''
-                    }`}
-                  >
-                    <Link href={`/playlist/detail/${playlist.id}`}>
-                      <PlaylistCard
-                        img={playlist.image}
-                        title={playlist.title}
-                        trackCount={playlist.trackCount}
-                      />
-                    </Link>
+                  return (
+                    <div
+                      key={playlist.id}
+                      className={`group relative rounded-2xl ${
+                        playlist.isHighlighted ? 'bg-primary/10' : ''
+                      }`}
+                    >
+                      <Link href={`/playlist/detail/${playlist.id}`}>
+                        <PlaylistCard
+                          img={playlist.image}
+                          title={playlist.title}
+                          trackCount={playlist.trackCount}
+                        />
+                      </Link>
 
-                    {playlist.isHighlighted && (
-                      <div
-                        className="bg-primary pointer-events-none absolute -top-2 -left-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-white drop-shadow-sm"
-                        aria-label="하이라이트됨"
+                      {playlist.isHighlighted && (
+                        <div
+                          className="bg-primary pointer-events-none absolute -top-2 -left-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-white drop-shadow-sm"
+                          aria-label="하이라이트됨"
+                        >
+                          <Star width={15} height={15} />
+                        </div>
+                      )}
+
+                      {canRemove && (
+                        <div className="absolute right-5 bottom-5 z-10">
+                          <PlaylistCardMenu>
+                            {isLeader && (
+                              <KebabModal.Item
+                                onClick={() => handleToggleHighlight(playlist)}
+                              >
+                                {playlist.isHighlighted
+                                  ? '하이라이트 해제'
+                                  : '하이라이트'}
+                              </KebabModal.Item>
+                            )}
+                            {canRemove && (
+                              <KebabModal.Item
+                                variant="danger"
+                                onClick={() => handleRemovePlaylist(playlist)}
+                              >
+                                플레이리스트 제거
+                              </KebabModal.Item>
+                            )}
+                          </PlaylistCardMenu>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {hasNextPlaylistsPage && (
+                <div
+                  ref={playlistsLoadMoreRef}
+                  className="flex flex-col items-center justify-center gap-2 py-4"
+                >
+                  {isFetchingNextPlaylistsPage && (
+                    <p className="text-text-secondary text-sm">
+                      플레이리스트를 더 불러오는 중입니다...
+                    </p>
+                  )}
+
+                  {isFetchNextPlaylistsPageError && (
+                    <>
+                      <p role="alert" className="text-sm text-red-500">
+                        플레이리스트를 더 불러오는데 실패했습니다.
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        isDisabled={false}
+                        type="button"
+                        onClick={handleRetryFetchPlaylists}
                       >
-                        <Star width={15} height={15} />
-                      </div>
-                    )}
-
-                    {canRemove && (
-                      <div className="absolute right-5 bottom-5 z-10">
-                        <PlaylistCardMenu>
-                          {isLeader && (
-                            <KebabModal.Item
-                              onClick={() => handleToggleHighlight(playlist)}
-                            >
-                              {playlist.isHighlighted
-                                ? '하이라이트 해제'
-                                : '하이라이트'}
-                            </KebabModal.Item>
-                          )}
-                          {canRemove && (
-                            <KebabModal.Item
-                              variant="danger"
-                              onClick={() => handleRemovePlaylist(playlist)}
-                            >
-                              플레이리스트 제거
-                            </KebabModal.Item>
-                          )}
-                        </PlaylistCardMenu>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                        다시 시도
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
+            </>
           )
         ) : (
           <GroupMemberList
