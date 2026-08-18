@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useRef, useState } from 'react';
 
+import { decodeHtml } from '@/lib/decodeHtml';
 import type { Track } from '@/services/playlist/PlatylistDetail.type';
 
 import { useAutoplayFallback } from '../../_hooks/Player/useAutoplayFallback';
@@ -184,7 +185,9 @@ export default function Player({
 
       {/* song title */}
       <h2 className="text-base font-bold text-white lg:pt-2">
-        {currentTrack?.title ?? '방장의 재생을 기다리는 중이에요⏱️'}
+        {currentTrack?.title
+          ? decodeHtml(currentTrack.title)
+          : '방장의 재생을 기다리는 중이에요⏱️'}
       </h2>
 
       {/* song artist */}
