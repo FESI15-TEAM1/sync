@@ -59,12 +59,12 @@ export function useUpdateGroupMutation({
           contentType: coverFile.type,
         });
 
-        const putResponse = await fetch(uploadUrl, {
+        const response = await fetch(uploadUrl, {
           method: 'PUT',
           headers: { 'Content-Type': coverFile.type },
           body: coverFile,
         });
-        if (!putResponse.ok) {
+        if (!response.ok) {
           throw new Error('이미지 업로드에 실패했습니다.');
         }
 
