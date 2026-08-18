@@ -1,3 +1,5 @@
+import type { NextRequest } from 'next/server';
+
 import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
 import type { NotificationItemList } from '@/services/notifications/notifications.type';
@@ -6,10 +8,17 @@ function errorResponse(status: number, code: string, message: string) {
   return Response.json({ error: { code, message } }, { status });
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const { searchParams } = req.nextUrl;
+  const cursor = searchParams.get('cursor');
+
+  const params: Record<string, string> = {};
+  if (cursor) params.cursor = cursor;
+
   try {
     const data = await serverFetch<NotificationItemList>('/notifications', {
       method: 'GET',
+      params,
     });
 
     return Response.json(data, { status: 200 });
