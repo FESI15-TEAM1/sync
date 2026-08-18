@@ -60,7 +60,11 @@ function KebabItem({ children, onClick, variant = 'default' }: KebabItemProps) {
     <button
       type="button"
       className={`w-full cursor-pointer px-4 py-3 text-left whitespace-nowrap ${textColor} hover:bg-zinc-700`}
-      onClick={onClick}
+      onClick={(e) => {
+        // Link 등 조상 요소로 클릭이 버블링되어 기본 동작(이동)이 발생하지 않도록 막습니다.
+        e.preventDefault();
+        onClick();
+      }}
     >
       {children}
     </button>

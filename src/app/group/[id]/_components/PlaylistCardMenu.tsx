@@ -51,7 +51,7 @@ export default function PlaylistCardMenu({
 
       {isMenuOpen && (
         <div
-          className="absolute right-0 bottom-8 z-10 flex w-max min-w-40 flex-col rounded-lg bg-zinc-800 p-2"
+          className="absolute right-0 bottom-8 z-30 flex w-max min-w-40 flex-col rounded-lg bg-zinc-800 p-2"
           onClick={() => setIsMenuOpen(false)}
         >
           {children}
