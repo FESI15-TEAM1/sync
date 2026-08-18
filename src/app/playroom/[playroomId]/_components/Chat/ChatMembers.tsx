@@ -4,6 +4,7 @@ import { cva } from 'class-variance-authority';
 import { type SubmitEvent, useState } from 'react';
 
 import SyncLogo from '@/assets/icons/syncLogo.svg';
+import { PLAYROOM_CHAT_MAX_LENGTH } from '@/constants/playroom';
 
 import { type ChatKindTypes } from '../Playroom';
 import Chatting from './Chatting';
@@ -71,6 +72,10 @@ export default function ChatMembers({
 
     const message = chat.trim();
     if (!message) return;
+    if (message.length > PLAYROOM_CHAT_MAX_LENGTH) {
+      alert(`채팅은 ${PLAYROOM_CHAT_MAX_LENGTH}자 이하로 입력해주세요!!!`);
+      return;
+    }
 
     try {
       sendMessage(message);

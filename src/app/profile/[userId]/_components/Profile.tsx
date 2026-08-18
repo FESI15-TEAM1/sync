@@ -3,7 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import SyncLogo from '@/assets/icons/syncLogo.svg';
 import Button from '@/components/Button';
@@ -16,11 +16,11 @@ import { logout } from '@/services/auth/auth.api';
 import { withdraw } from '@/services/user/user.api';
 import type { MyProfile, UserProfile } from '@/services/user/user.types';
 
+import NotificationItem from '../../../../components/NotificationItem';
 import {
-  useMarkNotificationRealAll,
+  useMarkNotificationReadAll,
   useNotificationRequestQuery,
 } from '../_hooks/useNotificationsQuery';
-import NotificationItem from './NotificationItem';
 
 type ProfileProps =
   { isOwn: true; profile: MyProfile } | { isOwn: false; profile: UserProfile };
@@ -38,12 +38,33 @@ export default function Profile(props: ProfileProps) {
   const [isFollowing, setIsFollowing] = useState(!isOwn && profile.isFollowing);
   const [followerCount, setFollowerCount] = useState(profile.followerCount);
 
-  const { data } = useNotificationRequestQuery(profile.id, isOwn);
-  const { mutate: notificationReadAll } = useMarkNotificationRealAll(
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useNotificationRequestQuery(profile.id, isOwn);
+  const { mutate: notificationReadAll } = useMarkNotificationReadAll(
     profile.id,
   );
   const { mutate: toggleFollow, isPending: isTogglingFollow } =
     useToggleFollowMutation();
+
+  const notificationItems = data?.pages.flatMap((page) => page.items) ?? [];
+
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOwn || !hasNextPage) return;
+
+    const target = loadMoreRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    });
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [isOwn, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleEditProfile = () => {
     router.push(`/profile/${profile.id}/edit`);
@@ -281,17 +302,22 @@ export default function Profile(props: ProfileProps) {
               </button>
             </div>
             <ul className="bg-bg-card divide-border flex flex-col divide-y overflow-hidden rounded-xl">
-              {data !== undefined &&
-                [...data.items]
-                  .sort((a, b) => Number(a.isRead) - Number(b.isRead))
-                  .map((item) => (
-                    <NotificationItem
-                      key={item.id}
-                      item={item}
-                      userId={profile.id}
-                    />
-                  ))}
+              {[...notificationItems]
+                .sort((a, b) => Number(a.isRead) - Number(b.isRead))
+                .map((item) => (
+                  <NotificationItem
+                    key={item.id}
+                    item={item}
+                    userId={profile.id}
+                  />
+                ))}
             </ul>
+            {hasNextPage ? <div ref={loadMoreRef} className="h-1" /> : null}
+            {isFetchingNextPage ? (
+              <p className="text-text-secondary text-center text-sm">
+                불러오는 중...
+              </p>
+            ) : null}
           </div>
         ) : null}
       </div>

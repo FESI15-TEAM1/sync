@@ -1,6 +1,7 @@
 import Image from 'next/image';
 
 import CrownIcon from '@/assets/icons/crown.svg';
+import SyncLogo from '@/assets/icons/syncLogo.svg';
 
 export interface MemberType {
   userId: number;
@@ -36,7 +37,9 @@ export default function MemberItem({
                 className="bg-bg-card rounded-full object-cover"
               />
             ) : (
-              <div className="bg-disabled h-full w-full rounded-full"></div>
+              <div className="bg-disabled h-full w-full rounded-full">
+                <SyncLogo className="text-text-secondary absolute top-1/2 left-1/2 size-5 -translate-x-1/2 -translate-y-1/2" />
+              </div>
             )}
           </span>
 

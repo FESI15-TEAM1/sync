@@ -1,6 +1,10 @@
 import type { NextRequest } from 'next/server';
 
-import { MY_PLAYROOM_MAX_COUNT } from '@/constants/playroom';
+import {
+  MY_PLAYROOM_MAX_COUNT,
+  PLAYROOM_DESCRIPTION_MAX_LENGTH,
+  PLAYROOM_TITLE_MAX_LENGTH,
+} from '@/constants/playroom';
 import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
 import {
@@ -36,6 +40,25 @@ export async function POST(req: NextRequest) {
 
     if (!trimmedTitle) {
       return errorResponse(400, 'VALIDATION_ERROR', '제목은 필수입니다.');
+    }
+
+    if (trimmedTitle.length > PLAYROOM_TITLE_MAX_LENGTH) {
+      return errorResponse(
+        400,
+        'VALIDATION_ERROR',
+        `제목은 ${PLAYROOM_TITLE_MAX_LENGTH}자 이하로 입력해주세요.`,
+      );
+    }
+
+    if (
+      typeof description === 'string' &&
+      description.length > PLAYROOM_DESCRIPTION_MAX_LENGTH
+    ) {
+      return errorResponse(
+        400,
+        'VALIDATION_ERROR',
+        `설명은 ${PLAYROOM_DESCRIPTION_MAX_LENGTH}자 이하로 입력해주세요.`,
+      );
     }
 
     if (typeof playlistId !== 'number') {

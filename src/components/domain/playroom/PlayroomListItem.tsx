@@ -1,6 +1,7 @@
 import type { PlayroomCardData } from '@/services/playroom/playroom.types';
 
 import Badge from './Badge';
+import LiveHeartbeat from './LiveHeartbeat';
 
 export default function PlayroomListItem({
   title,
@@ -23,12 +24,7 @@ export default function PlayroomListItem({
         <Badge type="live" isLive={isLive} />
 
         <span className="flex items-center gap-1 text-xs text-white">
-          {isLive && (
-            <span className="relative flex">
-              <span className="absolute top-1/2 left-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 transform animate-ping rounded-full bg-red-400"></span>
-              <span className="size-1 rounded-full bg-red-500"></span>
-            </span>
-          )}
+          {isLive && <LiveHeartbeat />}
           {listenerCount}명 {isLive ? '청취 중' : '참여 중'}
         </span>
       </div>

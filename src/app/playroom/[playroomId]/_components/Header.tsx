@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import BackButton from '@/components/common/BackButton';
 import KebabModal from '@/components/domain/KebabModal';
+import LiveHeartbeat from '@/components/domain/playroom/LiveHeartbeat';
 
 import { useDeletePlayroom } from '../_hooks/useDeletePlayroom';
 import PlayroomCloseModal from './Modal/PlayroomCloseModal';
@@ -65,17 +66,7 @@ export default function PlayroomHeader({
       />
 
       <h1 className="text-text-primary flex items-center gap-2 text-base">
-        {isHostOnline && (
-          <span
-            className="relative flex"
-            title="방장이 참여중!"
-            role="img"
-            aria-label="방장 참여중 아이콘"
-          >
-            <span className="absolute top-1/2 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2 transform animate-ping rounded-full bg-red-400"></span>
-            <span className="size-1.5 rounded-full bg-red-500"></span>
-          </span>
-        )}
+        {isHostOnline && <LiveHeartbeat size="md" />}
         {playroomTitle}
       </h1>
 

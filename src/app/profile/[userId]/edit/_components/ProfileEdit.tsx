@@ -174,7 +174,7 @@ export default function ProfileEditPage({ profile }: ProfileEditPageProps) {
             className="w-full"
             isDisabled={isSubmitting || !nickname.trim()}
           >
-            저장하기
+            {isSubmitting ? '저장 중...' : '저장하기'}
           </Button>
         </div>
       </form>

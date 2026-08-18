@@ -44,7 +44,7 @@ export default function Header() {
         <div className="flex items-center">
           <Link className="flex items-center gap-2" href="/">
             <SyncLogo width={45} height={45} />
-            <span className="text-text-primary text-2xl font-bold">Sync</span>
+            <h1 className="text-text-primary text-2xl font-bold">Sync</h1>
           </Link>
         </div>
       </div>

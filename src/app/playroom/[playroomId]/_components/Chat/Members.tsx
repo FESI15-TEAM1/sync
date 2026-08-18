@@ -53,7 +53,7 @@ export default function Members({
 
   return (
     <div
-      className="flex h-full min-h-0 flex-col overflow-y-auto"
+      className="scrollbar-thumb-text-secondary flex h-full min-h-0 scrollbar-track-transparent flex-col overflow-y-auto"
       onClickCapture={handleClickCapture}
     >
       <div className="grid grid-cols-2 gap-2 p-4">
