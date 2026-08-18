@@ -1,25 +1,51 @@
-import { type TextareaHTMLAttributes } from 'react';
+import { cva } from 'class-variance-authority';
+import { type ReactNode, type TextareaHTMLAttributes } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { fieldStyle } from '@/components/Input';
 
 type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
-  label?: string;
+  label?: string | ReactNode;
   errorMessage?: string;
+  resizable?: boolean;
+  maxResize?: string;
+  minResize?: string;
 };
 
 export default function Textarea({
   label,
   errorMessage,
+  resizable = false,
+  maxResize,
+  minResize,
   ...props
 }: TextareaProps) {
+  const textareaStyle = cva(
+    `${fieldStyle} scrollbar-thumb-text-secondary scrollbar-track-transparent`,
+    {
+      variants: {
+        resizable: {
+          true: 'resize-y',
+          false: 'resize-none',
+        },
+      },
+    },
+  );
   return (
     <div className="flex w-full flex-col gap-1">
-      {label ? (
-        <label className="ml-2 text-base font-bold text-white">{label}</label>
+      {typeof label === 'string' ? (
+        <label className="text-text-primary ml-2 text-base font-bold">
+          {label}
+        </label>
+      ) : typeof label === 'object' ? (
+        <>{label}</>
       ) : null}
       <textarea
-        className={twMerge(`${fieldStyle} resize-none`, props.className)}
+        style={{
+          minHeight: `${minResize && minResize}`,
+          maxHeight: `${maxResize && maxResize}`,
+        }}
+        className={twMerge(textareaStyle({ resizable }), props.className)}
         {...props}
       />
       {errorMessage ? (

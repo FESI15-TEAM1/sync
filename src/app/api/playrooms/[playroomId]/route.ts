@@ -1,3 +1,7 @@
+import {
+  PLAYROOM_DESCRIPTION_MAX_LENGTH,
+  PLAYROOM_TITLE_MAX_LENGTH,
+} from '@/constants/playroom';
 import { APIError } from '@/lib/http/error';
 import { serverFetch } from '@/lib/http/server-fetch';
 import type {
@@ -88,6 +92,22 @@ export async function PATCH(
 
     if (!trimmedTitle) {
       return errorResponse(400, 'VALIDATION_ERROR', '제목은 필수입니다.');
+    }
+
+    if (trimmedTitle.length > PLAYROOM_TITLE_MAX_LENGTH) {
+      return errorResponse(
+        400,
+        'VALIDATION_ERROR',
+        `제목은 ${PLAYROOM_TITLE_MAX_LENGTH}자 이하로 입력해주세요.`,
+      );
+    }
+
+    if (description && description.length > PLAYROOM_DESCRIPTION_MAX_LENGTH) {
+      return errorResponse(
+        400,
+        'VALIDATION_ERROR',
+        `설명은 ${PLAYROOM_DESCRIPTION_MAX_LENGTH}자 이하로 입력해주세요.`,
+      );
     }
 
     // 생략한 필드는 백엔드에서 기존 값이 유지되므로, 넘어온 필드만 실어 보냅니다.
