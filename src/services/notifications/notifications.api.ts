@@ -14,8 +14,9 @@ export const getNotificationsUnread = () => {
     },
   );
 };
-export const getNotifications = () => {
-  return clientFetch<NotificationItemList>(`/notifications`, {
+export const getNotifications = (cursor?: string) => {
+  const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
+  return clientFetch<NotificationItemList>(`/notifications${query}`, {
     method: 'GET',
   });
 };
