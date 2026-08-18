@@ -122,7 +122,7 @@ export default function AddPage({
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-5 py-6">
+    <div className="mx-auto flex-1 flex-col gap-8 px-5 py-6">
       <BackButton />
       <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
         <div className="flex items-center gap-3">
@@ -152,6 +152,7 @@ export default function AddPage({
           <InputField.Input
             value={groupName}
             placeholder="그룹 이름을 입력해주세요."
+            maxLength={50}
             onChange={(e) => setGroupName(e.target.value)}
           />
         </InputField>
@@ -160,7 +161,11 @@ export default function AddPage({
           label="그룹 소개"
           value={groupDescription}
           placeholder="그룹 소개를 입력해주세요."
+          maxLength={200}
           onChange={(e) => setGroupDescription(e.target.value)}
+          resizable
+          minResize="6rem"
+          maxResize="16rem"
         />
 
         <fieldset className="flex flex-col gap-2">

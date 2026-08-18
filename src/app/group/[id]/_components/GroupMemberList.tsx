@@ -2,10 +2,12 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useState } from 'react';
 
 import Crown from '@/assets/icons/crown.svg';
 import SyncLogo from '@/assets/icons/syncLogo.svg';
+import ConfirmModal from '@/components/ConfirmModal';
 import ProfilePreviewModal from '@/components/domain/user/ProfilePreviewModal';
 import { APIError } from '@/lib/http/error';
 import { leaveGroup } from '@/services/group/group.api';
@@ -28,6 +30,10 @@ export default function GroupMemberList({
 }: GroupMemberListProps) {
   const queryClient = useQueryClient();
   const [previewUserId, setPreviewUserId] = useState<number | null>(null);
+  const [kickTarget, setKickTarget] = useState<GroupMemberResponse | null>(
+    null,
+  );
+  const [kickErrorMessage, setKickErrorMessage] = useState<string | null>(null);
 
   const { mutate: kickMember, variables: kickingUserId } = useMutation({
     mutationFn: (userId: number) => leaveGroup(groupId, userId),
@@ -35,9 +41,10 @@ export default function GroupMemberList({
       queryClient.invalidateQueries({
         queryKey: ['group', groupId, 'members'],
       });
+      setKickTarget(null);
     },
     onError: (error) => {
-      alert(
+      setKickErrorMessage(
         error instanceof APIError
           ? error.message
           : '멤버 강퇴 중 오류가 발생했습니다.',
@@ -47,9 +54,19 @@ export default function GroupMemberList({
 
   const handleKick = (member: GroupMemberResponse) => {
     if (kickingUserId !== undefined) return;
-    if (!confirm(`${member.nickname}님을 내보내시겠습니까?`)) return;
+    setKickErrorMessage(null);
+    setKickTarget(member);
+  };
 
-    kickMember(member.userId);
+  const handleConfirmKick = () => {
+    if (!kickTarget) return;
+    kickMember(kickTarget.userId);
+  };
+
+  const handleCloseKickModal = () => {
+    if (kickingUserId !== undefined) return;
+    setKickTarget(null);
+    setKickErrorMessage(null);
   };
 
   if (isLoading) {
@@ -84,47 +101,60 @@ export default function GroupMemberList({
             className="group bg-bg-card relative flex w-full items-center gap-2 rounded-2xl p-3"
             key={member.userId}
           >
-            <button
-              type="button"
-              onClick={() => setPreviewUserId(member.userId)}
-              className="flex min-w-0 flex-1 cursor-pointer items-center gap-4 text-left"
-            >
-              {member.image ? (
-                <Image
-                  src={member.image}
-                  alt={`${member.nickname} 프로필`}
-                  width={44}
-                  height={44}
-                  className="size-11 shrink-0 rounded-full object-cover"
-                />
-              ) : (
-                <div
-                  className="bg-input flex size-11 shrink-0 items-center justify-center rounded-full"
-                  aria-hidden
-                >
-                  <SyncLogo width={22} height={22} />
-                </div>
-              )}
-              <div className="flex min-w-0 flex-1 items-center gap-1">
+            <div className="flex min-w-0 flex-1 items-center gap-1">
+              <Link
+                href={`/profile/${member.userId}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setPreviewUserId(member.userId);
+                }}
+                className="mr-4 shrink-0"
+              >
+                {member.image ? (
+                  <Image
+                    src={member.image}
+                    alt={`${member.nickname} 프로필`}
+                    width={44}
+                    height={44}
+                    className="size-11 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="bg-input flex size-11 shrink-0 items-center justify-center rounded-full"
+                    aria-hidden
+                  >
+                    <SyncLogo width={22} height={22} />
+                  </div>
+                )}
+              </Link>
+
+              <Link
+                onClick={(e) => {
+                  e.preventDefault();
+                  setPreviewUserId(member.userId);
+                }}
+                href={`/profile/${member.userId}`}
+              >
                 <p className="text-text-primary text-md truncate">
                   {member.nickname}
                 </p>
-                {member.isOwner && (
-                  <Crown
-                    className="shrink-0 text-yellow-500"
-                    width={20}
-                    height={20}
-                    aria-label="방장"
-                  />
-                )}
-              </div>
-            </button>
+              </Link>
+
+              {member.isOwner && (
+                <Crown
+                  className="shrink-0 text-yellow-500"
+                  width={20}
+                  height={20}
+                  aria-label="방장"
+                />
+              )}
+            </div>
             {isLeader && !member.isOwner && (
               <button
                 type="button"
                 onClick={() => handleKick(member)}
                 disabled={kickingUserId === member.userId}
-                className="absolute top-1/2 right-3 -translate-y-1/2 text-xs text-red-600 opacity-0 transition-opacity group-hover:opacity-100 disabled:opacity-50"
+                className="absolute top-1/2 right-5 -translate-y-1/2 cursor-pointer text-xs text-red-600 opacity-0 transition-opacity group-hover:opacity-100 disabled:opacity-50"
               >
                 {kickingUserId === member.userId
                   ? '내보내는 중...'
@@ -139,6 +169,20 @@ export default function GroupMemberList({
         userId={previewUserId}
         isOpen={previewUserId !== null}
         onClose={() => setPreviewUserId(null)}
+      />
+
+      <ConfirmModal
+        isOpen={kickTarget !== null}
+        title={`${kickTarget?.nickname}님을 내보내시겠습니까?`}
+        confirmLabel="내보내기"
+        confirmingLabel="내보내는 중..."
+        isConfirming={
+          kickTarget !== null && kickingUserId === kickTarget.userId
+        }
+        errorMessage={kickErrorMessage}
+        destructive
+        onConfirm={handleConfirmKick}
+        onClose={handleCloseKickModal}
       />
     </>
   );
