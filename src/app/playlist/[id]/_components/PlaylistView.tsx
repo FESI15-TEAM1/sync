@@ -9,25 +9,36 @@ import PlaylistCardList from '@/components/domain/playlists/PlaylistCardList';
 import IconButton from '@/components/IconButton';
 import Toggle from '@/components/Toggle';
 import type {
-  MyPlaylistItem,
+  MyplaylistResponse,
   Playlist,
 } from '@/services/playlist/playlistCard.type';
+import type { UserProfile } from '@/services/user/user.types';
+
+import {
+  useUserPlaylistsQuery,
+  useUserProfileQuery,
+} from '../_hooks/useUserPlaylistsQuery';
 
 type Tab = 'mine' | 'liked';
 
 export default function PlaylistView({
-  myData,
+  userId,
+  initialMyData,
   likedData,
-  userNickname,
+  initialProfile,
   isOwner,
 }: {
-  myData: MyPlaylistItem[];
+  userId: string;
+  initialMyData: MyplaylistResponse;
   likedData: Playlist[];
-  userNickname: string;
+  initialProfile: UserProfile;
   isOwner: boolean;
 }) {
   const [tab, setTab] = useState<Tab>('mine');
   const router = useRouter();
+
+  const { data: profile } = useUserProfileQuery(userId, initialProfile);
+  const { data: myPlaylists } = useUserPlaylistsQuery(userId, initialMyData);
 
   const { data: likedPlaylists } = useLikedPlaylistsQuery(
     { items: likedData, nextCursor: null },
@@ -35,7 +46,7 @@ export default function PlaylistView({
   );
 
   const activeTab = isOwner ? tab : 'mine';
-  const items = activeTab === 'mine' ? myData : likedPlaylists.items;
+  const items = activeTab === 'mine' ? myPlaylists.items : likedPlaylists.items;
 
   return (
     <div className="text-text-primary relative flex flex-col items-center justify-center gap-6 p-2">
@@ -45,7 +56,9 @@ export default function PlaylistView({
         </div>
       </div>
       <div className="ml-5 flex w-full items-center justify-between gap-3">
-        <h3 className="text-xl font-bold">{userNickname} 님의 플레이리스트</h3>
+        <h3 className="text-xl font-bold">
+          {profile.nickname} 님의 플레이리스트
+        </h3>
 
         {isOwner && (
           <Toggle
