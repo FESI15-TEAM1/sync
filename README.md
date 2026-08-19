@@ -61,16 +61,37 @@ YouTube Data API로 곡을 검색하고, 플레이어를 통해 바로 재생합
 | Package Manager | ![NPM](https://img.shields.io/badge/NPM-%23CB3837.svg?style=flat&logo=npm&logoColor=white) |
 | Code Quality | ![ESLint](https://img.shields.io/badge/ESLint-%234B3263.svg?style=flat&logo=eslint&logoColor=white) ![Prettier](https://img.shields.io/badge/prettier-%23192a32.svg?style=flat&logo=prettier&logoColor=dc524a) ![Husky](https://img.shields.io/badge/Husky-333?style=flat&logo=nodegui) |
 | CI/CD | ![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=flat&logo=githubactions&logoColor=white) ![Vercel](https://img.shields.io/badge/vercel-%23000000.svg?style=flat&logo=vercel&logoColor=white) |
-| Collaboration | ![GitHub Projects](https://img.shields.io/badge/github_projects-6737ba?style=flat&logo=github) ![Notion](https://img.shields.io/badge/Notion-%23000000.svg?style=flat&logo=notion&logoColor=white) ![Figma](https://img.shields.io/badge/figma-%23F24E1E.svg?style=flat&logo=figma&logoColor=white) ![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=flat&logo=discord&logoColor=white) |
+| Collaboration | ![GitHub Projects](https://img.shields.io/badge/github_projects-6737ba?style=flat&logo=github) ![Notion](https://img.shields.io/badge/Notion-white.svg?style=flat&logo=notion&logoColor=black) ![Figma](https://img.shields.io/badge/figma-%23F24E1E.svg?style=flat&logo=figma&logoColor=white) ![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=flat&logo=discord&logoColor=white) |
 | Third-Party / Music API | ![react-youtube (Youtube API)](https://img.shields.io/badge/react_youtube-%23FF0000?style=flat&logo=youtubemusic) |
 
 ## R&R (담당자)
 
-| 이름 | 작업 | GitHub |
-| --- | --- | --- |
-| 박민규 | 플레이룸 페이지(실시간 음악 재생 동기화, 실시간 채팅, 실시간 참여자 집계, 플레이룸 생성), 스테이지 페이지(플레이룸 목록), WebSocket 통신(STOMP.js) | https://github.com/minguru |
-| 고명한 | 플레이리스트 페이지(좋아요, 댓글, 볼륨 컨트롤), 헤더 및 사이드바 추가, 그룹 수정, 검색 페이지, Button 컴포넌트, 인증 기능, SVGR 적용 | https://github.com/Gomyeunghan |
-| 김현주 | 로그인·회원가입(소셜 로그인 포함) 페이지, 그룹 페이지, 프로필 페이지(팔로우/팔로잉), 알림 페이지, Kebab 메뉴, InputField 컴포넌트, 컴파운드 Modal | https://github.com/kkhhjjoo |
+<table>
+  <thead>
+    <tr>
+      <th width="50">이름</th>
+      <th>작업</th>
+      <th>Github</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>박민규</td>
+      <td>플레이룸 페이지(실시간 음악 재생 동기화, 실시간 채팅, 실시간 참여자 집계, 플레이룸 생성), 스테이지 페이지(플레이룸 목록), WebSocket 통신(STOMP.js)</td>
+      <td><a href="https://github.com/minguru">minguru</a></td>
+    </tr>
+    <tr>
+      <td>고명한</td>
+      <td>플레이리스트 페이지(좋아요, 댓글, 볼륨 컨트롤), 헤더 및 사이드바 추가, 그룹 수정, 검색 페이지, Button 컴포넌트, 인증 기능, SVGR 적용</td>
+      <td><a href="https://github.com/Gomyeunghan">Gomyeunghan</a></td>
+    </tr>
+    <tr>
+      <td>김현주</td>
+      <td>로그인·회원가입(소셜 로그인 포함) 페이지, 그룹 페이지, 프로필 페이지(팔로우/팔로잉), 알림 페이지, Kebab 메뉴, InputField 컴포넌트, 컴파운드 Modal</td>
+      <td><a href="https://github.com/kkhhjjoo">kkhhjjoo</a></td>
+    </tr>
+  </tbody>
+</table>
 
 ## 팀 그라운드 룰 및 컨벤션
 
