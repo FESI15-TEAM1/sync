@@ -94,7 +94,6 @@ export default function ProfileEditPage({ profile }: ProfileEditPageProps) {
       } else if (error instanceof Error) {
         alert(error.message);
       }
-    } finally {
       setIsSubmitting(false);
     }
   };

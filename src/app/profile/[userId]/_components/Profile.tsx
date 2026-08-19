@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import SyncLogo from '@/assets/icons/syncLogo.svg';
 import Button from '@/components/Button';
+import BackButton from '@/components/common/BackButton';
 import KebabModal from '@/components/domain/KebabModal';
 import { Modal } from '@/components/Modal';
 import { useToggleFollowMutation } from '@/hooks/useToggleFollowMutation';
@@ -132,7 +133,8 @@ export default function Profile(props: ProfileProps) {
 
   return (
     <>
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-5 py-6">
+      <div className="mx-auto flex flex-1 flex-col gap-6 px-5 py-6">
+        <BackButton />
         <div className="flex flex-col gap-5">
           {isOwn ? (
             <div className="flex flex-col items-end gap-1">
@@ -249,21 +251,27 @@ export default function Profile(props: ProfileProps) {
                 <p className="text-text-primary font-bold">
                   {props.profile.groupCount}
                 </p>
-                <p className="text-text-secondary mt-1 text-xs">내 그룹</p>
+                <p className="text-text-secondary mt-1 text-xs hover:underline">
+                  내 그룹
+                </p>
               </Link>
             ) : null}
             <Link href={`/playlist/${profile.id}`} className="text-center">
               <p className="text-text-primary font-bold">
                 {profile.playlistCount}
               </p>
-              <p className="text-text-secondary mt-1 text-xs">플레이리스트</p>
+              <p className="text-text-secondary mt-1 text-xs hover:underline">
+                플레이리스트
+              </p>
             </Link>
             <Link
               href={`/profile/${profile.id}/follow`}
               className="text-center"
             >
               <p className="text-text-primary font-bold">{followerCount}</p>
-              <p className="text-text-secondary mt-1 text-xs">팔로우</p>
+              <p className="text-text-secondary mt-1 text-xs hover:underline">
+                팔로우
+              </p>
             </Link>
             <Link
               href={`/profile/${profile.id}/follow?tab=following`}
@@ -272,7 +280,9 @@ export default function Profile(props: ProfileProps) {
               <p className="text-text-primary font-bold">
                 {profile.followingCount}
               </p>
-              <p className="text-text-secondary mt-1 text-xs">팔로잉</p>
+              <p className="text-text-secondary mt-1 text-xs hover:underline">
+                팔로잉
+              </p>
             </Link>
           </div>
 
