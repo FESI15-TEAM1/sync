@@ -110,8 +110,7 @@ export default function AddPage({
   const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (isSubmitting || !trimmedName || selectedPlaylists.length === 0)
-      return;
+    if (isSubmitting || !trimmedName || selectedPlaylists.length === 0) return;
 
     setErrorMessage(null);
     submitGroup();
@@ -165,9 +164,7 @@ export default function AddPage({
         />
 
         <div className="flex flex-col gap-4">
-          <legend className="text-md ml-2 font-bold text-white">
-            공개 여부
-          </legend>
+          <span className="text-md ml-2 font-bold text-white">공개 여부</span>
           <Toggle onChange={() => setIsPublic(!isPublic)} checked={isPublic} />
         </div>
 
