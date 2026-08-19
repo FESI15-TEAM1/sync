@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { userPlaylistsQueryKey } from '@/app/playlist/[id]/_hooks/useUserPlaylistsQuery';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import KebabModal from '@/components/domain/KebabModal';
@@ -13,9 +14,11 @@ import { deletePlaylist } from '@/services/playlist/playlist.api';
 
 export default function PlaylistHeaderActions({
   playlistId,
+  ownerId,
   isOwner,
 }: {
   playlistId: string | string[] | undefined;
+  ownerId: string;
   isOwner: boolean;
 }) {
   const router = useRouter();
@@ -47,7 +50,12 @@ export default function PlaylistHeaderActions({
     try {
       await deletePlaylist(Number(playlistId));
       queryClient.removeQueries({ queryKey: ['playlists', playlistId] });
-      await queryClient.invalidateQueries({ queryKey: ['playlists'] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['playlists'] }),
+        queryClient.invalidateQueries({
+          queryKey: userPlaylistsQueryKey(ownerId),
+        }),
+      ]);
       handleCloseDeleteModal();
       router.push('/playlist');
     } catch (error) {
