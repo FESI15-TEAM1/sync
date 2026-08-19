@@ -20,6 +20,11 @@ export const getNotifications = (cursor?: string) => {
     method: 'GET',
   });
 };
+export const getRecentlyNotifications = () => {
+  return clientFetch<NotificationItemList>(`/notifications?isRead=false`, {
+    method: 'GET',
+  });
+};
 
 export const markNotificationRead = (notificationId: number) => {
   return clientFetch<NotificationItem>(`/notifications/${notificationId}`, {
