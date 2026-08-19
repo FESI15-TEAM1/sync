@@ -69,26 +69,26 @@ YouTube Data API로 곡을 검색하고, 플레이어를 통해 바로 재생합
 <table>
   <thead>
     <tr>
-      <th width="50">이름</th>
+      <th width="70" align="center">이름</th>
       <th>작업</th>
-      <th>Github</th>
+      <th align="center">Github</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>박민규</td>
+      <td align="center">박민규</td>
       <td>플레이룸 페이지(실시간 음악 재생 동기화, 실시간 채팅, 실시간 참여자 집계, 플레이룸 생성), 스테이지 페이지(플레이룸 목록), WebSocket 통신(STOMP.js)</td>
-      <td><a href="https://github.com/minguru">minguru</a></td>
+      <td align="center"><a href="https://github.com/minguru">minguru</a></td>
     </tr>
     <tr>
-      <td>고명한</td>
+      <td align="center">고명한</td>
       <td>플레이리스트 페이지(좋아요, 댓글, 볼륨 컨트롤), 헤더 및 사이드바 추가, 그룹 수정, 검색 페이지, Button 컴포넌트, 인증 기능, SVGR 적용</td>
-      <td><a href="https://github.com/Gomyeunghan">Gomyeunghan</a></td>
+      <td align="center"><a href="https://github.com/Gomyeunghan">Gomyeunghan</a></td>
     </tr>
     <tr>
-      <td>김현주</td>
+      <td align="center">김현주</td>
       <td>로그인·회원가입(소셜 로그인 포함) 페이지, 그룹 페이지, 프로필 페이지(팔로우/팔로잉), 알림 페이지, Kebab 메뉴, InputField 컴포넌트, 컴파운드 Modal</td>
-      <td><a href="https://github.com/kkhhjjoo">kkhhjjoo</a></td>
+      <td align="center"><a href="https://github.com/kkhhjjoo">kkhhjjoo</a></td>
     </tr>
   </tbody>
 </table>
