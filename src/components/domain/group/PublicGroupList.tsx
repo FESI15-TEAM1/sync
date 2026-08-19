@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { getPublicGroups } from '@/services/group/group.api';
 
-import GroupList from './GroupList';
+import GroupList, { GroupListSkeleton } from './GroupList';
 
 const PUBLIC_GROUP_LIST_LIMIT = 6;
 
@@ -19,11 +19,7 @@ export default function PublicGroupList() {
   });
 
   if (isPending) {
-    return (
-      <p className="text-text-secondary text-sm">
-        그룹 목록을 불러오는 중입니다...
-      </p>
-    );
+    return <GroupListSkeleton count={3} />;
   }
 
   if (isError) {
