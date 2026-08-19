@@ -58,8 +58,8 @@ const SidebarItemStyle = cva(
   {
     variants: {
       isCurrent: {
-        true: 'text-shadow-[0_2px_15px_var(--color-primary)] text-primary font-bold',
-        false: 'text-shadow-none',
+        true: 'text-primary font-bold brightness-[1.1] text-shadow-[0_0_2rem_var(--color-primary)] ',
+        false: '',
       },
     },
   },
