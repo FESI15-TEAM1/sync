@@ -39,16 +39,21 @@ export default function NotificationBell() {
   }, [isModalOpen]);
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div className="relative flex items-center" ref={containerRef}>
       {user && (
         <button
           type="button"
           aria-label="알림"
           aria-expanded={isModalOpen}
-          className="relative"
+          className="relative cursor-pointer"
           onClick={() => setIsModalOpen((prev) => !prev)}
         >
-          <Bell width={30} height={30} color={'white'} />
+          <Bell
+            width={30}
+            height={30}
+            color={'white'}
+            className="transition-transform duration-200 hover:rotate-10"
+          />
           {unreadCount !== undefined && unreadCount > 0 ? (
             <div className="absolute top-0 right-0.5 size-3 rounded-full bg-red-500"></div>
           ) : (

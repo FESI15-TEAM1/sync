@@ -1,32 +1,52 @@
 'use client';
 
+import { cva } from 'class-variance-authority';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { type SubmitEvent } from 'react';
 
 import Serach from '@/assets/icons/Search.svg';
 
 export default function SearchBar() {
   const router = useRouter();
   const [query, setQuery] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
 
-  const handleSaearch = () => {
+  const inputStyle = cva(
+    'bg-bg-card text-text-primary flex rounded-full py-2 pr-3 pl-4 border transition-border duration-300',
+    {
+      variants: {
+        isFocused: {
+          true: 'border-primary',
+          false: 'border-transparent',
+        },
+      },
+    },
+  );
+
+  const handleSearch = (e: SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
     if (!query.trim()) return;
     router.push(`/search?q=${encodeURIComponent(query)}`);
   };
 
   return (
-    <div className="relative flex w-full">
+    <form className={inputStyle({ isFocused })} onSubmit={handleSearch}>
       <input
-        className="bg-bg-card text-text-primary w-full rounded-full px-6 py-2 pr-10 text-sm"
-        placeholder="검색어 를 입력해 주세요"
+        className="w-full bg-transparent text-sm outline-none"
+        placeholder="플레이리스트, 그룹 검색"
         onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') handleSaearch();
-        }}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
       ></input>
-      <button className="absolute top-2 right-4" onClick={handleSaearch}>
+      <button
+        className="shrink-0 cursor-pointer"
+        type="submit"
+        aria-label="검색"
+      >
         <Serach />
       </button>
-    </div>
+    </form>
   );
 }

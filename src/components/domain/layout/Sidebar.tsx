@@ -4,6 +4,7 @@ import { cva } from 'class-variance-authority';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 import { useSidebarStore } from '@/providers/sidebar-store-provider';
 import { useUserStore } from '@/providers/user-store-provider';
@@ -53,16 +54,29 @@ const backdropStyle = cva(
 const DRAWER_MEDIA_QUERY = '(max-width: 1024px)';
 
 const SidebarItemStyle = cva(
-  'hover:text-shadow-[0_2px_15px_var(--color-primary)] transition-all duration-300 ease-in-out',
+  'hover:font-bold font-normal transition-all duration-200 ease-in-out',
   {
     variants: {
       isCurrent: {
-        true: 'font-bold',
-        false: 'inline-block',
+        true: 'text-primary font-bold brightness-[1.1] text-shadow-[0_0_2rem_var(--color-primary)] ',
+        false: '',
       },
     },
   },
 );
+
+// 자체 메뉴가 없는 세그먼트를 활성 표시할 메뉴의 세그먼트로 옮긴다 — playroom은 스테이지에서 들어가는 하위 화면.
+// Record 타입을 사용해 키와 값의 타입을 지정합니다.
+const SEGMENT_ALIAS: Record<string, string> = {
+  playroom: 'stage',
+};
+
+// '/group/123' -> 'group', '/' -> '' — 첫 세그먼트만 비교하므로 하위 경로에서도 활성 상태가 유지된다.
+function getFirstSegment(path: string) {
+  const segment = path.split('/')[1] ?? '';
+
+  return SEGMENT_ALIAS[segment] ?? segment;
+}
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -76,14 +90,18 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
       <nav className="text-text-primary flex h-full flex-col gap-9 p-4">
         {items.map(({ href, label }) => {
-          const isCurrent = pathname === href;
+          // 홈은 루트 경로에서만 활성 — 나머지는 첫 세그먼트가 같으면 활성
+          const isCurrent =
+            href === '/'
+              ? pathname === '/'
+              : getFirstSegment(pathname) === getFirstSegment(href);
 
           return (
             <Link
               key={href}
               href={href}
               aria-current={isCurrent ? 'page' : undefined}
-              className={SidebarItemStyle({ isCurrent })}
+              className={twMerge(SidebarItemStyle({ isCurrent }))}
               onClick={onNavigate}
             >
               {label}

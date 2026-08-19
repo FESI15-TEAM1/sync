@@ -3,6 +3,7 @@
 import { useGetMyPlayroomList } from '@/app/stage/_hooks/useGetMyPlayroomList';
 import Button from '@/components/Button';
 import PlayroomList from '@/components/domain/playroom/PlayroomList';
+import LoadingFallback from '@/components/LoadingFallback';
 
 import StatusContainer from './StatusContainer';
 
@@ -18,7 +19,7 @@ export default function MyPlayroomListView() {
   if (isLoading) {
     return (
       <StatusContainer>
-        <p className="text-disabled">내가 만든 플레이룸을 불러오는 중입니다!</p>
+        <LoadingFallback />
       </StatusContainer>
     );
   }

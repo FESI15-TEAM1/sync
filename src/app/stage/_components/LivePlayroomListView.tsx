@@ -3,6 +3,7 @@
 import { useGetPlayroomList } from '@/app/stage/_hooks/useGetPlayroomList';
 import Button from '@/components/Button';
 import PlayroomList from '@/components/domain/playroom/PlayroomList';
+import LoadingFallback from '@/components/LoadingFallback';
 import { type PlayroomListItemResponse } from '@/services/playroom/playroom.types';
 
 import StatusContainer from './StatusContainer';
@@ -23,7 +24,7 @@ export default function LivePlayroomListView() {
   if (isPending) {
     return (
       <StatusContainer>
-        <p className="text-disabled">생성된 플레이룸을 불러오는 중입니다!</p>
+        <LoadingFallback />
       </StatusContainer>
     );
   }
