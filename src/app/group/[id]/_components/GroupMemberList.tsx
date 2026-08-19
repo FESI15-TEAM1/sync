@@ -13,6 +13,8 @@ import { APIError } from '@/lib/http/error';
 import { leaveGroup } from '@/services/group/group.api';
 import type { GroupMemberResponse } from '@/services/group/group.types';
 
+import { groupMembersQueryKey } from '../_hooks/useGroupMembersQuery';
+
 type GroupMemberListProps = {
   groupId: number;
   isLeader: boolean;
@@ -39,7 +41,7 @@ export default function GroupMemberList({
     mutationFn: (userId: number) => leaveGroup(groupId, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['group', groupId, 'members'],
+        queryKey: groupMembersQueryKey(groupId),
       });
       setKickTarget(null);
     },

@@ -13,7 +13,7 @@ const baseCookieOptions = {
   path: '/',
 };
 
-const PROTECTED_PATH_PREFIXES = ['/search'];
+const PROTECTED_PATH_PREFIXES = ['/search', '/group'];
 
 function isProtectedPath(pathname: string) {
   return PROTECTED_PATH_PREFIXES.some(

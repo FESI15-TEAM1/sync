@@ -1,55 +1,47 @@
-import { redirect } from 'next/navigation';
+'use client';
 
-import { APIError } from '@/lib/http/error';
-import { serverFetch } from '@/lib/http/server-fetch';
-import type {
-  MyPlaylistItem,
-  MyplaylistResponse,
-} from '@/services/playlist/playlistCard.type';
-import type { MyProfile } from '@/services/user/user.types';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+import { useMyPlaylistsQuery } from '@/app/group/_hooks/useMyPlaylistsQuery';
+import { useUserStore } from '@/providers/user-store-provider';
 
 import AddPage from './_components/AddPage';
 
-// 스펙상 한 페이지 최대 개수. 커서로 끝까지 모아 모든 플레이리스트를 선택할 수 있게 한다.
-const PLAYLIST_PAGE_SIZE = '50';
-const MAX_PLAYLIST_PAGES = 10;
+export default function AddGroupPage() {
+  const router = useRouter();
+  const currentUser = useUserStore((state) => state.user);
+  const isUserLoading = useUserStore((state) => state.isLoading);
 
-async function getMyPlaylists(userId: number) {
-  const playlists: MyPlaylistItem[] = [];
-  let cursor: string | null = null;
+  const myPlaylistsQuery = useMyPlaylistsQuery(
+    currentUser?.id,
+    currentUser !== null,
+  );
 
-  for (let page = 0; page < MAX_PLAYLIST_PAGES; page++) {
-    const data: MyplaylistResponse = await serverFetch<MyplaylistResponse>(
-      `/users/${userId}/playlists`,
-      {
-        method: 'GET',
-        params: {
-          limit: PLAYLIST_PAGE_SIZE,
-          ...(cursor ? { cursor } : {}),
-        },
-      },
+  useEffect(() => {
+    if (!isUserLoading && !currentUser) {
+      router.replace('/login-required');
+    }
+  }, [isUserLoading, currentUser, router]);
+
+  if (isUserLoading || !currentUser || myPlaylistsQuery.isPending) {
+    return (
+      <p className="text-text-secondary mx-auto max-w-md px-5 py-10 text-center text-sm">
+        불러오는 중입니다...
+      </p>
     );
-
-    playlists.push(...data.items);
-
-    if (!data.nextCursor) break;
-    cursor = data.nextCursor;
   }
 
-  return playlists;
-}
-
-export default async function AddGroupPage() {
-  let user: MyProfile;
-
-  try {
-    user = await serverFetch<MyProfile>('/users/me', { method: 'GET' });
-  } catch (error) {
-    if (error instanceof APIError && error.status === 401) redirect('/login');
-    throw error;
+  if (myPlaylistsQuery.isError) {
+    return (
+      <p
+        role="alert"
+        className="mx-auto max-w-md px-5 py-10 text-center text-sm text-red-500"
+      >
+        플레이리스트를 불러오는데 실패했습니다.
+      </p>
+    );
   }
 
-  const playlists = await getMyPlaylists(user.id);
-
-  return <AddPage playlists={playlists} />;
+  return <AddPage playlists={myPlaylistsQuery.data ?? []} />;
 }

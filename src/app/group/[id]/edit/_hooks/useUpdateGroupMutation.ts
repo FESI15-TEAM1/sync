@@ -4,7 +4,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 import { groupsQueryKey } from '@/app/group/_hooks/useGroupsQuery';
-import { groupPlaylistsQueryKey } from '@/app/group/[id]/_components/GroupDetail';
+import { groupPlaylistsQueryKey } from '@/app/group/[id]/_hooks/useGroupPlaylists';
+import { groupQueryKey } from '@/app/group/[id]/_hooks/useGroupQuery';
 import { editGroupPlaylists, updateGroup } from '@/services/group/group.api';
 import { requestUploadUrl } from '@/services/upload/upload.api';
 import type { UploadUrlRequest } from '@/services/upload/upload.types';
@@ -112,6 +113,7 @@ export function useUpdateGroupMutation({
       queryClient.invalidateQueries({
         queryKey: groupPlaylistsQueryKey(Number(groupId)),
       });
+      queryClient.invalidateQueries({ queryKey: groupQueryKey(groupId) });
       router.push(`/group/${groupId}`);
     },
     onError: (error) => {
