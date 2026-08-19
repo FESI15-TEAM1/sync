@@ -7,6 +7,7 @@ export interface SearchPlaylistItem {
 }
 
 export interface SearchGroupItem {
+  image: string;
   id: number;
   title: string;
   memberCount: number;
