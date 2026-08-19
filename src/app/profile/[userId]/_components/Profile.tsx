@@ -3,13 +3,14 @@
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import SyncLogo from '@/assets/icons/syncLogo.svg';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import KebabModal from '@/components/domain/KebabModal';
 import { Modal } from '@/components/Modal';
+import { useLoadMoreObserver } from '@/hooks/useLoadMoreObserver';
 import { useToggleFollowMutation } from '@/hooks/useToggleFollowMutation';
 import { APIError } from '@/lib/http/error';
 import { useUserStore } from '@/providers/user-store-provider';
@@ -41,31 +42,17 @@ export default function Profile(props: ProfileProps) {
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useNotificationRequestQuery(profile.id, isOwn);
-  const { mutate: notificationReadAll } = useMarkNotificationReadAll(
-    profile.id,
-  );
+  const { mutate: notificationReadAll } = useMarkNotificationReadAll();
   const { mutate: toggleFollow, isPending: isTogglingFollow } =
     useToggleFollowMutation();
 
   const notificationItems = data?.pages.flatMap((page) => page.items) ?? [];
 
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isOwn || !hasNextPage) return;
-
-    const target = loadMoreRef.current;
-    if (!target) return;
-
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && !isFetchingNextPage) {
-        fetchNextPage();
-      }
-    });
-
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [isOwn, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const loadMoreRef = useLoadMoreObserver({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
   const handleEditProfile = () => {
     router.push(`/profile/${profile.id}/edit`);

@@ -11,9 +11,14 @@ function errorResponse(status: number, code: string, message: string) {
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const cursor = searchParams.get('cursor');
+  const isRead = searchParams.get('isRead');
 
   const params: Record<string, string> = {};
   if (cursor) params.cursor = cursor;
+  if (isRead) {
+    params.isRead = 'false';
+    params.limit = '5';
+  }
 
   try {
     const data = await serverFetch<NotificationItemList>('/notifications', {

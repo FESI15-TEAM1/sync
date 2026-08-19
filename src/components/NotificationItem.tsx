@@ -159,7 +159,7 @@ export default function NotificationItem({
   userId: number;
 }) {
   const { href, subject, detail } = getNotificationContent(item);
-  const { mutate: markRead } = useMarkNotificationRead(userId);
+  const { mutate: markRead } = useMarkNotificationRead();
 
   const { mutate: deleteNotification, isPending } = useDeleteNotification(
     item.id,
