@@ -137,7 +137,7 @@ function EditPlaylistForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex w-4xl flex-col items-center gap-6"
+      className="flex w-4xl flex-col items-center gap-4"
     >
       <div className="flex w-full">
         <BackButton type="button" fallbackUrl={`/playlist/detail/${id}`} />
@@ -165,21 +165,24 @@ function EditPlaylistForm({
           </InputField.Error>
         </InputField>
 
-        <Textarea
-          label="플레이리스트 설명"
-          value={form.description}
-          onChange={(e) =>
-            setForm((prev) => ({ ...prev, description: e.target.value }))
-          }
-          placeholder={`공부할때 들으면 집중 잘되는 노래들로 모아봤습니다.\n비슷한 취향있으신 분은 좋아요 그룹생성 요청 눌러주세요!`}
-        />
-        <div className="flex w-full flex-col gap-1">
+        <div className="mb-4 w-full">
+          <Textarea
+            label="플레이리스트 설명"
+            value={form.description}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, description: e.target.value }))
+            }
+            placeholder={`공부할때 들으면 집중 잘되는 노래들로 모아봤습니다.\n비슷한 취향있으신 분은 좋아요 그룹생성 요청 눌러주세요!`}
+          />
+        </div>
+        <div className="flex w-full flex-col gap-4">
           <label className="ml-2 text-base font-bold text-white">
             공개여부
           </label>
           <Toggle
             checked={form.isPublic}
             onChange={(isPublic) => setForm((prev) => ({ ...prev, isPublic }))}
+            className="mb-4"
           />
         </div>
         {/* 검색 색션 */}
@@ -188,7 +191,7 @@ function EditPlaylistForm({
           onAddTrack={handleAddTrack}
         />
         {/* 추가된곡 색션 */}
-        <span className="text-text-secondary">추가된곡</span>
+        <span className="text-text-secondary mb-4">추가된곡</span>
         <div className="w-full">
           <ReorderableTrackList
             tracks={form.tracks}
@@ -200,7 +203,7 @@ function EditPlaylistForm({
 
       <Button
         type="submit"
-        className="w-full"
+        className="mt-4 w-full"
         isDisabled={isSubmitting || !form.title.trim()}
       >
         {isSubmitting ? '저장 중...' : '저장하기'}
