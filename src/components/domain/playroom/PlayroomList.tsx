@@ -6,7 +6,7 @@ import PlayroomListItem from './PlayroomListItem';
 
 export default function PlayroomList({ data }: { data: PlayroomCardData[] }) {
   return (
-    <ul className="flex flex-col gap-2">
+    <ul className="flex flex-col gap-4">
       {data.map(({ id, ...playroom }) => (
         <li key={id}>
           <Link href={`/playroom/${id}`} className="block w-full">
