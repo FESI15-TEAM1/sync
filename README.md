@@ -166,7 +166,7 @@ YouTube Data API로 곡을 검색하고, 플레이어를 통해 바로 재생합
 | --- | --- |
 | `YOUTUBE_API_KEY` | YouTube Data API 키 (서버에서만 사용) |
 | `NEXT_PUBLIC_WS_URL` | WebSocket 백엔드 서버 URL |
-| `NEXT_PUBLIC_API_BASE_URL` | API base URL |
+| `NEXT_PUBLIC_BE_API_URL` | API base URL |
 
 ### 실행 방법
 
