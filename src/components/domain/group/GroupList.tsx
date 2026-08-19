@@ -5,18 +5,21 @@ import type { GroupSummary } from '@/services/group/group.types';
 import GroupListItem from './GroupListItem';
 export default function GroupList({ data }: { data: GroupSummary[] }) {
   return (
-    <ul className="flex flex-col gap-3">
-      {data.map((group) => (
-        <li key={group.id}>
-          <Link
-            href={`/group/${group.id}`}
-            className="hover:bg-input block w-full rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-xl"
-          >
-            <GroupListItem {...group} />
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <div role="status" aria-busy="true">
+      <span className="sr-only">그룹 목록을 불러오는 중입니다.</span>
+      <ul className="flex flex-col gap-3">
+        {data.map((group) => (
+          <li key={group.id}>
+            <Link
+              href={`/group/${group.id}`}
+              className="hover:bg-input block w-full rounded-2xl transition-all hover:-translate-y-0.5 hover:shadow-xl"
+            >
+              <GroupListItem {...group} />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
