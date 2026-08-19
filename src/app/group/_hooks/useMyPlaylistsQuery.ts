@@ -27,13 +27,16 @@ async function fetchAllUserPlaylists(userId: number) {
   return items;
 }
 
+export const userPlaylistsQueryKey = (userId: number | undefined) =>
+  ['user', userId, 'playlists'] as const;
+
 // 내가 그룹에 추가할 수 있는 플레이리스트 소스(내 플레이리스트 전체)
 export function useMyPlaylistsQuery(
   userId: number | undefined,
   enabled: boolean,
 ) {
   return useQuery({
-    queryKey: ['user', userId, 'playlists'],
+    queryKey: userPlaylistsQueryKey(userId),
     queryFn: () => fetchAllUserPlaylists(userId!),
     enabled: enabled && userId !== undefined,
   });

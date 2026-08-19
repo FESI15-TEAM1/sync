@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
+import { userPlaylistsQueryKey } from '@/app/group/_hooks/useMyPlaylistsQuery';
 import { APIError } from '@/lib/http/error';
 import { editGroupPlaylists } from '@/services/group/group.api';
 
@@ -29,9 +30,11 @@ export function useSaveGroupPlaylists(
       queryClient.invalidateQueries({
         queryKey: groupPlaylistsQueryKey(groupId),
       });
-      queryClient.invalidateQueries({
-        queryKey: ['user', currentUserId, 'playlists'],
-      });
+      if (currentUserId !== undefined) {
+        queryClient.invalidateQueries({
+          queryKey: userPlaylistsQueryKey(currentUserId),
+        });
+      }
       onSaved();
     },
     onError: (error) => {

@@ -15,7 +15,7 @@ export default function PlaylistCard({
   buttonChild?: ReactNode;
 }) {
   return (
-    <div className="bg-bg-card text-text-primary hover:-translate-y- flex h-57.5 w-42.5 flex-col gap-2 rounded-2xl px-3 py-5 transition duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-2xl">
+    <div className="bg-bg-card text-text-primary flex h-57.5 w-42.5 flex-col gap-2 rounded-2xl px-3 py-5 transition duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-2xl">
       <div className="flex justify-center">
         <Image
           className="aspect-square rounded-2xl object-cover select-none"

@@ -1,6 +1,7 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 import { useMyPlaylistsQuery } from '@/app/group/_hooks/useMyPlaylistsQuery';
 import { useGroupQuery } from '@/app/group/[id]/_hooks/useGroupQuery';
@@ -15,13 +16,19 @@ export default function EditGroupPage() {
 
   const currentUser = useUserStore((state) => state.user);
   const isUserLoading = useUserStore((state) => state.isLoading);
-
+  const router = useRouter();
   const groupQuery = useGroupQuery(id);
   const myPlaylistsQuery = useMyPlaylistsQuery(
     currentUser?.id,
     currentUser !== null,
   );
   const groupPlaylistsQuery = useAllGroupPlaylistsQuery(groupId);
+
+  useEffect(() => {
+    if (!isUserLoading && !currentUser) {
+      router.replace('/login-required');
+    }
+  }, [isUserLoading, currentUser, router]);
 
   const isLoading =
     isUserLoading ||
