@@ -34,7 +34,7 @@ export default function Textarea({
   return (
     <div className="flex w-full flex-col gap-1">
       {typeof label === 'string' ? (
-        <label className="text-text-primary ml-2 text-base font-bold">
+        <label className="text-text-primary mb-2 ml-2 text-base font-bold">
           {label}
         </label>
       ) : typeof label === 'object' ? (
