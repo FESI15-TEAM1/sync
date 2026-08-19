@@ -183,6 +183,7 @@ export default function PlaylistDetailView({
     >
       <PlaylistHeaderActions
         playlistId={id}
+        ownerId={String(playlist.owner.userId)}
         isOwner={userid == String(playlist.owner.userId)}
       />
       <div className="flex items-center gap-4">
