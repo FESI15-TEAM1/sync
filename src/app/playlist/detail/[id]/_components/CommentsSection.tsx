@@ -92,22 +92,26 @@ export default function CommentsSection({
   return (
     <div className="flex flex-col gap-4">
       <h4 className="text-text-primary text-xl font-bold">댓글</h4>
-      <InputField>
-        <InputField.Input
-          placeholder="댓글을 입력해 주세요."
-          onChange={(e) => setCommentContent(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') handleSubmitComment();
-          }}
-          value={commentContent}
-        />
-        <InputField.Button
-          onClick={handleSubmitComment}
-          disabled={!commentContent.trim() || isSubmittingComment}
-        >
-          작성하기
-        </InputField.Button>
-      </InputField>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmitComment();
+        }}
+      >
+        <InputField>
+          <InputField.Input
+            placeholder="댓글을 입력해 주세요."
+            onChange={(e) => setCommentContent(e.target.value)}
+            value={commentContent}
+          />
+          <InputField.Button
+            onClick={handleSubmitComment}
+            disabled={!commentContent.trim() || isSubmittingComment}
+          >
+            작성하기
+          </InputField.Button>
+        </InputField>
+      </form>
       <CommentItemList
         items={items}
         userid={userid}
