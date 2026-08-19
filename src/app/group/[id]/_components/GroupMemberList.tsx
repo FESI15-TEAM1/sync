@@ -97,7 +97,7 @@ export default function GroupMemberList({
 
   return (
     <>
-      <ul className="mx-auto flex w-10/12 flex-col gap-2">
+      <ul className="mx-auto flex w-10/12 flex-col gap-4">
         {[...members].reverse().map((member) => (
           <li
             className="group bg-bg-card relative flex w-full items-center gap-2 rounded-2xl p-3"

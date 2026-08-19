@@ -64,7 +64,7 @@ export default function GroupPlaylistGrid({
 
   return (
     <>
-      <div className="flex flex-wrap justify-items-start gap-3">
+      <div className="grid grid-cols-[repeat(2,max-content)] items-center justify-center gap-4 sm:flex sm:flex-wrap sm:justify-start">
         {displayPlaylists.map((playlist) => {
           const canRemove = isLeader || playlist.owner.userId === currentUserId;
 
