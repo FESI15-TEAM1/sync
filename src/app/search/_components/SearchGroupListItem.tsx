@@ -12,7 +12,6 @@ export default function SearchGroupListItem({
       <Image
         src={image}
         alt="그룹 이미지"
-        aria-hidden
         width={56}
         height={56}
         className={'size-14 shrink-0 rounded-xl bg-linear-to-br'}
