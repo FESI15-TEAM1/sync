@@ -22,7 +22,7 @@ export default function GroupJoinBanner({
   if (!group.isPublic || isLeader || group.isMember) return null;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="mx-auto flex w-1/2 flex-col gap-2">
       <Button
         type="button"
         variant="primary"
