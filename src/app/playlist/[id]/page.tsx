@@ -4,6 +4,7 @@ import type {
   LikePlaylistResponse,
   MyplaylistResponse,
 } from '@/services/playlist/playlistCard.type';
+import type { UserProfile } from '@/services/user/user.types';
 
 import PlaylistView from './_components/PlaylistView';
 
@@ -14,14 +15,14 @@ export default async function Playlist({
 }) {
   const routeUserId = (await params).id;
 
-  const initialData = await serverFetch<MyplaylistResponse>(
+  const initialMyData = await serverFetch<MyplaylistResponse>(
     `/users/${routeUserId}/playlists`,
     {
       method: 'GET',
     },
   );
 
-  const userNickname = await serverFetch<{ id: number; nickname: string }>(
+  const initialProfile = await serverFetch<UserProfile>(
     `/users/${routeUserId}`,
     {
       method: 'GET',
@@ -41,9 +42,10 @@ export default async function Playlist({
   return (
     <div>
       <PlaylistView
-        myData={initialData.items}
+        userId={routeUserId}
+        initialMyData={initialMyData}
         likedData={initialLikeData?.items ?? []}
-        userNickname={userNickname.nickname}
+        initialProfile={initialProfile}
         isOwner={isOwner}
       />
     </div>

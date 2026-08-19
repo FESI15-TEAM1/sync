@@ -14,7 +14,7 @@ export default function PlaylistCardList({
   data: MyPlaylistItem[] | Playlist[];
 }) {
   return (
-    <div className="grid grid-cols-2 items-center justify-items-start gap-1 md:grid-cols-4 lg:flex lg:flex-wrap">
+    <div className="grid grid-cols-[repeat(2,max-content)] items-center justify-center gap-4 sm:flex sm:flex-wrap sm:justify-start">
       {data.map((item) => {
         return (
           <Link href={`/playlist/detail/${item.id}`} key={item.id}>

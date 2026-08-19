@@ -11,6 +11,7 @@ import BackButton from '@/components/common/BackButton';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
+import Toggle from '@/components/Toggle';
 import { APIError } from '@/lib/http/error';
 import { createGroup } from '@/services/group/group.api';
 import type { MyPlaylistItem } from '@/services/playlist/playlistCard.type';
@@ -109,20 +110,14 @@ export default function AddPage({
   const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (
-      isSubmitting ||
-      !trimmedName ||
-      !trimmedDescription ||
-      selectedPlaylists.length === 0
-    )
-      return;
+    if (isSubmitting || !trimmedName || selectedPlaylists.length === 0) return;
 
     setErrorMessage(null);
     submitGroup();
   };
 
   return (
-    <div className="mx-auto flex-1 flex-col gap-8 px-5 py-6">
+    <div className="mx-auto flex flex-col gap-4 px-5 py-6">
       <BackButton />
       <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
         <div className="flex items-center gap-3">
@@ -168,49 +163,12 @@ export default function AddPage({
           maxResize="16rem"
         />
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="text-md ml-2 font-bold text-white">
-            공개 여부
-          </legend>
-          <div className="border-border bg-bg-card flex overflow-hidden rounded-md border">
-            <label
-              className={`flex-1 cursor-pointer py-2 text-center text-sm ${
-                isPublic
-                  ? 'bg-primary text-white'
-                  : 'text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              <input
-                type="radio"
-                name="visibility"
-                value="public"
-                checked={isPublic}
-                onChange={() => setIsPublic(true)}
-                className="sr-only"
-              />
-              공개
-            </label>
-            <label
-              className={`flex-1 cursor-pointer py-2 text-center text-sm ${
-                !isPublic
-                  ? 'bg-primary text-white'
-                  : 'text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              <input
-                type="radio"
-                name="visibility"
-                value="private"
-                checked={!isPublic}
-                onChange={() => setIsPublic(false)}
-                className="sr-only"
-              />
-              비공개
-            </label>
-          </div>
-        </fieldset>
+        <div className="flex flex-col gap-4">
+          <span className="text-md ml-2 font-bold text-white">공개 여부</span>
+          <Toggle onChange={() => setIsPublic(!isPublic)} checked={isPublic} />
+        </div>
 
-        <div>
+        <div className="flex flex-col gap-4">
           <h2 className="text-md ml-2 font-bold text-white">
             플레이리스트 추가
           </h2>
@@ -256,10 +214,7 @@ export default function AddPage({
 
         <Button
           isDisabled={
-            !trimmedName ||
-            !trimmedDescription ||
-            selectedPlaylists.length === 0 ||
-            isSubmitting
+            !trimmedName || selectedPlaylists.length === 0 || isSubmitting
           }
         >
           {isSubmitting ? '생성 중...' : '그룹 생성하기'}

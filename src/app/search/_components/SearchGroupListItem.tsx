@@ -1,16 +1,20 @@
-import { getGroupGradientClassName } from '@/services/group/group.utils';
+import Image from 'next/image';
+
 import type { SearchGroupItem } from '@/services/search/search.types';
 
 export default function SearchGroupListItem({
-  id,
   title,
   memberCount,
+  image,
 }: SearchGroupItem) {
   return (
     <div className="bg-bg-card hover:bg-input flex items-center gap-4 rounded-2xl p-3 transition-all hover:-translate-y-0.5 hover:shadow-xl">
-      <div
-        aria-hidden
-        className={`size-14 shrink-0 rounded-xl bg-linear-to-br ${getGroupGradientClassName(id)}`}
+      <Image
+        src={image}
+        alt="그룹 이미지"
+        width={56}
+        height={56}
+        className={'size-14 shrink-0 rounded-xl bg-linear-to-br'}
       />
       <div className="min-w-0">
         <h3 className="text-text-primary truncate text-base font-semibold">

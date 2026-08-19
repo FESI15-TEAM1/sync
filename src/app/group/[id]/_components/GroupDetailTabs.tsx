@@ -1,3 +1,5 @@
+import { clsx } from 'clsx';
+
 export type DetailTab = 'playlists' | 'members';
 
 type GroupDetailTabsProps = {
@@ -19,11 +21,12 @@ export default function GroupDetailTabs({
         role="tab"
         aria-selected={activeTab === 'playlists'}
         onClick={() => onChange('playlists')}
-        className={
+        className={clsx(
+          'text-md w-1/2',
           activeTab === 'playlists'
-            ? 'text-text-primary text-md font-bold'
-            : 'text-text-secondary text-md'
-        }
+            ? 'text-text-primary font-bold'
+            : 'text-text-secondary',
+        )}
       >
         플레이리스트
       </button>
@@ -33,11 +36,12 @@ export default function GroupDetailTabs({
         role="tab"
         aria-selected={activeTab === 'members'}
         onClick={() => onChange('members')}
-        className={
+        className={clsx(
+          'text-md w-1/2',
           activeTab === 'members'
-            ? 'text-text-primary text-md font-bold'
-            : 'text-text-secondary text-md'
-        }
+            ? 'text-text-primary font-bold'
+            : 'text-text-secondary',
+        )}
       >
         멤버
       </button>

@@ -29,6 +29,10 @@ export default function TrackSearchSection({
     searchError,
   } = useYoutubeSearchTracks(addedVideoIds);
 
+  const handleSearch = () => {
+    if (searchValue) search(searchValue);
+  };
+
   return (
     <>
       <div className="flex w-full items-center justify-center gap-3">
@@ -37,16 +41,13 @@ export default function TrackSearchSection({
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key !== 'Enter') return;
+              if (e.key !== 'Enter' || e.nativeEvent.isComposing) return;
               e.preventDefault();
-              if (searchValue) search(searchValue);
+              handleSearch();
             }}
             placeholder="아티스트 명 또는 곡 이름을 검색하세요."
           ></InputField.Input>
-          <InputField.Button
-            onClick={() => search(searchValue)}
-            disabled={!searchValue}
-          >
+          <InputField.Button onClick={handleSearch} disabled={!searchValue}>
             검색
           </InputField.Button>
         </InputField>

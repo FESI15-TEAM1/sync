@@ -9,6 +9,7 @@ import BackButton from '@/components/common/BackButton';
 import PlaylistCard from '@/components/domain/PlaylistCard';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
+import Toggle from '@/components/Toggle';
 import type { MyPlaylistItem } from '@/services/playlist/playlistCard.type';
 
 import GroupDeleteModal from '../../_components/GroupDeleteModal';
@@ -106,7 +107,7 @@ export default function EditPage({
   const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!trimmedName || !trimmedDescription || hasNoPlaylists) return;
+    if (!trimmedName || hasNoPlaylists) return;
 
     setErrorMessage(null);
     submitGroup({
@@ -120,7 +121,7 @@ export default function EditPage({
   };
 
   return (
-    <div className="mx-auto flex-1 flex-col gap-8 px-5 py-6">
+    <div className="mx-auto flex flex-col gap-4 px-5 py-6">
       <BackButton />
       <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
         <div className="flex items-center gap-3">
@@ -166,49 +167,14 @@ export default function EditPage({
           maxResize="16rem"
         />
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="text-md mb-1 ml-2 font-bold text-white">
+        <div className="flex flex-col gap-4">
+          <legend className="text-md ml-2 font-bold text-white">
             공개 여부
           </legend>
-          <div className="border-border bg-bg-card flex overflow-hidden rounded-md border">
-            <label
-              className={`flex-1 cursor-pointer py-2 text-center text-sm ${
-                isPublic
-                  ? 'bg-primary text-white'
-                  : 'text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              <input
-                type="radio"
-                name="visibility"
-                value="public"
-                checked={isPublic}
-                onChange={() => setIsPublic(true)}
-                className="sr-only"
-              />
-              공개
-            </label>
-            <label
-              className={`flex-1 cursor-pointer py-2 text-center text-sm ${
-                !isPublic
-                  ? 'bg-primary text-white'
-                  : 'text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              <input
-                type="radio"
-                name="visibility"
-                value="private"
-                checked={!isPublic}
-                onChange={() => setIsPublic(false)}
-                className="sr-only"
-              />
-              비공개
-            </label>
-          </div>
-        </fieldset>
+          <Toggle onChange={() => setIsPublic(!isPublic)} checked={isPublic} />
+        </div>
 
-        <div>
+        <div className="flex flex-col gap-4">
           <h2 className="text-md ml-2 font-bold text-white">
             플레이리스트 추가
           </h2>
@@ -255,12 +221,7 @@ export default function EditPage({
             <Button
               type="submit"
               className="flex-1"
-              isDisabled={
-                !trimmedName ||
-                !trimmedDescription ||
-                hasNoPlaylists ||
-                isSubmitting
-              }
+              isDisabled={!trimmedName || hasNoPlaylists || isSubmitting}
             >
               {isSubmitting ? '수정 중...' : '수정하기'}
             </Button>
