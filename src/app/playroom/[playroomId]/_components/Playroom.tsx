@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import ChatMembers from '@/app/playroom/[playroomId]/_components/Chat/ChatMembers';
 import Player from '@/app/playroom/[playroomId]/_components/Player/Player';
 import { playroomListQueryKey } from '@/app/stage/_hooks/useGetPlayroomList';
+import LoadingFallback from '@/components/LoadingFallback';
 import { useUserStore } from '@/providers/user-store-provider';
 
 import { useChatMessages } from '../_hooks/useChatMessages';
@@ -150,10 +151,8 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
       />
 
       {isPending ? (
-        <div className="flex h-full w-full items-center justify-center">
-          <p role="status" className="text-text-primary font-bold">
-            로딩중...
-          </p>
+        <div className="relative flex h-[80vh] items-center justify-center">
+          <LoadingFallback />
         </div>
       ) : errorMessage ? (
         <div className="flex h-full w-full items-center justify-center">
