@@ -1,4 +1,5 @@
 import type { PlayroomCardData } from '@/services/playroom/playroom.types';
+import { formatPlayroomUptime } from '@/utils/playroom/formatPlayroomUptime';
 
 import Badge from './Badge';
 import LiveHeartbeat from './LiveHeartbeat';
@@ -10,6 +11,7 @@ export default function PlayroomListItem({
   listenerCount,
   host,
   isLive,
+  createdAt,
 }: Omit<PlayroomCardData, 'id'>) {
   return (
     <div
@@ -43,8 +45,9 @@ export default function PlayroomListItem({
           ))}
         </ul>
 
-        <span className="text-text-secondary text-sm">
-          {host.nickname}님의 라이브
+        <span className="text-text-secondary shrink-0 text-right text-xs">
+          {host.nickname} 님께서
+          <br /> {formatPlayroomUptime(createdAt)}
         </span>
       </div>
     </div>
