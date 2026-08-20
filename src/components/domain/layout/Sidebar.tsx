@@ -12,11 +12,11 @@ import { useUserStore } from '@/providers/user-store-provider';
 import SearchBar from './SearchBar';
 
 const NAV_ITEMS = [
-  { href: '/', label: '홈', isAuthOnly: true, hasEmphasisStyle: true },
+  { href: '/', label: '홈', isAuthOnly: false, hasEmphasisStyle: true },
   {
     href: '/stage',
     label: '스테이지',
-    isAuthOnly: true,
+    isAuthOnly: false,
     hasEmphasisStyle: true,
   },
   {
