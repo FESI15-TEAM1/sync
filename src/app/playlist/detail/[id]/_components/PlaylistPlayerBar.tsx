@@ -151,7 +151,10 @@ export default function PlaylistPlayerBar({
               value={isMuted ? 0 : volume}
               onChange={(e) => onVolumeChange(Number(e.target.value))}
               aria-label="볼륨"
-              className="accent-primary bg-bg-card h-1 w-20 cursor-pointer"
+              style={{
+                background: `linear-gradient(to right, var(--color-primary) ${volume}%, var(--color-bg-primary) ${volume}%)`,
+              }}
+              className="focus-visible:outline-primary h-1 w-full cursor-pointer appearance-none rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 [&::-moz-range-thumb]:size-3 [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-white [&::-webkit-slider-thumb]:size-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
             />
             <span className="text-text-secondary w-8 shrink-0 text-right text-xs">
               {isMuted ? 0 : volume}%

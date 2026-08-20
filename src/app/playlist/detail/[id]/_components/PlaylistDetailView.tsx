@@ -20,6 +20,7 @@ import { clientFetch } from '@/lib/http/client-fetch';
 import { usePlayerStore } from '@/providers/player-store-provider';
 import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
 import { type PlaylistTrack } from '@/services/playlist/playlist';
+import { readStoredVolume, writeStoredVolume } from '@/utils/player/volume';
 
 import { useCreateGroupRequest } from '../_hooks/useCreateGroupRequest';
 import { useLikedMutation } from '../_hooks/useLikedQuery';
@@ -39,7 +40,7 @@ export default function PlaylistDetailView({
   const playerRef = useRef<PlaylistPlayerHandle | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(100);
+  const [volume, setVolume] = useState(readStoredVolume() ?? 100);
   const [isMuted, setIsMuted] = useState(false);
   const [isOwnerPreviewOpen, setIsOwnerPreviewOpen] = useState(false);
   const { id } = useParams<{ id: string }>();
@@ -158,6 +159,7 @@ export default function PlaylistDetailView({
   const handleVolumeChange = (nextVolume: number) => {
     setVolume(nextVolume);
     playerRef.current?.setVolume(nextVolume);
+    writeStoredVolume(nextVolume);
     if (nextVolume === 0) {
       setIsMuted(true);
       playerRef.current?.mute();
