@@ -7,6 +7,9 @@ import localFont from 'next/font/local';
 export const metadata: Metadata = {
   title: 'Sync',
   description: 'Sharing my own playlists with others on streaming platforms.',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 import { type ReactNode } from 'react';
