@@ -41,7 +41,7 @@ export default function TrackSearchSection({
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key !== 'Enter' || e.nativeEvent.isComposing) return;
+              if (e.key !== 'Enter') return;
               e.preventDefault();
               handleSearch();
             }}
