@@ -10,16 +10,16 @@ function HintBox() {
   const hashtagExampleStyle = 'whitespace-nowrap text-text-primary';
 
   return (
-    <div className="bg-bg-card border-border absolute left-16 z-10 w-auto rounded-xl border p-3 break-keep shadow-xl">
+    <div className="bg-bg-card border-border absolute left-16 z-10 w-auto max-w-122 rounded-xl border p-3 break-keep shadow-xl">
       <p className="text-text-secondary text-left text-sm">
         내용에서 <span className={hashtagExampleStyle}>해시태그(#)</span>를
         사용해 플레이룸 목록에서 보이는{' '}
-        <span className={hashtagExampleStyle}>뱃지</span>를 생성해보세요!
-        <br />
+        <span className={hashtagExampleStyle}>뱃지</span>를 생성해보세요!{' '}
         <span className={hashtagExampleStyle}>#장르</span>{' '}
         <span className={hashtagExampleStyle}>#힐링</span> 이런식으로 작성하면,{' '}
         <span className={hashtagExampleStyle}>플레이룸 목록의 항목 하단</span>에
-        아래 처럼 나타나요!
+        아래 처럼 나타나요! 최소 2글자, 최대 8글자로 작성할 수 있고, 최대 9개의
+        뱃지를 생성할 수 있어요!
       </p>
       <div className="mt-2 flex gap-2">
         <Badge type="genre">장르</Badge>
