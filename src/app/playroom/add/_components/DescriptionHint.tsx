@@ -18,7 +18,7 @@ function HintBox() {
         <span className={hashtagExampleStyle}>#장르</span>{' '}
         <span className={hashtagExampleStyle}>#힐링</span> 이런식으로 작성하면,{' '}
         <span className={hashtagExampleStyle}>플레이룸 목록의 항목 하단</span>에
-        아래 처럼 나타나요! 최소 2글자, 최대 8글자로 작성할 수 있고, 최대 9개의
+        아래처럼 나타나요! 최소 2글자, 최대 8글자로 작성할 수 있고, 최대 9개의
         뱃지를 생성할 수 있어요!
       </p>
       <div className="mt-2 flex gap-2">
