@@ -5,7 +5,10 @@ import {
   type MouseEvent,
   type ReactNode,
   useContext,
+  useEffect,
 } from 'react';
+
+import useFocusTrap from '@/hooks/useFocusTrap';
 
 import IconButton from './IconButton';
 
@@ -27,14 +30,35 @@ function useModal() {
 type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  closeOnBackdropClick?: boolean;
   children: ReactNode;
+  ariaLabelledBy?: string;
 };
 
-export function Modal({ isOpen, onClose, children }: ModalProps) {
+export function Modal({
+  isOpen,
+  onClose,
+  closeOnBackdropClick = true,
+  children,
+  ariaLabelledBy,
+}: ModalProps) {
+  const dialogRef = useFocusTrap<HTMLDivElement>(isOpen);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
   if (!isOpen) return null;
 
   const handleBackdropClick = (e: MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
+    if (closeOnBackdropClick && e.target === e.currentTarget) {
       onClose();
     }
   };
@@ -46,8 +70,11 @@ export function Modal({ isOpen, onClose, children }: ModalProps) {
         onClick={handleBackdropClick}
       >
         <div
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
+          aria-labelledby={ariaLabelledBy ?? 'modal-title'}
+          tabIndex={-1}
           className="bg-bg-primary flex max-h-[90vh] w-full max-w-md flex-col rounded-2xl p-5 shadow-xl"
         >
           {children}
@@ -57,12 +84,21 @@ export function Modal({ isOpen, onClose, children }: ModalProps) {
   );
 }
 
-function Header({ children }: { children: ReactNode }) {
+function Header({
+  ariaLabelledById,
+  children,
+}: {
+  ariaLabelledById?: string;
+  children: ReactNode;
+}) {
   const { onClose } = useModal();
 
   return (
     <div className="mb-4 flex items-center justify-between">
-      <h2 id="modal-title" className="text-text-primary text-lg font-bold">
+      <h2
+        id={ariaLabelledById ?? 'modal-title'}
+        className="text-text-primary text-lg font-bold"
+      >
         {children}
       </h2>
 

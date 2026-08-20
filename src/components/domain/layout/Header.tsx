@@ -1,19 +1,22 @@
 'use client';
 
-import Image from 'next/image';
+import Link from 'next/link';
 import { useLayoutEffect, useRef } from 'react';
 
-import Bell from '@/assets/icons/bell.svg';
 import SyncLogo from '@/assets/icons/syncLogo.svg';
-import initImage from '@/assets/images/mook.jpg';
+import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { useUserStore } from '@/providers/user-store-provider';
 
 import HamburgerButton from './HamburgerButton';
+import NotificationBell from './NotificationsBell';
 
 export default function Header() {
   const headerRef = useRef<HTMLElement>(null);
+  const user = useUserStore((state) => state.user);
+  const isLoading = useUserStore((state) => state.isLoading);
+  const showLoading = useDelayedLoading(isLoading);
 
   useLayoutEffect(() => {
-    // 페이지 렌더링 직전에 header의 높이값을 가져오기 위해 useEffect 대신 useLayoutEffect를 사용합니다
     const headerElement = headerRef.current;
     if (!headerElement) return;
 
@@ -31,8 +34,6 @@ export default function Header() {
     };
   }, []);
 
-  const defaultImage = initImage;
-
   return (
     <header
       className="bg-bg-card flex-[0 0 auto] flex items-center justify-between px-4 py-4 text-center shadow-md"
@@ -41,19 +42,50 @@ export default function Header() {
       <div className="flex items-center gap-3">
         <HamburgerButton />
         <div className="flex items-center">
-          <SyncLogo width={45} height={45} />
-          <span className="text-text-primary text-2xl font-bold">Sync</span>
+          <Link className="flex items-center gap-2" href="/">
+            <SyncLogo width={45} height={45} />
+            <h1 className="text-text-primary text-2xl font-bold">Sync</h1>
+          </Link>
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <Bell width={30} height={30} color={'white'} />
-        <Image
-          src={defaultImage}
-          alt="기본이미지"
-          width={45}
-          height={45}
-          className="rounded-full"
-        />
+        <NotificationBell />
+        {isLoading ? (
+          // 200ms 이상 로딩이 지속될 때만 스켈레톤 표시(짧은 로딩의 깜빡임 방지)
+          <div
+            className={`size-11.25 rounded-full ${showLoading ? 'animate-pulse bg-gray-300' : ''}`}
+          />
+        ) : user ? (
+          // 로그인 상태
+
+          <Link aria-label="프로필" href={`/profile/${user.id}`}>
+            {user.image ? (
+              // eslint-disable-next-line @next/next/no-img-element -- 유저 업로드 CDN 호스트가 가변
+              <img
+                src={user.image}
+                alt="프로필"
+                width={45}
+                height={45}
+                className="size-11.25 shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="bg-input flex size-11.25 shrink-0 items-center justify-center rounded-full"
+                aria-hidden
+              >
+                <SyncLogo width={24} height={24} />
+              </div>
+            )}
+          </Link>
+        ) : (
+          // 로그아웃 상태
+          <Link
+            href="/login"
+            className="bg-primary text-text-primary hover:bg-secondary rounded-3xl px-4 py-2 text-base font-bold"
+          >
+            로그인
+          </Link>
+        )}
       </div>
     </header>
   );

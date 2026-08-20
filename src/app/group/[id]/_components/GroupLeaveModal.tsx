@@ -1,14 +1,20 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+import { groupsQueryKey } from '@/app/group/_hooks/useGroupsQuery';
 import Button from '@/components/Button';
+import { APIError } from '@/lib/http/error';
+import { useUserStore } from '@/providers/user-store-provider';
+import { leaveGroup } from '@/services/group/group.api';
 
 type GroupLeaveModalProps = {
   isOpen: boolean;
+  groupId: number;
   groupName: string;
   onClose: () => void;
-  onConfirm: () => void;
 };
 
 export default function GroupLeaveModal({
@@ -20,10 +26,41 @@ export default function GroupLeaveModal({
 }
 
 function GroupLeaveModalContent({
+  groupId,
   groupName,
   onClose,
-  onConfirm,
 }: Omit<GroupLeaveModalProps, 'isOpen'>) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const currentUser = useUserStore((state) => state.user);
+
+  const leaveGroupMutation = useMutation({
+    mutationFn: () => {
+      if (!currentUser) throw new Error('로그인이 필요합니다.');
+      return leaveGroup(groupId, currentUser.id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: groupsQueryKey() });
+      onClose();
+      router.push('/group');
+    },
+    onError: (error) => {
+      if (error instanceof APIError) {
+        console.error(error.message);
+        alert(error.message);
+        return;
+      }
+
+      console.error(error);
+      alert('그룹 탈퇴 중 오류가 발생했습니다.');
+    },
+  });
+
+  const handleConfirmLeave = () => {
+    if (!currentUser) return;
+    leaveGroupMutation.mutate();
+  };
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -69,8 +106,8 @@ function GroupLeaveModalContent({
             type="button"
             size="md"
             variant="primary"
-            isDisabled={false}
-            onClick={onConfirm}
+            isDisabled={leaveGroupMutation.isPending}
+            onClick={handleConfirmLeave}
             className="flex h-9 w-28 shrink-0 items-center justify-center rounded-full bg-red-500 px-0 font-bold hover:bg-red-600"
           >
             탈퇴하기

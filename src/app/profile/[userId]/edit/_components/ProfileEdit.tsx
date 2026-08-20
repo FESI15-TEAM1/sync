@@ -1,49 +1,101 @@
 'use client';
 
-import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { type ChangeEvent, type SubmitEvent, useRef, useState } from 'react';
 
 import PencilIcon from '@/assets/icons/pencil.svg';
+import SyncLogo from '@/assets/icons/syncLogo.svg';
 import Button from '@/components/Button';
 import IconButton from '@/components/IconButton';
-import Input from '@/components/Input';
+import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
+import { APIError } from '@/lib/http/error';
+import { useUserStore } from '@/providers/user-store-provider';
+import { requestUploadUrl } from '@/services/upload/upload.api';
+import type { UploadUrlRequest } from '@/services/upload/upload.types';
+import { updateMe } from '@/services/user/user.api';
+import type { MyProfile } from '@/services/user/user.types';
 
 type ProfileEditPageProps = {
-  profileId: number;
+  profile: MyProfile;
 };
 
-export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
+export default function ProfileEditPage({ profile }: ProfileEditPageProps) {
+  const router = useRouter();
+  const setUser = useUserStore((state) => state.setUser);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [nickname, setNickname] = useState('JPOP의 신');
-  const [bio, setBio] = useState('자기 소개입니다');
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(
+    profile.image,
+  );
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [nickname, setNickname] = useState(profile.nickname);
+  const [bio, setBio] = useState(profile.description ?? '');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [nicknameError, setNicknameError] = useState('');
 
   const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const url = URL.createObjectURL(file);
+    setAvatarFile(file);
     setAvatarPreview((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
+      if (prev?.startsWith('blob:')) URL.revokeObjectURL(prev);
       return url;
     });
   };
 
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log({
-      profileId,
-      nickname,
-      bio,
-      hasAvatar: Boolean(avatarPreview),
-    });
-  };
+    if (isSubmitting) return;
 
-  //회원 탈퇴
-  const handleWithDraw = () => {
-    console.log('회원탈퇴 계정', profileId);
+    setIsSubmitting(true);
+    setNicknameError('');
+    try {
+      let image: string | undefined;
+
+      if (avatarFile) {
+        const { uploadUrl, fileUrl } = await requestUploadUrl({
+          domain: 'profile',
+          contentType: avatarFile.type as UploadUrlRequest['contentType'],
+        });
+
+        const putResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': avatarFile.type },
+          body: avatarFile,
+        });
+        if (!putResponse.ok) {
+          throw new Error('이미지 업로드에 실패했습니다.');
+        }
+
+        image = fileUrl;
+      }
+
+      const updated = await updateMe({
+        nickname: nickname.trim(),
+        description: bio.trim(),
+        ...(image ? { image } : {}),
+      });
+
+      setUser(updated);
+      router.push(`/profile/${updated.id}`);
+      router.refresh();
+    } catch (error) {
+      if (error instanceof APIError) {
+        if (error.status === 400 || error.status === 409) {
+          setNicknameError(error.message);
+        } else if (error.status === 401) {
+          router.push('/login');
+        } else {
+          alert(error.message);
+        }
+      } else if (error instanceof Error) {
+        alert(error.message);
+      }
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -54,17 +106,20 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
             <button
               type="button"
               onClick={() => avatarInputRef.current?.click()}
-              className="bg-bg-card size-48 overflow-hidden rounded-full"
+              className="bg-bg-card flex size-48 items-center justify-center overflow-hidden rounded-full"
             >
               {avatarPreview ? (
-                <Image
+                // eslint-disable-next-line @next/next/no-img-element -- blob URL 및 가변 CDN
+                <img
                   src={avatarPreview}
                   alt="프로필"
                   width={192}
                   height={192}
                   className="size-full object-cover"
                 />
-              ) : null}
+              ) : (
+                <SyncLogo width={80} height={80} />
+              )}
             </button>
 
             <IconButton
@@ -89,12 +144,19 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
         </div>
 
         <div className="flex flex-col gap-5">
-          <Input
-            label="닉네임"
-            placeholder="닉네임을 입력하세요"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-          />
+          <InputField>
+            <InputField.Label>닉네임</InputField.Label>
+            <InputField.Input
+              placeholder="닉네임을 입력하세요"
+              value={nickname}
+              onChange={(e) => {
+                setNickname(e.target.value);
+                setNicknameError('');
+              }}
+            />
+            <InputField.Error>{nicknameError}</InputField.Error>
+          </InputField>
+
           <Textarea
             label="자기소개"
             placeholder="자기소개를 입력하세요"
@@ -104,17 +166,15 @@ export default function ProfileEditPage({ profileId }: ProfileEditPageProps) {
         </div>
 
         <div className="flex flex-1 flex-col justify-end gap-3">
-          <Button type="submit" variant="primary" size="lg" className="w-full">
-            저장하기
-          </Button>
-
-          <button
-            type="button"
-            onClick={handleWithDraw}
-            className="self-end text-sm text-red-400"
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            className="w-full"
+            isDisabled={isSubmitting || !nickname.trim()}
           >
-            회원탈퇴
-          </button>
+            {isSubmitting ? '저장 중...' : '저장하기'}
+          </Button>
         </div>
       </form>
     </div>

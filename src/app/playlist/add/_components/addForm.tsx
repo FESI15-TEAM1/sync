@@ -1,23 +1,26 @@
 'use client';
 
-import Image from 'next/image';
-import { type ChangeEvent, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { type SubmitEvent, useState } from 'react';
 
-import TrackList from '@/app/playlist/_components/TrackList';
-import Minus from '@/assets/icons/minus.svg';
+import AddedTracksSection from '@/app/playlist/add/_components/AddedTracksSection';
+import PlaylistThumbnailField from '@/app/playlist/add/_components/PlaylistThumbnailField';
+import TrackSearchSection from '@/app/playlist/add/_components/TrackSearchSection';
 import Button from '@/components/Button';
-import IconButton from '@/components/IconButton';
-import Input from '@/components/Input';
+import BackButton from '@/components/common/BackButton';
+import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
 import Toggle from '@/components/Toggle';
-import type { CreatePlaylistRequest, PlaylistTrack } from '@/types/playlist';
-import {
-  isYoutubeVideoItem,
-  type YoutubeSearchResponse,
-} from '@/types/youtube';
+import { APIError } from '@/lib/http/error';
+import type {
+  CreatePlaylistRequest,
+  PlaylistTrack,
+} from '@/services/playlist/playlist';
+import { postPlaylist } from '@/services/playlist/playlist.api';
+import { requestUploadUrl } from '@/services/upload/upload.api';
+import type { UploadUrlRequest } from '@/services/upload/upload.types';
 
 export default function AddForm() {
-  const [preview, setPreview] = useState<string | null>(null);
   const [form, setForm] = useState<CreatePlaylistRequest>({
     title: '',
     description: '',
@@ -25,31 +28,14 @@ export default function AddForm() {
     isPublic: true,
     tracks: [],
   });
-  const [searchValue, setSearchValue] = useState('');
-  const [searchList, setSearchList] = useState<PlaylistTrack[]>([]);
+  const [imgFile, setImgFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setPreview(URL.createObjectURL(file));
-  };
-  const fetchSearchData = async () => {
-    const data = await fetch(`/api/youtube/searchTrack?q=${searchValue}`);
-    const result: YoutubeSearchResponse = await data.json();
-    const videos = result.items.filter(isYoutubeVideoItem).map((item) => ({
-      videoId: item.id.videoId,
-      title: item.snippet.title,
-      artist: item.snippet.channelTitle,
-      thumbnail: item.snippet.thumbnails.default.url,
-    }));
-    console.log(videos);
-    setSearchList(videos);
-  };
+  const addedVideoIds = new Set(form.tracks.map((track) => track.videoId));
+
   const handleAddTrack = (track: PlaylistTrack) => {
     setForm((prev) => ({ ...prev, tracks: [...prev.tracks, track] }));
-    setSearchList((prev) =>
-      prev.filter((item) => item.videoId !== track.videoId),
-    );
   };
   const handleDeleteTrack = (track: PlaylistTrack) => {
     setForm((prev) => ({
@@ -57,123 +43,109 @@ export default function AddForm() {
       tracks: prev.tracks.filter((item) => item.videoId !== track.videoId),
     }));
   };
-  useEffect(() => {
-    console.log(searchList);
-  }, [searchList]);
+  const handleReorderTracks = (tracks: PlaylistTrack[]) => {
+    setForm((prev) => ({ ...prev, tracks }));
+  };
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      let image = form.image;
+
+      if (imgFile) {
+        const { uploadUrl, fileUrl } = await requestUploadUrl({
+          domain: 'playlist',
+          contentType: imgFile.type as UploadUrlRequest['contentType'],
+        });
+        const putResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': imgFile.type },
+          body: imgFile,
+        });
+        if (!putResponse.ok) {
+          throw new Error('이미지 업로드에 실패했습니다.');
+        }
+        image = fileUrl;
+      }
+      await postPlaylist({ ...form, image });
+      router.push('/playlist');
+    } catch (error) {
+      if (error instanceof APIError) {
+        if (error.status === 400) {
+          alert(error.message);
+        }
+        if (error.status === 401) {
+          router.replace('/login');
+        }
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-6">
-      {/* 이미지 색션 */}
-      <div className="relative h-40 w-40">
-        <label
-          htmlFor="thumbnail"
-          className="border-border bg-bg-primary flex h-full w-full cursor-pointer items-center justify-center overflow-hidden rounded-2xl border"
-        >
-          {preview ? (
-            <Image
-              src={preview ? preview : form.image}
-              alt="플레이리스트 썸네일"
-              fill
-              className="overflow-hidden rounded-2xl object-cover p-2"
-            />
-          ) : null}
-        </label>
-        <input
-          id="thumbnail"
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleFileChange}
-        />
-        <IconButton
-          variants="primary"
-          size="sm"
-          className="text-text-primary absolute -right-2 -bottom-2"
-        >
-          +
-        </IconButton>
+    <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
+      <div className="flex w-full">
+        <BackButton type="button" fallbackUrl="/playlist" />
       </div>
 
-      {/* 플레이리스트 이름 색션 */}
-      <Input
-        label="플레이리스트이름"
-        width={'100%'}
-        value={form.title}
-        onChange={(e) =>
-          setForm((prev) => ({ ...prev, title: e.target.value }))
-        }
-        placeholder="플레이리스트 이름을 입력하세요"
-      />
+      <fieldset disabled={isSubmitting} className="contents">
+        <PlaylistThumbnailField onFileSelect={setImgFile} />
 
-      <Textarea
-        label="플레이리스트 설명"
-        width={'100%'}
-        value={form.description}
-        onChange={(e) =>
-          setForm((prev) => ({ ...prev, description: e.target.value }))
-        }
-        placeholder={`공부할때 들으면 집중 잘되는 노래들로 모아봤습니다.\n비슷한 취향있으신 분은 좋아요 그룹생성 요청 눌러주세요!`}
-      />
-      <div className="flex w-full flex-col gap-1">
-        <label className="ml-2 text-base font-bold text-white">공개여부</label>
-        <Toggle
-          checked={form.isPublic}
-          onChange={(isPublic) => setForm((prev) => ({ ...prev, isPublic }))}
+        {/* 플레이리스트 이름 색션 */}
+        <InputField className="w-full">
+          <InputField.Label>플레이리스트 이름 </InputField.Label>
+          <InputField.Input
+            value={form.title}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, title: e.target.value }))
+            }
+            placeholder="플레이리스트 이름을 입력하세요"
+          ></InputField.Input>
+          <InputField.Error>
+            {form.title.trim() ? '' : '플레이리스트 이름은 필수입니다.'}
+          </InputField.Error>
+        </InputField>
+        <div className="mb-4 w-full">
+          <Textarea
+            label="플레이리스트 설명"
+            value={form.description}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, description: e.target.value }))
+            }
+            placeholder={`공부할때 들으면 집중 잘되는 노래들로 모아봤습니다.\n비슷한 취향있으신 분은 좋아요 그룹생성 요청 눌러주세요!`}
+          />
+        </div>
+        <div className="mb-4 flex w-full flex-col gap-4">
+          <label className="ml-2 text-base font-bold text-white">
+            공개여부
+          </label>
+          <Toggle
+            checked={form.isPublic}
+            onChange={(isPublic) => setForm((prev) => ({ ...prev, isPublic }))}
+          />
+        </div>
+
+        <TrackSearchSection
+          addedVideoIds={addedVideoIds}
+          onAddTrack={handleAddTrack}
         />
-      </div>
-      {/* 검색 색션 */}
-      <div className="flex w-full items-center justify-center gap-3">
-        <Input
-          width={'100%'}
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          placeholder="곡 제목이나 아티스트 검색(YouTube)"
+
+        <AddedTracksSection
+          tracks={form.tracks}
+          onReorder={handleReorderTracks}
+          onRemoveTrack={handleDeleteTrack}
         />
-        <Button size="md" isDisabled={false} onClick={fetchSearchData}>
-          검색
-        </Button>
-      </div>
-      {searchList.length > 0 ? (
-        <>
-          <span className="text-text-secondary">검색결과</span>
-          {/* 검색 결과 색션 */}
-          <div className="bg-bg-card w-full rounded-xl p-2">
-            <TrackList
-              trackList={searchList}
-              onTrackClick={handleAddTrack}
-              Button={
-                <IconButton
-                  className="border-border text-text-secondary hover:text-text-primary flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full border text-sm"
-                  size="sm"
-                >
-                  +
-                </IconButton>
-              }
-            />
-          </div>
-        </>
-      ) : (
-        ''
-      )}
-      {/* 추가된곡 색션 */}
-      <span className="text-text-secondary">추가된곡</span>
-      <div className="w-full">
-        <TrackList
-          trackList={form?.tracks}
-          onTrackClick={handleDeleteTrack}
-          Button={
-            <IconButton
-              className="border-border text-text-secondary hover:text-text-primary flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full border text-sm"
-              size="sm"
-            >
-              <Minus color="text-text-secondary" />
-            </IconButton>
-          }
-        />
-      </div>
-      <Button className="w-full" onClick={() => console.log(form)}>
-        저장하기
+      </fieldset>
+
+      <Button
+        type="submit"
+        className="w-full"
+        isDisabled={isSubmitting || !form.title.trim()}
+      >
+        {isSubmitting ? '저장 중...' : '저장하기'}
       </Button>
-    </div>
+    </form>
   );
 }

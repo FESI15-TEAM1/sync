@@ -1,10 +1,10 @@
 import AddButton from '@/app/stage/_components/AddButton';
-import PlayroomList from '@/app/stage/_components/PlayroomList';
+import PlayroomListView from '@/app/stage/_components/PlayroomListView';
 
 export default function Stage() {
   return (
     <>
-      <PlayroomList />
+      <PlayroomListView />
 
       <AddButton />
     </>

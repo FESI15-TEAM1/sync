@@ -1,5 +1,9 @@
 import { notFound } from 'next/navigation';
 
+import { APIError } from '@/lib/http/error';
+import { serverFetch } from '@/lib/http/server-fetch';
+import type { MyProfile, UserProfile } from '@/services/user/user.types';
+
 import Profile from './_components/Profile';
 
 export default async function ProfilePage({
@@ -14,16 +18,28 @@ export default async function ProfilePage({
     notFound();
   }
 
-  const props = {
-    profileId,
-    nickname: 'JPOP 의 신',
-    email: 'test@test.com',
-    bio: '자기소개 입니다 웋히히',
-    groupCount: 2,
-    playlistCount: 14,
-    followerCount: 10,
-    followingCount: 50,
-  };
+  let me: MyProfile | null = null;
+  try {
+    me = await serverFetch<MyProfile>('/users/me', { method: 'GET' });
+  } catch {
+    me = null;
+  }
 
-  return <Profile {...props} />;
+  if (me && me.id === profileId) {
+    return <Profile isOwn={true} profile={me} />;
+  }
+
+  let profile: UserProfile;
+  try {
+    profile = await serverFetch<UserProfile>(`/users/${profileId}`, {
+      method: 'GET',
+    });
+  } catch (error) {
+    if (error instanceof APIError && error.status === 404) {
+      notFound();
+    }
+    throw error;
+  }
+
+  return <Profile isOwn={false} profile={profile} />;
 }

@@ -1,0 +1,55 @@
+import type { PlayroomCardData } from '@/services/playroom/playroom.types';
+import { formatPlayroomUptime } from '@/utils/playroom/formatPlayroomUptime';
+
+import Badge from './Badge';
+import LiveHeartbeat from './LiveHeartbeat';
+
+export default function PlayroomListItem({
+  title,
+  description,
+  hashtags,
+  listenerCount,
+  host,
+  isLive,
+  createdAt,
+}: Omit<PlayroomCardData, 'id'>) {
+  return (
+    <div
+      className="bg-bg-card hover:border-border flex cursor-pointer flex-col gap-0.5 rounded-lg border border-transparent p-4 transition-all hover:-translate-y-0.5 hover:shadow-xl"
+      title={
+        !isLive
+          ? `${host.nickname} 님이 참여중이지 않아 플레이룸이 곧 종료될 수 있습니다`
+          : undefined
+      }
+    >
+      <div className="flex items-center justify-between">
+        <Badge type="live" isLive={isLive} />
+
+        <span className="flex items-center gap-1 text-xs text-white">
+          {isLive && <LiveHeartbeat />}
+          {listenerCount}명 {isLive ? '청취 중' : '참여 중'}
+        </span>
+      </div>
+
+      <div>
+        <h3 className="text-base font-bold text-white">{title}</h3>
+        <p className="text-text-secondary text-xs">{description}</p>
+      </div>
+
+      <div className="mt-1 flex items-end justify-between">
+        <ul className="flex flex-wrap gap-1">
+          {hashtags.map((hashtag) => (
+            <li key={hashtag}>
+              <Badge type="genre">{hashtag}</Badge>
+            </li>
+          ))}
+        </ul>
+
+        <span className="text-text-secondary shrink-0 text-right text-xs">
+          {host.nickname} 님께서
+          <br /> {formatPlayroomUptime(createdAt)}
+        </span>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,205 @@
+'use client';
+
+import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+
+import ChatMembers from '@/app/playroom/[playroomId]/_components/Chat/ChatMembers';
+import Player from '@/app/playroom/[playroomId]/_components/Player/Player';
+import { playroomListQueryKey } from '@/app/stage/_hooks/useGetPlayroomList';
+import LoadingFallback from '@/components/LoadingFallback';
+import { useUserStore } from '@/providers/user-store-provider';
+
+import { useChatMessages } from '../_hooks/useChatMessages';
+import { useGetPlaylistData } from '../_hooks/useGetPlaylistData';
+import {
+  playroomQueryKey,
+  useGetPlayroomData,
+} from '../_hooks/useGetPlayroomData';
+import { useHostLeaveGuard } from '../_hooks/useHostLeaveGuard';
+import { useWSConnect } from '../_hooks/useWSConnect';
+import PlayroomHeader from './Header';
+import HostLeaveModal from './Modal/HostLeaveModal';
+import LoginRequiredModal from './Modal/LoginRequiredModal';
+import RoomClosedModal from './Modal/RoomClosedModal';
+
+export type ChatMessageTypes = {
+  id: number;
+  userId: number;
+  username: string;
+  // 프로필 이미지가 없거나 탈퇴한 유저면 null 입니다.
+  userImage: string | null;
+  message: string;
+  createdAt: string;
+};
+
+/**
+ * 채팅 사이에 끼워 보여주는 입·퇴장 알림.
+ * 서버에 저장되지 않으므로 접속해 있는 동안 받은 이벤트만 보이고, 방을 나가면 사라집니다.
+ */
+export type SystemNoticeTypes = {
+  // 서버 id 가 없으므로 렌더 key 는 로컬에서 만듭니다.
+  key: string;
+  // 도착 순서. 같은 채팅 뒤에 붙는 알림끼리의 순서를 지킵니다.
+  seq: number;
+  // 이 알림이 도착했을 때 마지막으로 받은 채팅 id. 0이면 접속 후 첫 알림입니다.
+  afterMessageId: number;
+  type: 'joined' | 'left';
+  // 접속 중에 나갔다가 다시 들어온 경우입니다.
+  isRejoin: boolean;
+  userId: number;
+  nickname: string;
+};
+
+/** 채팅 로그에 순서대로 늘어놓는 항목. 실제 채팅과 시스템 알림이 섞여 있습니다.
+ * discriminated union type 으로 kind 에 따라 타입이 달라집니다.
+ */
+export type ChatKindTypes =
+  | ({ kind: 'chat' } & ChatMessageTypes)
+  | ({ kind: 'notice' } & SystemNoticeTypes);
+
+export default function Playroom({ playroomId }: { playroomId: number }) {
+  const {
+    messages: liveMessages,
+    systemNotices,
+    sendMessage,
+    playback,
+    playbackControl,
+    memberJoinedCount,
+    isRoomClosed,
+  } = useWSConnect(playroomId);
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const user = useUserStore((state) => state.user);
+  const isUserLoading = useUserStore((state) => state.isLoading);
+
+  // 세션 확인 전에는 비회원 여부를 알 수 없으므로, 확인이 끝난 뒤에만 안내합니다.
+  const isLoginRequiredOpen = !isUserLoading && !user;
+
+  // 접속 전 대화는 WebSocket 으로 오지 않으므로, 지난 채팅 기록과 합쳐서 보여줍니다.
+  // 입·퇴장 알림도 여기서 채팅 사이사이에 끼워 넣습니다.
+  const { messages, errorMessage: chatHistoryErrorMessage } = useChatMessages(
+    playroomId,
+    liveMessages,
+    systemNotices,
+  );
+  // playroomId로 데이터를 가져와서 Player, Playlist, Chatting 컴포넌트에 전달합니다.
+  const { playroomData, errorMessage, isPending } =
+    useGetPlayroomData(playroomId);
+
+  const isHost = playroomData?.isHost ?? false;
+  const isHostOnline = (playroomData?.members ?? []).some(
+    (member) => member.userId === playroomData?.host.userId,
+  );
+
+  // 방장은 종료 요청이 성공하면 스스로 이동하므로, 안내는 참가자에게만 보여줍니다.
+  const isClosedNoticeOpen = isRoomClosed && !isHost;
+
+  // 방장이 페이지를 벗어나면 재생 동기화가 끊기므로, 이동을 감지해 먼저 안내합니다.
+  // 이미 종료된 방은 동기화할 것이 없으므로 막지 않습니다.
+  const { isLeaveNoticeOpen, requestLeave, confirmLeave, cancelLeave } =
+    useHostLeaveGuard(isHost && !isRoomClosed);
+
+  const handleHeaderBeforeBack = () =>
+    requestLeave(() => router.push('/stage'));
+
+  const handleClosedNoticeConfirm = () => {
+    // 종료된 방은 더 이상 조회할 수 없으므로 상세·채팅 캐시를 통째로 지웁니다.
+    queryClient.removeQueries({ queryKey: playroomQueryKey(playroomId) });
+    // 이 안내는 참가자에게만 보이므로 내 플레이룸 목록은 그대로 두고 전체 목록만 갱신합니다.
+    queryClient.invalidateQueries({ queryKey: playroomListQueryKey() });
+
+    router.replace('/stage');
+    router.refresh();
+  };
+
+  // 비회원은 방에 머무를 수 없으므로 플레이룸 목록으로 돌려보냅니다.
+  const handleLoginRequiredCancel = () => {
+    router.replace('/stage');
+  };
+
+  const handleLoginRequiredConfirm = () => {
+    router.push('/login');
+  };
+
+  // 플레이리스트는 방장만 받아옵니다. 참가자는 방장의 플레이리스트에 접근하지 못할 수 있고,
+  // 재생에 필요한 곡 정보는 방 상세의 currentTrack 으로 충분하기 때문입니다.
+  // playlistId 는 방 상세를 받아야 알 수 있습니다.
+  const { playlistData } = useGetPlaylistData(
+    isHost ? playroomData?.playlistId : undefined,
+  );
+
+  // 방장이 재생을 시작하기 전에는 currentTrack 이 null 입니다.
+  const currentTrack = playroomData?.currentTrack ?? null;
+
+  // 접속 중인 참가자 목록. 입퇴장이 생기면 useWSConnect 가 방 상세를 다시 받아오게 합니다.
+  const members = (playroomData?.members ?? []).map((member) => ({
+    userId: member.userId,
+    username: member.nickname,
+    userImage: member.image,
+  }));
+
+  return (
+    <div className="grid h-(--main-content-full-height) min-h-0 grid-rows-[auto_1fr] gap-4">
+      <PlayroomHeader
+        playroomId={playroomId}
+        playroomTitle={playroomData?.title ?? ''}
+        playroomDescription={playroomData?.description ?? ''}
+        isHost={playroomData?.isHost ?? false}
+        onBeforeBack={handleHeaderBeforeBack}
+        isHostOnline={isHostOnline}
+      />
+
+      {isPending ? (
+        <div className="relative flex h-[80vh] items-center justify-center">
+          <LoadingFallback />
+        </div>
+      ) : errorMessage ? (
+        <div className="flex h-full w-full items-center justify-center">
+          <p role="alert" className="text-red-500">
+            {errorMessage}
+          </p>
+        </div>
+      ) : (
+        <div className="grid min-h-0 auto-cols-fr grid-rows-[auto_1fr] flex-col items-start justify-between gap-4 lg:grid-cols-[300px_1fr] lg:grid-rows-[1fr]">
+          <Player
+            tracks={playlistData?.tracks ?? []}
+            currentTrack={currentTrack}
+            isHost={isHost}
+            playback={playback}
+            onPlaybackChange={playbackControl}
+            memberJoinedCount={memberJoinedCount}
+          />
+
+          <ChatMembers
+            messages={messages}
+            historyErrorMessage={chatHistoryErrorMessage}
+            sendMessage={sendMessage}
+            members={members}
+            hostId={playroomData?.host.userId ?? null}
+            onBeforeProfileNavigate={requestLeave}
+          />
+        </div>
+      )}
+
+      <RoomClosedModal
+        isOpen={isClosedNoticeOpen}
+        onConfirm={handleClosedNoticeConfirm}
+      />
+
+      {/* 방장이 페이지를 벗어나려 할 때의 동기화 종료 안내 */}
+      <HostLeaveModal
+        isOpen={isLeaveNoticeOpen}
+        onCancel={cancelLeave}
+        onConfirm={confirmLeave}
+      />
+
+      {/* 비회원 로그인 요구 안내 */}
+      <LoginRequiredModal
+        isOpen={isLoginRequiredOpen}
+        onCancel={handleLoginRequiredCancel}
+        onConfirm={handleLoginRequiredConfirm}
+      />
+    </div>
+  );
+}

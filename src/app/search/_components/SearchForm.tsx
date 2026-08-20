@@ -1,87 +1,77 @@
 'use client';
 
-import { motion } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-import PlayroomList from '@/app/stage/_components/PlayroomList';
 import SearchBar from '@/components/domain/layout/SearchBar';
-import PlaylistCard from '@/components/domain/PlaylistCard';
+import LoadingSpinner from '@/components/LoadingSpiner';
+
+import { useGetSearchDataQuery } from '../_hooks/useSearchHooks';
+import SearchGroupList from './SearchGroupList';
+import SearchPlaylistCarousel from './SearchPlaylistCarousel';
+import SearchPlayroomList from './SearchPlayroomList';
 
 export default function SearchForm() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [dragRange, setDragRange] = useState(0);
+  const searchParams = useSearchParams();
+  const q = searchParams.get('q');
 
-  useEffect(() => {
-    const container = containerRef.current;
-    const content = contentRef.current;
-    if (!container || !content) return;
+  const { data, isPending, error } = useGetSearchDataQuery({ q });
+  const { playlists, groups, playrooms } = data ?? {};
 
-    const updateDragRange = () => {
-      setDragRange(Math.max(0, content.scrollWidth - container.clientWidth));
-    };
+  if (error) return <div>에러발생</div>;
 
-    updateDragRange();
-
-    const resizeObserver = new ResizeObserver(updateDragRange);
-    resizeObserver.observe(container);
-    resizeObserver.observe(content);
-
-    return () => resizeObserver.disconnect();
-  }, []);
+  const hasResults =
+    (playlists?.items.length ?? 0) > 0 ||
+    (groups?.items.length ?? 0) > 0 ||
+    (playrooms?.items.length ?? 0) > 0;
 
   return (
     <div className="flex w-full flex-col gap-8 p-4">
       <SearchBar />
-      <span className="text-text-primary w-full font-bold">PlayList</span>
-      {/* 컨테이너 */}
-      <div ref={containerRef} className="w-full">
-        <motion.div
-          ref={contentRef}
-          drag={dragRange > 0 ? 'x' : false}
-          dragConstraints={{ left: -dragRange, right: 0 }}
-          dragElastic={0.1}
-          className={`flex w-full gap-4 select-none ${dragRange > 0 ? 'cursor-grab active:cursor-grabbing' : ''}`}
-        >
-          <div className="shrink-0">
-            <PlaylistCard title={'아냐포져가 만든곡 '} trackCount={15} />
-          </div>{' '}
-          <div className="shrink-0">
-            <PlaylistCard title={'아냐포져가 만든곡 '} trackCount={15} />
-          </div>
-          <div className="shrink-0">
-            <PlaylistCard title={'아냐포져가 만든곡 '} trackCount={15} />
-          </div>
-          <div className="shrink-0">
-            <PlaylistCard title={'아냐포져가 만든곡 '} trackCount={15} />
-          </div>
-          <div className="shrink-0">
-            <PlaylistCard title={'아냐포져가 만든곡 '} trackCount={15} />
-          </div>
-          <div className="shrink-0">
-            <PlaylistCard title={'아냐포져가 만든곡 '} trackCount={15} />
-          </div>
-          <div className="shrink-0">
-            <PlaylistCard title={'아냐포져가 만든곡 '} trackCount={15} />
-          </div>{' '}
-          <div className="shrink-0">
-            <PlaylistCard title={'아냐포져가 만든곡 '} trackCount={15} />
-          </div>{' '}
-          <div className="shrink-0">
-            <PlaylistCard title={'아냐포져가 만든곡 '} trackCount={15} />
-          </div>{' '}
-          <div className="shrink-0">
-            <PlaylistCard title={'아냐포져가 만든곡 '} trackCount={15} />
-          </div>{' '}
-          <div className="shrink-0">
-            <PlaylistCard title={'아냐포져가 만든곡 '} trackCount={15} />
-          </div>
-        </motion.div>
-      </div>
-      <span className="text-text-primary font-bold">Live</span>
-      <div>
-        <PlayroomList />
-      </div>
+      {isPending ? (
+        <div className="flex min-h-[60vh] w-full flex-col items-center justify-center gap-5">
+          <LoadingSpinner />
+          <span className="text-text-primary">Loading...</span>
+        </div>
+      ) : !data || !hasResults ? (
+        <div className="text-text-primary flex min-h-[60vh] w-full items-center justify-center font-bold">
+          검색된 내용을 찾을 수 없습니다.
+        </div>
+      ) : (
+        <>
+          {!playlists?.items || playlists.items.length < 1 ? (
+            ''
+          ) : (
+            <>
+              <span className="text-text-primary w-full font-bold">
+                PlayList
+              </span>
+              <SearchPlaylistCarousel items={playlists?.items ?? []} />
+            </>
+          )}
+
+          {!playrooms?.items || playrooms.items.length < 1 ? (
+            ''
+          ) : (
+            <>
+              <span className="text-text-primary font-bold">Live</span>
+              <div>
+                <SearchPlayroomList data={playrooms?.items ?? []} />
+              </div>
+            </>
+          )}
+
+          {!groups?.items || groups.items.length < 1 ? (
+            ''
+          ) : (
+            <>
+              <span className="text-text-primary font-bold">Group</span>
+              <div>
+                <SearchGroupList data={groups?.items ?? []} />
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }

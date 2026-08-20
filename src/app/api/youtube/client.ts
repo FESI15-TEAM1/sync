@@ -22,14 +22,19 @@ export async function request<T>(
   if (!apiKey) throw new YoutubeApiError('유튜브 API 키가 없습니다.', 500);
 
   const url = new URL(`${BASE_URL}${endpoint}`);
-  Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
+  Object.entries(params).forEach(([key, value]) =>
+    url.searchParams.set(key, value),
+  );
   url.searchParams.set('key', apiKey);
 
   const response = await fetch(url.toString(), { method });
   const data = await response.json();
 
   if (!response.ok) {
-    throw new YoutubeApiError(data.error?.message ?? 'YouTube API error', response.status);
+    throw new YoutubeApiError(
+      data.error?.message ?? 'YouTube API error',
+      response.status,
+    );
   }
   return data as T;
 }

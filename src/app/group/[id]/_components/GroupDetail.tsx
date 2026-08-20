@@ -3,85 +3,91 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import KebabModal from '@/components/domain/KebabModal';
-import PlaylistCard from '@/components/domain/PlaylistCard';
+import { useMyPlaylistsQuery } from '@/app/group/_hooks/useMyPlaylistsQuery';
+import BackButton from '@/components/common/BackButton';
+import { useUserStore } from '@/providers/user-store-provider';
+import type { GroupDetailResponse } from '@/services/group/group.types';
 
+import { useCopyInviteCode } from '../_hooks/useCopyInviteCode';
+import { useGroupMembersQuery } from '../_hooks/useGroupMembersQuery';
+import { useGroupPlaylists } from '../_hooks/useGroupPlaylists';
+import { useJoinGroup } from '../_hooks/useJoinGroup';
+import { useSaveGroupPlaylists } from '../_hooks/useSaveGroupPlaylists';
+import GroupDetailTabs, { type DetailTab } from './GroupDetailTabs';
+import GroupHeader from './GroupHeader';
+import GroupJoinBanner from './GroupJoinBanner';
 import GroupLeaveModal from './GroupLeaveModal';
+import GroupMemberList from './GroupMemberList';
+import GroupPlaylistGrid from './GroupPlaylistGrid';
 import PlaylistEditModal, { type EditablePlaylist } from './PlaylistEditModal';
 
 type GroupDetailProps = {
   groupId: number;
-  isLeader: boolean;
-  isJoined: boolean;
+  group: GroupDetailResponse;
 };
 
-export type EditableGroupInfo = {
-  name: string;
-  description: string;
-  isPublic: boolean;
-  coverImage: string | null;
-};
-
-const MOCK_GROUP_INFO: EditableGroupInfo = {
-  name: '인디밴드 러버스',
-  description: '인디 음악을 좋아하는 사람들의 모임',
-  isPublic: false,
-  coverImage: null,
-};
-
-const MOCK_GROUP_META = {
-  memberCount: 32,
-  inviteCode: 'IN9X2K',
-};
-
-const MOCK_ADDED_PLAYLISTS: EditablePlaylist[] = [
-  {
-    id: 1,
-    title: '비 오는 날 감성',
-    artist: 'ㄹㅇ좋음',
-    trackCount: 18,
-  },
-  {
-    id: 2,
-    title: 'Midnight Rain',
-    artist: 'Aria Chen',
-    trackCount: 12,
-  },
-];
-
-const MOCK_AVAILABLE_PLAYLISTS: EditablePlaylist[] = [
-  { id: 3, title: 'jpop', artist: 'ㄹㅇ좋음', trackCount: 20 },
-  {
-    id: 4,
-    title: '습할때 듣는노래',
-    artist: 'Aria Chen',
-    trackCount: 15,
-  },
-];
-
-export default function GroupDetail({
-  groupId,
-  isLeader,
-  isJoined,
-}: GroupDetailProps) {
+export default function GroupDetail({ groupId, group }: GroupDetailProps) {
   const router = useRouter();
+  const currentUser = useUserStore((state) => state.user);
+
+  const isLeader = currentUser?.id === group.owner.userId;
+  const isMember = isLeader || group.isMember;
 
   const [isEditPlaylistsOpen, setIsEditPlaylistsOpen] = useState(false);
   const [isLeaveGroupOpen, setIsLeaveGroupOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<DetailTab>('playlists');
 
-  const [groupInfo] = useState<EditableGroupInfo>(MOCK_GROUP_INFO);
-  const [playlists, setPlaylists] =
-    useState<EditablePlaylist[]>(MOCK_ADDED_PLAYLISTS);
-  const [availablePlaylists, setAvailablePlaylists] = useState<
-    EditablePlaylist[]
-  >(MOCK_AVAILABLE_PLAYLISTS);
+  const { showCopyToast, copyErrorMessage, handleCopyInviteCode } =
+    useCopyInviteCode(group.inviteCode);
+
+  const groupMembersQuery = useGroupMembersQuery(groupId);
+
+  const { playlists, isPending: isGroupPlaylistsPending } =
+    useGroupPlaylists(groupId);
+
+  // 내가 그룹에 추가할 수 있는 플레이리스트(내 플레이리스트 중 아직 추가되지 않은 것)
+  const myPlaylistsQuery = useMyPlaylistsQuery(
+    currentUser?.id,
+    isMember && currentUser !== null,
+  );
+
+  const addedPlaylistIds = new Set(playlists.map((item) => item.id));
+  const availablePlaylists: EditablePlaylist[] = (myPlaylistsQuery.data ?? [])
+    .filter((item) => !addedPlaylistIds.has(item.id))
+    .map((item) => ({
+      id: item.id,
+      title: item.title,
+      trackCount: item.trackCount,
+      owner: currentUser?.nickname ?? '',
+      image: item.image,
+      ownerId: currentUser?.id ?? 0,
+    }));
+
+  const isPlaylistsLoading =
+    isGroupPlaylistsPending || (isMember && myPlaylistsQuery.isPending);
+
+  const {
+    handleSavePlaylists,
+    isSavingPlaylists,
+    saveErrorMessage,
+    resetSaveError,
+  } = useSaveGroupPlaylists(groupId, currentUser?.id, () =>
+    setIsEditPlaylistsOpen(false),
+  );
+
+  const { handleJoinGroup, isJoinPending, isJoinSuccess, joinErrorMessage } =
+    useJoinGroup(groupId);
 
   //그룹 정보 수정
   const handleEditGroupInfo = () => {
     router.push(`/group/${groupId}/edit`);
   };
+
   //플레이리스트 편집
   const handleEditPlaylists = () => {
+    if (isSavingPlaylists || isPlaylistsLoading) return;
+
+    resetSaveError();
     setIsEditPlaylistsOpen(true);
   };
 
@@ -90,60 +96,43 @@ export default function GroupDetail({
     setIsLeaveGroupOpen(true);
   };
 
-  const handleSavePlaylists = (nextPlaylists: EditablePlaylist[]) => {
-    const nextIds = new Set(nextPlaylists.map((item) => item.id));
-    const removed = playlists.filter((item) => !nextIds.has(item.id));
-    const keptAvailable = availablePlaylists.filter(
-      (item) => !nextIds.has(item.id),
-    );
-
-    setPlaylists(nextPlaylists);
-    setAvailablePlaylists([...keptAvailable, ...removed]);
-    setIsEditPlaylistsOpen(false);
-  };
-
-  const handleConfirmLeave = () => {
-    console.log('Leave group', groupId);
-    setIsLeaveGroupOpen(false);
-  };
-
   return (
     <>
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5 px-5 py-6">
-        <div className="flex items-start gap-4">
-          <div className="bg-input size-20 shrink-0 rounded-2xl" aria-hidden />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-2">
-              <h1 className="text-text-primary text-xl font-bold">
-                {groupInfo.name}
-              </h1>
-              {/* 케밥 메뉴 */}
-              <KebabModal>
-                {isLeader || !isJoined ? (
-                  <>
-                    <KebabModal.Item onClick={handleEditGroupInfo}>
-                      그룹 정보 수정
-                    </KebabModal.Item>
-                    <KebabModal.Item onClick={handleEditPlaylists}>
-                      플레이리스트 편집
-                    </KebabModal.Item>
-                  </>
-                ) : (
-                  <KebabModal.Item variant="danger" onClick={handleLeaveGroup}>
-                    그룹 탈퇴하기
-                  </KebabModal.Item>
-                )}
-              </KebabModal>
-            </div>
-            <p className="text-text-secondary mt-1 text-sm">
-              멤버 {MOCK_GROUP_META.memberCount}명 · 플레이리스트{' '}
-              {playlists.length}개
-            </p>
-            <p className="text-text-secondary mt-0.5 text-sm">
-              초대코드 {MOCK_GROUP_META.inviteCode}
-            </p>
-          </div>
-        </div>
+      <div
+        role="status"
+        aria-live="polite"
+        aria-hidden={!showCopyToast}
+        className={`bg-bg-card fixed top-25 left-1/2 -translate-x-1/2 rounded-lg px-4 py-2 text-sm text-white transition-all duration-300 ${showCopyToast ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0'} `}
+      >
+        {showCopyToast ? '초대코드가 복사되었습니다.' : ''}
+      </div>
+      <div className="mx-auto flex w-full flex-1 flex-col gap-5 px-5 py-6">
+        <BackButton />
+
+        <GroupHeader
+          group={group}
+          isLeader={isLeader}
+          copyErrorMessage={copyErrorMessage}
+          onEditGroupInfo={handleEditGroupInfo}
+          onEditPlaylists={handleEditPlaylists}
+          onLeaveGroup={handleLeaveGroup}
+          onCopyInviteCode={handleCopyInviteCode}
+        />
+
+        <GroupJoinBanner
+          group={group}
+          isLeader={isLeader}
+          isPending={isJoinPending}
+          isSuccess={isJoinSuccess}
+          errorMessage={joinErrorMessage}
+          onJoin={handleJoinGroup}
+        />
+
+        {saveErrorMessage && (
+          <p role="alert" className="text-sm text-red-500">
+            {saveErrorMessage}
+          </p>
+        )}
 
         {/* 플레이리스트 편집 모달 */}
         {isEditPlaylistsOpen && (
@@ -151,6 +140,8 @@ export default function GroupDetail({
             isOpen={isEditPlaylistsOpen}
             addedPlaylists={playlists}
             availablePlaylists={availablePlaylists}
+            isLeader={isLeader}
+            currentUserId={currentUser?.id ?? null}
             onClose={() => setIsEditPlaylistsOpen(false)}
             onSave={handleSavePlaylists}
           />
@@ -159,21 +150,28 @@ export default function GroupDetail({
         {/* 그룹 탈퇴 모달 */}
         <GroupLeaveModal
           isOpen={isLeaveGroupOpen}
-          groupName={groupInfo.name}
+          groupId={groupId}
+          groupName={group.title}
           onClose={() => setIsLeaveGroupOpen(false)}
-          onConfirm={handleConfirmLeave}
         />
       </div>
-      <div className="mx-auto w-full max-w-md px-5">
-        <div className="flex flex-row flex-wrap gap-3">
-          {playlists.map((playlist) => (
-            <PlaylistCard
-              key={playlist.id}
-              title={playlist.title}
-              trackCount={playlist.trackCount}
-            />
-          ))}
-        </div>
+      <GroupDetailTabs activeTab={activeTab} onChange={setActiveTab} />
+      <div className="mx-auto mt-4 w-full px-5">
+        {activeTab === 'playlists' ? (
+          <GroupPlaylistGrid
+            groupId={groupId}
+            isLeader={isLeader}
+            currentUserId={currentUser?.id ?? null}
+          />
+        ) : (
+          <GroupMemberList
+            groupId={groupId}
+            isLeader={isLeader}
+            members={groupMembersQuery.data?.items ?? []}
+            isLoading={groupMembersQuery.isPending}
+            isError={groupMembersQuery.isError}
+          />
+        )}
       </div>
     </>
   );

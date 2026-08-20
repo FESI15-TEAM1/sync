@@ -14,7 +14,24 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
-    remotePatterns: [{ protocol: 'https', hostname: 'i.ytimg.com' }],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.ytimg.com', // Youtube thumbnail images
+      },
+      {
+        protocol: 'https',
+        hostname: 'code-it-sync-bucket.s3.ap-northeast-2.amazonaws.com', // S3 bucket for SYNC images
+      },
+      {
+        protocol: 'http',
+        hostname: 'k.kakaocdn.net', // Kakao profile images
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com', // Google profile images
+      },
+    ],
   },
 };
 

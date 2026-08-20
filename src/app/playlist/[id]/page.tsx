@@ -1,43 +1,65 @@
-import PlaylistDetailView from './_components/PlaylistDetailView';
+import { APIError } from '@/lib/http/error';
+import { serverFetch } from '@/lib/http/server-fetch';
+import type {
+  LikePlaylistResponse,
+  MyplaylistResponse,
+} from '@/services/playlist/playlistCard.type';
+import type { UserProfile } from '@/services/user/user.types';
 
-const data = {
-  tracks: [
-    {
-      id: 10,
-      videoId: 'oZpYEEcvu5I',
-      title: 'tuki.『만찬가』Official Music Video',
-      artist: 'tuki.(17)',
-      thumbnail:
-        'https://i.ytimg.com/vi/oZpYEEcvu5I/hq720.jpg?sqp=-oaymwEqCNAFEJQDSFryq4qpAxwIARUAAIhCGAHYAQHiAQoIGBACGAY4AUABuAIZovOX_wMOCKfinqwGGODqBCDgqAE=&rs=AOn4CLBkr1n5P4qrGeenHafIq1xQQ9pNfQ&usqp=CBk',
-    },
-    {
-      id: 11,
-      videoId: 'OaPBaP-yyNk',
-      title: '【Ado】逆光（ウタ from ONE PIECE FILM RED）',
-      artist: 'Ado',
-      thumbnail:
-        'https://i.ytimg.com/vi/gt-v_YCkaMY/hqdefault.jpg?sqp=-oaymwEpCKgBEF5IWvKriqkDHAgBFQAAiEIYAdgBAeIBCggYEAIYBjgBQAG4Ahmi85f_Aw4ImvvInwYY4OoEIOCoAQ==&rs=AOn4CLAI4I1QR6Fo8wMhU_Cx3KTIDZzG2g&usqp=CBk',
-    },
-    {
-      id: 12,
-      videoId: 'sk1Z-Hqwwog',
-      title: '【Ado】私は最強 (ウタ from ONE PIECE FILM RED)',
-      artist: 'Ado',
-      thumbnail:
-        'https://i.ytimg.com/vi/sk1Z-Hqwwog/hqdefault.jpg?sqp=-oaymwEpCKgBEF5IWvKriqkDHAgBFQAAiEIYAdgBAeIBCggYEAIYBjgBQAG4Ahmi85f_Aw4I0fvInwYY4OoEIOCoAQ==&rs=AOn4CLBc6BqJzNIe-EN2Y3GjpfsAlC6uOA&usqp=CBk',
-    },
-    {
-      id: 13,
-      videoId: 'n6WaTObHRJM',
-      title:
-        '2019 신 애국가 1~4절 영상ㅣ2019 New version National Anthem of Koreaㅣlmlxiabeize',
-      artist: '에레멜lmlxiabeize',
-      thumbnail:
-        'https://i.ytimg.com/vi/n6WaTObHRJM/hq720.jpg?sqp=-oaymwEqCNAFEJQDSFryq4qpAxwIARUAAIhCGAHYAQHiAQoIGBACGAY4AUABuAIZovOX_wMOCJWwr-EFGODqBCDgqAE=&rs=AOn4CLCTExm3zUnMqcm10jvDxPqff0RAMw&usqp=CBk',
-    },
-  ],
-};
+import PlaylistView from './_components/PlaylistView';
 
-export default function PlaylistDeatilPage() {
-  return <PlaylistDetailView tracks={data.tracks} />;
+export default async function Playlist({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const routeUserId = (await params).id;
+
+  const initialMyData = await serverFetch<MyplaylistResponse>(
+    `/users/${routeUserId}/playlists`,
+    {
+      method: 'GET',
+    },
+  );
+
+  const initialProfile = await serverFetch<UserProfile>(
+    `/users/${routeUserId}`,
+    {
+      method: 'GET',
+    },
+  );
+
+  const currentUserId = await getCurrentUserId();
+
+  const isOwner = currentUserId === Number(routeUserId);
+
+  const initialLikeData = isOwner
+    ? await serverFetch<LikePlaylistResponse>(`/users/me/liked-playlists`, {
+        method: 'GET',
+      })
+    : null;
+
+  return (
+    <div>
+      <PlaylistView
+        userId={routeUserId}
+        initialMyData={initialMyData}
+        likedData={initialLikeData?.items ?? []}
+        initialProfile={initialProfile}
+        isOwner={isOwner}
+      />
+    </div>
+  );
+}
+
+async function getCurrentUserId() {
+  try {
+    const me = await serverFetch<{ id: number }>('/users/me', {
+      method: 'GET',
+    });
+    return me.id;
+  } catch (error) {
+    if (error instanceof APIError) return null;
+    throw error;
+  }
 }

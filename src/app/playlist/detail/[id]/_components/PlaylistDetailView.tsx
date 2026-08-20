@@ -1,0 +1,310 @@
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+import Image from 'next/image';
+import { useParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+
+import CommentsSection from '@/app/playlist/detail/[id]/_components/CommentsSection';
+import LikedButton from '@/app/playlist/detail/[id]/_components/LikedButton';
+import PlaylistHeaderActions from '@/app/playlist/detail/[id]/_components/PlaylistHeaderActions';
+import PlaylistPlayer from '@/app/playlist/detail/[id]/_components/PlaylistPlayer';
+import { type PlaylistPlayerHandle } from '@/app/playlist/detail/[id]/_components/PlaylistPlayer';
+import PlaylistPlayerBar from '@/app/playlist/detail/[id]/_components/PlaylistPlayerBar';
+import TrackHoverController from '@/app/playlist/detail/[id]/_components/TrackHoverController';
+import defaultImg from '@/assets/images/default.png';
+import Button from '@/components/Button';
+import TrackList from '@/components/domain/playlists/TrackList';
+import ProfilePreviewModal from '@/components/domain/user/ProfilePreviewModal';
+import { clientFetch } from '@/lib/http/client-fetch';
+import { usePlayerStore } from '@/providers/player-store-provider';
+import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
+import { type PlaylistTrack } from '@/services/playlist/playlist';
+import { readStoredVolume, writeStoredVolume } from '@/utils/player/volume';
+
+import { useCreateGroupRequest } from '../_hooks/useCreateGroupRequest';
+import { useLikedMutation } from '../_hooks/useLikedQuery';
+
+const RESTART_THRESHOLD_SECONDS = 3;
+
+export default function PlaylistDetailView({
+  userid,
+}: {
+  userid: string | null;
+}) {
+  const currentTrack = usePlayerStore((state) => state.currentTrack);
+  const isPlaying = usePlayerStore((state) => state.isPlaying);
+  const playTrack = usePlayerStore((state) => state.playTrack);
+  const stop = usePlayerStore((state) => state.stop);
+  const setIsPlaying = usePlayerStore((state) => state.setIsPlaying);
+  const playerRef = useRef<PlaylistPlayerHandle | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(readStoredVolume() ?? 100);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isOwnerPreviewOpen, setIsOwnerPreviewOpen] = useState(false);
+  const { id } = useParams<{ id: string }>();
+
+  const {
+    data: playlist,
+    isPending: isPlaylistPending,
+    error: playlistError,
+  } = useQuery({
+    queryKey: ['playlists', id],
+    queryFn: () => clientFetch<PlaylistDetail>(`/playlists/${id}`),
+  });
+
+  const [trackIdForTime, setTrackIdForTime] = useState(currentTrack?.videoId);
+  if (currentTrack?.videoId !== trackIdForTime) {
+    setTrackIdForTime(currentTrack?.videoId);
+    setCurrentTime(0);
+    setDuration(0);
+  }
+  const {
+    mutate: createGroupRequest,
+    isPending: isRequesting,
+    isSuccess: isRequestSuccess,
+    variables: requestedPlaylistId,
+  } = useCreateGroupRequest();
+
+  const isRequestedThisPlaylist =
+    isRequestSuccess && requestedPlaylistId === playlist?.id;
+
+  const [lastTrack, setLastTrack] = useState(currentTrack);
+  if (currentTrack && currentTrack !== lastTrack) {
+    setLastTrack(currentTrack);
+  }
+  const { mutate: toggleLiked, isPending } = useLikedMutation(
+    String(playlist?.id),
+  );
+
+  const handleLikedClick = () => {
+    if (isPending) return;
+    toggleLiked(!playlist?.isLiked);
+  };
+
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      setCurrentTime(playerRef.current?.getCurrentTime() ?? 0);
+      setDuration(playerRef.current?.getDuration() ?? 0);
+    }, 500);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  useEffect(() => {
+    return () => setIsPlaying(false);
+  }, [setIsPlaying]);
+
+  if (isPlaylistPending) return <PlaylistDetailSkeleton />;
+  if (playlistError)
+    return (
+      <div className="text-text-primary flex min-h-[60vh] w-full items-center justify-center font-bold">
+        플레이리스트를 불러오지 못했습니다.
+      </div>
+    );
+
+  const handleTogglePlay = () => {
+    if (isPlaying) playerRef.current?.pause();
+    else playerRef.current?.play();
+  };
+
+  const handleTrackClick = (track: PlaylistTrack) => {
+    if (currentTrack?.videoId === track.videoId) {
+      handleTogglePlay();
+      return;
+    }
+    playerRef.current?.loadVideo(track.videoId);
+    playTrack(track);
+  };
+
+  const handleEnd = () => {
+    const currentIndex = playlist.tracks.findIndex(
+      (track) => track.videoId === currentTrack?.videoId,
+    );
+    const nextTrack = playlist.tracks[currentIndex + 1];
+    if (nextTrack) {
+      playerRef.current?.loadVideo(nextTrack.videoId);
+      playTrack(nextTrack);
+    } else {
+      stop();
+    }
+  };
+
+  const handlePrevious = () => {
+    const elapsed = playerRef.current?.getCurrentTime() ?? 0;
+    if (elapsed > RESTART_THRESHOLD_SECONDS) {
+      playerRef.current?.seekTo(0);
+      setCurrentTime(0);
+      return;
+    }
+    const currentIndex = playlist.tracks.findIndex(
+      (track) => track.videoId === currentTrack?.videoId,
+    );
+    const prevTrack = playlist.tracks[currentIndex - 1];
+    if (prevTrack) {
+      playerRef.current?.loadVideo(prevTrack.videoId);
+      playTrack(prevTrack);
+    } else {
+      playerRef.current?.seekTo(0);
+      setCurrentTime(0);
+    }
+  };
+
+  const handleSeek = (time: number) => {
+    playerRef.current?.seekTo(time);
+    setCurrentTime(time);
+  };
+
+  const handleVolumeChange = (nextVolume: number) => {
+    setVolume(nextVolume);
+    playerRef.current?.setVolume(nextVolume);
+    writeStoredVolume(nextVolume);
+    if (nextVolume === 0) {
+      setIsMuted(true);
+      playerRef.current?.mute();
+    } else if (isMuted) {
+      setIsMuted(false);
+      playerRef.current?.unMute();
+    }
+  };
+
+  const handleToggleMute = () => {
+    if (isMuted) {
+      setIsMuted(false);
+      playerRef.current?.unMute();
+    } else {
+      setIsMuted(true);
+      playerRef.current?.mute();
+    }
+  };
+
+  return (
+    <div
+      className={`flex max-w-7xl flex-col gap-10 p-2 ${currentTrack ? 'pb-24' : ''}`}
+    >
+      <PlaylistHeaderActions
+        playlistId={id}
+        ownerId={String(playlist.owner.userId)}
+        isOwner={userid == String(playlist.owner.userId)}
+      />
+      <div className="flex items-center gap-4">
+        <div className="overflow-hidden">
+          <Image
+            src={playlist.image || defaultImg}
+            width={140}
+            height={140}
+            alt="플레이리스트 이미지"
+            className="aspect-square rounded-2xl object-cover select-none"
+          />
+        </div>
+        <div className="mb-4 flex flex-col gap-3">
+          <h3 className="text-text-primary text-xl font-bold">
+            {playlist.title}
+          </h3>
+          <button
+            type="button"
+            onClick={() => setIsOwnerPreviewOpen(true)}
+            className="text-text-secondary w-fit cursor-pointer text-left text-sm"
+          >{`작성자: ${playlist.owner.nickname}`}</button>
+          <LikedButton
+            isLiked={!!playlist.isLiked}
+            onClick={handleLikedClick}
+            disabled={!userid}
+          />
+        </div>
+      </div>
+      {playlist.description && (
+        <p className="bg-bg-card text-text-primary rounded-xl p-4">
+          {playlist.description}
+        </p>
+      )}
+      {userid == String(playlist.owner.userId) ? (
+        ''
+      ) : (
+        <Button
+          className="w-full"
+          isDisabled={isRequesting || isRequestedThisPlaylist}
+          onClick={() => createGroupRequest(playlist.id)}
+        >
+          {isRequesting
+            ? '그룹생성 요청중..'
+            : isRequestedThisPlaylist
+              ? '요청됨'
+              : '그룹생성 요청'}
+        </Button>
+      )}
+      <div className="bg-bg-card rounded-xl p-4">
+        <TrackList
+          trackList={playlist?.tracks}
+          onTrackClick={handleTrackClick}
+          Button={(track) => (
+            <TrackHoverController
+              isPlaying={track.videoId === currentTrack?.videoId && isPlaying}
+              onToggle={() => handleTrackClick(track)}
+            />
+          )}
+        />
+      </div>
+      {currentTrack && (
+        <PlaylistPlayer
+          ref={playerRef}
+          videoId={currentTrack.videoId}
+          autoPlay={isPlaying}
+          volume={volume}
+          isMuted={isMuted}
+          onEnded={handleEnd}
+        />
+      )}
+      {lastTrack && (
+        <PlaylistPlayerBar
+          track={lastTrack}
+          isVisible={!!currentTrack}
+          isPlaying={isPlaying}
+          currentTime={currentTime}
+          duration={duration}
+          volume={volume}
+          isMuted={isMuted}
+          onTogglePlay={handleTogglePlay}
+          onPrevious={handlePrevious}
+          onNext={handleEnd}
+          onStop={stop}
+          onSeek={handleSeek}
+          onVolumeChange={handleVolumeChange}
+          onToggleMute={handleToggleMute}
+        />
+      )}
+      <CommentsSection playlistId={id} userid={userid} />
+
+      <ProfilePreviewModal
+        userId={playlist.owner.userId}
+        isOpen={isOwnerPreviewOpen}
+        onClose={() => setIsOwnerPreviewOpen(false)}
+      />
+    </div>
+  );
+}
+
+function PlaylistDetailSkeleton() {
+  return (
+    <div className="flex max-w-7xl flex-col gap-10 p-2">
+      <div className="flex items-center gap-4">
+        <div className="bg-border size-35 shrink-0 animate-pulse rounded-2xl" />
+        <div className="flex flex-col gap-3">
+          <div className="bg-border h-6 w-40 animate-pulse rounded" />
+          <div className="bg-border h-4 w-24 animate-pulse rounded" />
+        </div>
+      </div>
+      <div className="bg-border h-16 w-full animate-pulse rounded-xl" />
+      <div className="bg-bg-card flex flex-col gap-2 rounded-xl p-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            style={{ animationDelay: `${i * 100}ms` }}
+            className="bg-border h-14 w-full animate-pulse rounded-xl"
+          />
+        ))}
+      </div>
+    </div>
+  );
+}

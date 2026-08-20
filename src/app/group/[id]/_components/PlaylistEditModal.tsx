@@ -5,48 +5,58 @@ import { useState } from 'react';
 import Button from '@/components/Button';
 import Track from '@/components/domain/Track';
 import IconButton from '@/components/IconButton';
-import Input from '@/components/Input';
+import InputField from '@/components/InputField';
 import Modal from '@/components/Modal';
 
 export type EditablePlaylist = {
   id: number;
   title: string;
-  artist: string;
+  owner: string;
   trackCount: number;
+  image?: string;
+  ownerId: number;
 };
 
 type PlaylistEditModalProps = {
   isOpen: boolean;
   addedPlaylists: EditablePlaylist[];
   availablePlaylists: EditablePlaylist[];
+  isLeader: boolean;
+  currentUserId: number | null;
   onClose: () => void;
   onSave: (playlists: EditablePlaylist[]) => void;
 };
 
 function PlaylistRow({
   playlist,
+  canRemove,
   onRemove,
 }: {
   playlist: EditablePlaylist;
+  canRemove: boolean;
   onRemove: () => void;
 }) {
   return (
     <li>
       <Track
+        img={playlist.image}
         videoId={String(playlist.id)}
         title={playlist.title}
-        artist={playlist.artist}
+        // Track은 아티스트 필드를 쓰지만, 여기서는 플레이리스트 소유자(owner)를 표시한다.
+        artist={playlist.owner}
         Button={
-          <IconButton
-            type="button"
-            size="sm"
-            variants="secondary"
-            aria-label={`${playlist.title} 제거`}
-            onClick={onRemove}
-            className="border-border text-text-secondary hover:text-text-primary flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full border text-sm"
-          >
-            ✕
-          </IconButton>
+          canRemove ? (
+            <IconButton
+              type="button"
+              size="sm"
+              variants="secondary"
+              aria-label={`${playlist.title} 제거`}
+              onClick={onRemove}
+              className="border-border text-text-secondary hover:text-text-primary flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full border text-sm"
+            >
+              ✕
+            </IconButton>
+          ) : undefined
         }
       />
     </li>
@@ -64,6 +74,8 @@ export default function PlaylistEditModal({
 function PlaylistEditModalContent({
   addedPlaylists,
   availablePlaylists,
+  isLeader,
+  currentUserId,
   onClose,
   onSave,
 }: Omit<PlaylistEditModalProps, 'isOpen'>) {
@@ -83,10 +95,14 @@ function PlaylistEditModalContent({
     setSearchTerm(query.trim());
   };
 
+  // 참여자는 본인 소유 플레이리스트만 제거할 수 있고, 남이 담은 건 불변이다.
+  const canRemove = (playlist: EditablePlaylist) =>
+    isLeader || playlist.ownerId === currentUserId;
+
   const handleRemove = (id: number) => {
     const target = added.find((item) => item.id === id);
 
-    if (!target) return;
+    if (!target || !canRemove(target)) return;
 
     setAdded((prev) => prev.filter((item) => item.id !== id));
 
@@ -103,6 +119,16 @@ function PlaylistEditModalContent({
     setAdded((prev) => [...prev, target]);
   };
 
+  const handleSave = () => {
+    // 참여자: 배열 = 내가 담은 것의 최종 목록(본인 소유분만 반영)
+    // 그룹장: 배열 = 그룹 전체의 최종 목록(모더레이션 포함)
+    const finalPlaylists = isLeader
+      ? added
+      : added.filter((item) => item.ownerId === currentUserId);
+
+    onSave(finalPlaylists);
+  };
+
   return (
     <Modal isOpen onClose={onClose}>
       {/* Header */}
@@ -113,27 +139,26 @@ function PlaylistEditModalContent({
         {/* 검색 */}
         <div className="mb-5 flex items-center gap-2">
           <div className="min-w-0 flex-1">
-            <Input
-              placeholder="내 플레이리스트 검색"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearch();
-                }
-              }}
-            />
+            <InputField>
+              <InputField.Input
+                placeholder="내 플레이리스트 검색"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch();
+                  }
+                }}
+              />
+              <InputField.Button
+                disabled={false}
+                onClick={handleSearch}
+                className="h-11 w-auto shrink-0 rounded-full px-5"
+              >
+                검색
+              </InputField.Button>
+            </InputField>
           </div>
-
-          <Button
-            type="button"
-            size="md"
-            isDisabled={false}
-            onClick={handleSearch}
-            className="h-11 w-auto shrink-0 rounded-full px-5"
-          >
-            검색
-          </Button>
         </div>
 
         {/* 플레이리스트 목록 */}
@@ -143,16 +168,18 @@ function PlaylistEditModalContent({
           {/* 추가 가능한 플레이리스트 */}
           <div>
             <h3 className="text-text-secondary mb-2 text-sm">
-              검색된 플레이리스트({filteredAvailable.length})
+              내 플레이리스트({filteredAvailable.length})
             </h3>
 
             <ul>
               {filteredAvailable.map((playlist) => (
                 <Track
                   key={playlist.id}
+                  img={playlist.image}
                   videoId={String(playlist.id)}
                   title={playlist.title}
-                  artist={playlist.artist}
+                  // Track은 아티스트 필드를 쓰지만, 여기서는 플레이리스트 소유자(owner)를 표시한다.
+                  artist={playlist.owner}
                   Button={
                     <IconButton
                       type="button"
@@ -170,7 +197,7 @@ function PlaylistEditModalContent({
           </div>
           <div>
             <h3 className="text-text-secondary mb-2 text-sm">
-              추가된 플레이리스트({added.length})
+              그룹에 추가된 플레이리스트({added.length})
             </h3>
 
             <ul>
@@ -178,6 +205,7 @@ function PlaylistEditModalContent({
                 <PlaylistRow
                   key={playlist.id}
                   playlist={playlist}
+                  canRemove={canRemove(playlist)}
                   onRemove={() => handleRemove(playlist.id)}
                 />
               ))}
@@ -204,7 +232,7 @@ function PlaylistEditModalContent({
           size="md"
           variant="primary"
           isDisabled={false}
-          onClick={() => onSave(added)}
+          onClick={handleSave}
           className="flex h-9 w-28 shrink-0 items-center justify-center rounded-full px-0 font-bold"
         >
           저장하기

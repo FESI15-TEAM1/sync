@@ -2,10 +2,37 @@
 
 :root {
   --global-header-height: 77px; /* 페이지 첫 로드 시 사이드바 세로 길이 레이아웃 쉬프팅 방지를 위해 초기값 지정 */
+  --main-content-full-height: calc(100vh - var(--global-header-height) - 2rem);
 }
 
 body {
   font-family: var(--font-noto-sans), var(--font-pretendard);
+  word-break: keep-all;
+}
+
+/* 자동 완성시 배경 바뀌는 거 방지용 */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ffffff;
+  -webkit-box-shadow: 0 0 0px 1000px #2a2a2a inset;
+  box-shadow: 0 0 0px 1000px #2a2a2a inset;
+  caret-color: #ffffff;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+@theme {
+  --animate-wave: wave 1.4s ease-in-out infinite;
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: scaleY(0.32);
+  }
+  50% {
+    transform: scaleY(1);
+  }
 }
 
 @theme {
@@ -25,4 +52,7 @@ body {
   /* Text */
   --color-text-primary: #ffffff;
   --color-text-secondary: #b3b3b3;
+
+  /* xsmall breakpoint 추가 */
+  --breakpoint-xs: 30rem; /* 480px */
 }
