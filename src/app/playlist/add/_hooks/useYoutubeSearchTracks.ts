@@ -57,7 +57,8 @@ export function useYoutubeSearchTracks(addedVideoIds: Set<string>) {
   };
 
   const goToNextPage = () => {
-    const nextIndex = page + 1;
+    const originPage = page;
+    const nextIndex = originPage + 1;
     if (nextIndex < rawPages.length) {
       setPage(nextIndex);
       return;
@@ -65,7 +66,9 @@ export function useYoutubeSearchTracks(addedVideoIds: Set<string>) {
     if (nextPageToken == null) return;
 
     fetchAndAppendPage(nextPageToken, generationRef.current).then((result) => {
-      if (result) setPage(nextIndex);
+      if (!result) return;
+      // 요청이 도는 동안 사용자가 이전 페이지로 이동했다면 그 이동을 덮어쓰지 않는다.
+      setPage((current) => (current === originPage ? nextIndex : current));
     });
   };
 
@@ -82,6 +85,7 @@ export function useYoutubeSearchTracks(addedVideoIds: Set<string>) {
     page,
     hasNextPage,
     hasPrevPage,
+    hasSearched: rawPages.length > 0,
     goToNextPage,
     goToPrevPage,
     search,
