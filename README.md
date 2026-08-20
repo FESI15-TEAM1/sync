@@ -20,7 +20,8 @@
 
 YouTube Data API로 곡을 검색하고, 플레이어를 통해 바로 재생합니다.
 
-<img width="1916" height="915" alt="1" src="https://github.com/user-attachments/assets/e146693d-3a8a-4e91-aa08-69b2e5473ddb" />
+<img width="1901" height="915" alt="1" src="https://github.com/user-attachments/assets/0bf6a476-0452-4def-85f5-e92df8b34073" />
+
 
 
 <!-- 이미지 영역: 곡 검색 및 재생 -->
@@ -29,7 +30,8 @@ YouTube Data API로 곡을 검색하고, 플레이어를 통해 바로 재생합
 
 검색한 트랙을 담아 플레이리스트를 만들고, 다른 사용자의 플레이리스트에 댓글과 좋아요를 남길 수 있습니다.
 
-<img width="1903" height="919" alt="2" src="https://github.com/user-attachments/assets/5045b82c-51f0-404d-a53a-88b4e111a7c4" />
+<img width="1894" height="919" alt="2" src="https://github.com/user-attachments/assets/39a5c9e5-fb90-4eee-af55-79d6665822aa" />
+
 <!-- 이미지 영역(gif): 플레이리스트 생성 / 댓글 / 좋아요 -->
 
 ### 3. 생성된 플레이리스트로 비슷한 취향끼리 그룹 만들기
