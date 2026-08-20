@@ -38,3 +38,25 @@ export default function TrackList({
     </div>
   );
 }
+
+export function TrackListSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <div className="p-2" role="status" aria-busy="true">
+      <span className="sr-only">트랙 목록을 불러오는 중입니다.</span>
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          style={{ animationDelay: `${i * 100}ms` }}
+          className="flex animate-pulse items-center justify-between gap-4 p-2"
+        >
+          <div className="bg-border size-10 shrink-0 rounded-lg" />
+          <div className="flex min-w-0 grow flex-col gap-1.5">
+            <div className="bg-border h-4 w-1/3 rounded" />
+            <div className="bg-border h-3 w-1/2 rounded" />
+          </div>
+          <div className="bg-border size-6 shrink-0 rounded-full" />
+        </div>
+      ))}
+    </div>
+  );
+}

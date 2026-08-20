@@ -12,10 +12,15 @@ import { useUserStore } from '@/providers/user-store-provider';
 import SearchBar from './SearchBar';
 
 const NAV_ITEMS = [
-  { href: '/', label: '홈', isAuthOnly: false },
-  { href: '/stage', label: '스테이지', isAuthOnly: false },
-  { href: '/group', label: '내 그룹', isAuthOnly: true },
-  { href: '/playlist', label: '내 플레이리스트', isAuthOnly: true },
+  { href: '/', label: '홈', isAuthOnly: false, hasEmphasisStyle: false },
+  { href: '/stage', label: '스테이지', isAuthOnly: false, hasEmphasisStyle: false },
+  { href: '/group', label: '내 그룹', isAuthOnly: true, hasEmphasisStyle: true },
+  {
+    href: '/playlist',
+    label: '내 플레이리스트',
+    isAuthOnly: true,
+    hasEmphasisStyle: true,
+  },
 ] as const;
 
 // 데스크탑 사이드바와 모바일 드로어가 공유하는 패널 스타일
@@ -78,6 +83,27 @@ function getFirstSegment(path: string) {
   return SEGMENT_ALIAS[segment] ?? segment;
 }
 
+// 그룹/플레이리스트는 하위 경로가 "내 것"인지에 따라 활성 여부가 갈려서 첫 세그먼트 비교만으로는 판단할 수 없다.
+function getIsCurrent(href: string, pathname: string, userId: number | null) {
+  if (href === '/') return pathname === '/';
+
+  // 내 그룹: 목록(/group) 자체만 활성 — 남의 그룹이든 내 그룹이든 상세(/group/[id])에서는 비활성
+  if (href === '/group') return pathname === '/group';
+
+  // 내 플레이리스트: 상세 경로의 userId가 로그인한 내 id와 같을 때만 활성
+  if (href === '/playlist') {
+    const routeUserId = pathname.split('/')[2];
+
+    return (
+      pathname.split('/')[1] === 'playlist' &&
+      userId !== null &&
+      routeUserId === String(userId)
+    );
+  }
+
+  return getFirstSegment(pathname) === getFirstSegment(href);
+}
+
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const user = useUserStore((state) => state.user);
@@ -89,19 +115,17 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       {pathname === '/search' || !user ? null : <SearchBar />}
 
       <nav className="text-text-primary flex h-full flex-col gap-9 p-4">
-        {items.map(({ href, label }) => {
-          // 홈은 루트 경로에서만 활성 — 나머지는 첫 세그먼트가 같으면 활성
-          const isCurrent =
-            href === '/'
-              ? pathname === '/'
-              : getFirstSegment(pathname) === getFirstSegment(href);
+        {items.map(({ href, label, hasEmphasisStyle }) => {
+          const isCurrent = getIsCurrent(href, pathname, user?.id ?? null);
 
           return (
             <Link
               key={href}
               href={href}
               aria-current={isCurrent ? 'page' : undefined}
-              className={twMerge(SidebarItemStyle({ isCurrent }))}
+              className={twMerge(
+                hasEmphasisStyle ? SidebarItemStyle({ isCurrent }) : '',
+              )}
               onClick={onNavigate}
             >
               {label}
