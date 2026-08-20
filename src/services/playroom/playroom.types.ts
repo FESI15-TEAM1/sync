@@ -37,6 +37,7 @@ export type PlayroomCardData = Pick<
   | 'listenerCount'
   | 'host'
   | 'isLive'
+  | 'createdAt'
 >;
 
 /** 한 페이지 개수의 허용 범위. 벗어난 값은 백엔드가 임의로 보정하므로 요청 전에 걸러냅니다. */
