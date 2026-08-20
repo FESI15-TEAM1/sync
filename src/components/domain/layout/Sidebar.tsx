@@ -12,9 +12,19 @@ import { useUserStore } from '@/providers/user-store-provider';
 import SearchBar from './SearchBar';
 
 const NAV_ITEMS = [
-  { href: '/', label: '홈', isAuthOnly: false, hasEmphasisStyle: false },
-  { href: '/stage', label: '스테이지', isAuthOnly: false, hasEmphasisStyle: false },
-  { href: '/group', label: '내 그룹', isAuthOnly: true, hasEmphasisStyle: true },
+  { href: '/', label: '홈', isAuthOnly: true, hasEmphasisStyle: true },
+  {
+    href: '/stage',
+    label: '스테이지',
+    isAuthOnly: true,
+    hasEmphasisStyle: true,
+  },
+  {
+    href: '/group',
+    label: '내 그룹',
+    isAuthOnly: true,
+    hasEmphasisStyle: true,
+  },
   {
     href: '/playlist',
     label: '내 플레이리스트',
