@@ -20,11 +20,17 @@
 
 YouTube Data API로 곡을 검색하고, 플레이어를 통해 바로 재생합니다.
 
+<img width="1901" height="915" alt="1" src="https://github.com/user-attachments/assets/0bf6a476-0452-4def-85f5-e92df8b34073" />
+
+
+
 <!-- 이미지 영역: 곡 검색 및 재생 -->
 
 ### 2. 트랙을 추가해 나만의 플레이리스트 생성하기
 
 검색한 트랙을 담아 플레이리스트를 만들고, 다른 사용자의 플레이리스트에 댓글과 좋아요를 남길 수 있습니다.
+
+<img width="1894" height="919" alt="2" src="https://github.com/user-attachments/assets/39a5c9e5-fb90-4eee-af55-79d6665822aa" />
 
 <!-- 이미지 영역(gif): 플레이리스트 생성 / 댓글 / 좋아요 -->
 
@@ -32,13 +38,15 @@ YouTube Data API로 곡을 검색하고, 플레이어를 통해 바로 재생합
 
 플레이리스트를 기준으로 그룹을 만들고, 취향이 맞는 사용자들과 함께 음악을 모아둘 수 있습니다.
 
-<!-- 이미지 영역: 그룹 생성 및 참여 -->
+<img width="1917" height="891" alt="image" src="https://github.com/user-attachments/assets/379f6f9a-70e7-4a6f-8a40-4e71bde24652" />
+
 
 ### 4. 생성된 플레이리스트로 스트리밍 세션 생성하여 공유
 
 플레이룸을 열면 참여자 모두의 재생 위치가 실시간으로 동기화되고, 채팅으로 함께 이야기할 수 있습니다.
 
-<!-- 이미지 영역: 플레이룸 실시간 동기화 및 채팅 -->
+<img width="1918" height="922" alt="image" src="https://github.com/user-attachments/assets/26c1b173-6b0d-46db-9440-3cecd12c27b0" />
+
 
 ## 그 외 기능
 
