@@ -6,6 +6,7 @@ import { type SubmitEvent, useState } from 'react';
 import AddedTracksSection from '@/app/playlist/add/_components/AddedTracksSection';
 import PlaylistThumbnailField from '@/app/playlist/add/_components/PlaylistThumbnailField';
 import TrackSearchSection from '@/app/playlist/add/_components/TrackSearchSection';
+import { usePostPlaylist } from '@/app/playlist/add/_hooks/usePostPlaylist';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import InputField from '@/components/InputField';
@@ -16,7 +17,6 @@ import type {
   CreatePlaylistRequest,
   PlaylistTrack,
 } from '@/services/playlist/playlist';
-import { postPlaylist } from '@/services/playlist/playlist.api';
 import { requestUploadUrl } from '@/services/upload/upload.api';
 import type { UploadUrlRequest } from '@/services/upload/upload.types';
 
@@ -29,8 +29,10 @@ export default function AddForm() {
     tracks: [],
   });
   const [imgFile, setImgFile] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const router = useRouter();
+  const { createPlaylist, isCreating } = usePostPlaylist();
+  const isSubmitting = isUploadingImage || isCreating;
 
   const addedVideoIds = new Set(form.tracks.map((track) => track.videoId));
 
@@ -49,27 +51,31 @@ export default function AddForm() {
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isSubmitting) return;
-    setIsSubmitting(true);
     try {
       let image = form.image;
 
       if (imgFile) {
-        const { uploadUrl, fileUrl } = await requestUploadUrl({
-          domain: 'playlist',
-          contentType: imgFile.type as UploadUrlRequest['contentType'],
-        });
-        const putResponse = await fetch(uploadUrl, {
-          method: 'PUT',
-          headers: { 'Content-Type': imgFile.type },
-          body: imgFile,
-        });
-        if (!putResponse.ok) {
-          throw new Error('이미지 업로드에 실패했습니다.');
+        setIsUploadingImage(true);
+        try {
+          const { uploadUrl, fileUrl } = await requestUploadUrl({
+            domain: 'playlist',
+            contentType: imgFile.type as UploadUrlRequest['contentType'],
+          });
+          const putResponse = await fetch(uploadUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': imgFile.type },
+            body: imgFile,
+          });
+          if (!putResponse.ok) {
+            throw new Error('이미지 업로드에 실패했습니다.');
+          }
+          image = fileUrl;
+        } finally {
+          setIsUploadingImage(false);
         }
-        image = fileUrl;
       }
-      await postPlaylist({ ...form, image });
-      router.push('/playlist');
+
+      await createPlaylist({ ...form, image });
     } catch (error) {
       if (error instanceof APIError) {
         if (error.status === 400) {
@@ -79,8 +85,6 @@ export default function AddForm() {
           router.replace('/login');
         }
       }
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
