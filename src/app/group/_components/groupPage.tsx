@@ -2,6 +2,7 @@
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
@@ -224,7 +225,8 @@ export default function GroupPage() {
           variant="primary"
           size="md"
           isDisabled={false}
-          onClick={() => router.push('/group/add')}
+          as={Link}
+          href={'/group/add'}
         >
           그룹 만들기
         </Button>

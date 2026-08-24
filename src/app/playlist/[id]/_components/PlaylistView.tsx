@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -86,9 +87,10 @@ export default function PlaylistView({
         variants="primary"
         size="lg"
         className="fixed right-6 bottom-6 text-xl"
-        onClick={() => router.push('/playlist/add')}
+        as={Link}
+        href={'/playlist/add'}
       >
-        +
+        <span className="text-3xl text-white">+</span>
       </IconButton>
     </div>
   );
