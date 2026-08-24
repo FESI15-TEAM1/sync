@@ -1,25 +1,31 @@
 'use client';
 
 import clsx from 'clsx';
+import type { ElementType } from 'react';
 import { type ComponentPropsWithoutRef } from 'react';
 import { type ReactNode } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-export default function Button({
+export type PolymorphicProps<C extends ElementType> = {
+  as?: C;
+} & Omit<ComponentPropsWithoutRef<C>, 'as'>;
+
+export default function Button<C extends ElementType = 'button'>({
   children,
   size = 'md',
   isDisabled,
   variant = 'primary',
   className,
+  as,
   ...props
-}: ComponentPropsWithoutRef<'button'> & {
-  // ComponentPropsWithoutRef == 이컴포넌트 태그가 받을 수 있는 모든 속성 중 ref만 빼고 button테그의 속성을 사용한다.
+}: PolymorphicProps<C> & {
   children: ReactNode;
   size?: 'sm' | 'md' | 'lg';
   isDisabled?: boolean;
   variant?: 'primary' | 'secondary' | 'outline';
   className?: string;
 }) {
+  const Comp = as || 'button';
   const button = twMerge(
     clsx(
       'rounded-3xl text-base font-bold transition-all text-nowrap',
@@ -46,12 +52,12 @@ export default function Button({
   );
 
   return (
-    <button
+    <Comp
       className={twMerge(button, className)}
       disabled={isDisabled}
       {...props}
     >
       {children}
-    </button>
+    </Comp>
   );
 }
