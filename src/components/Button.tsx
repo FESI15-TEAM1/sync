@@ -10,6 +10,15 @@ export type PolymorphicProps<C extends ElementType> = {
   as?: C;
 } & Omit<ComponentPropsWithoutRef<C>, 'as'>;
 
+// next/link 같은 as 오버라이드는 disabled 속성을 해석하지 않아 isDisabled가 눌림을 막지 못하므로,
+// as로 button이 아닌 요소를 지정하면 isDisabled 자체를 타입에서 금지합니다.
+type ButtonOwnProps<C extends ElementType> = {
+  children: ReactNode;
+  size?: 'sm' | 'md' | 'lg';
+  variant?: 'primary' | 'secondary' | 'outline';
+  className?: string;
+} & (C extends 'button' ? { isDisabled?: boolean } : { isDisabled?: never });
+
 export default function Button<C extends ElementType = 'button'>({
   children,
   size = 'md',
@@ -18,13 +27,7 @@ export default function Button<C extends ElementType = 'button'>({
   className,
   as,
   ...props
-}: PolymorphicProps<C> & {
-  children: ReactNode;
-  size?: 'sm' | 'md' | 'lg';
-  isDisabled?: boolean;
-  variant?: 'primary' | 'secondary' | 'outline';
-  className?: string;
-}) {
+}: PolymorphicProps<C> & ButtonOwnProps<C>) {
   const Comp = as || 'button';
   const button = twMerge(
     clsx(

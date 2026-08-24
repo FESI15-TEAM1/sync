@@ -221,13 +221,7 @@ export default function GroupPage() {
         >
           코드로 참여하기
         </Button>
-        <Button
-          variant="primary"
-          size="md"
-          isDisabled={false}
-          as={Link}
-          href={'/group/add'}
-        >
+        <Button variant="primary" size="md" as={Link} href={'/group/add'}>
           그룹 만들기
         </Button>
       </div>

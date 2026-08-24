@@ -36,7 +36,6 @@ export default function PlaylistView({
   isOwner: boolean;
 }) {
   const [tab, setTab] = useState<Tab>('mine');
-  const router = useRouter();
 
   const { data: profile } = useUserProfileQuery(userId, initialProfile);
   const { data: myPlaylists } = useUserPlaylistsQuery(userId, initialMyData);
