@@ -1,20 +1,24 @@
 import { clsx } from 'clsx';
+import type { ElementType } from 'react';
 import { type ReactNode } from 'react';
-import { type ComponentPropsWithoutRef } from 'react';
 import { twMerge } from 'tailwind-merge';
 
-export default function IconButton({
+import type { PolymorphicProps } from './Button';
+
+export default function IconButton<C extends ElementType = 'button'>({
   children,
   variants,
   size,
   className,
+  as,
   ...props
-}: ComponentPropsWithoutRef<'button'> & {
+}: PolymorphicProps<C> & {
   children: ReactNode; // 아이콘 컴포넌트를 받아옵니다
   variants?: 'primary' | 'secondary';
   size: 'sm' | 'md' | 'lg';
   className?: string;
 }) {
+  const Comp = as || 'button';
   const buttonStyle = clsx(
     'rounded-full flex justify-center items-center cursor-pointer',
     {
@@ -30,9 +34,9 @@ export default function IconButton({
 
   return (
     <>
-      <button className={twMerge(buttonStyle, className)} {...props}>
+      <Comp className={twMerge(buttonStyle, className)} {...props}>
         {children}
-      </button>
+      </Comp>
     </>
   );
 }

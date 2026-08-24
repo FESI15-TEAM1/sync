@@ -14,8 +14,8 @@ import { getEmailError } from '@/lib/auth-validation';
 import { useLoginMutation } from '../_hooks/useLoginMutation';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('97power@naver.com');
+  const [password, setPassword] = useState('password123');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
