@@ -30,7 +30,7 @@ export default function ProfileEditPage({ profile }: ProfileEditPageProps) {
   );
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [nickname, setNickname] = useState(profile.nickname);
-  const [bio, setBio] = useState(profile.description ?? '');
+  const [description, setDescription] = useState(profile.description ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [nicknameError, setNicknameError] = useState('');
 
@@ -75,7 +75,7 @@ export default function ProfileEditPage({ profile }: ProfileEditPageProps) {
 
       const updated = await updateMe({
         nickname: nickname.trim(),
-        description: bio.trim(),
+        description: description.trim(),
         ...(image ? { image } : {}),
       });
 
@@ -160,8 +160,8 @@ export default function ProfileEditPage({ profile }: ProfileEditPageProps) {
           <Textarea
             label="자기소개"
             placeholder="자기소개를 입력하세요"
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
         </div>
 
