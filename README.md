@@ -11,18 +11,21 @@
 
 ## 배포 정보
 
-- **배포 URL**: (배포 후 추가 예정)
-- **빌드 기간**: 2026.7.3 ~ 2026.8.20
+- **개발 프리뷰 URL**: [https://sync151-dev.vercel.app/](https://sync151-dev.vercel.app/) (테스트 계정 로그인 정보 포함됨)
+- **개발 기간** : 
+  - 부트캠프 과정 도중 개발: 2026.7.3 ~ 2026.8.20
+  - 과정 이후 개발: 2026.8.24~
 
 ## 주요 기능
+
+### * 시연 영상
+[시연 영상 Vimeo 링크](https://vimeo.com/1221410914?fl=ip&fe=ec) 입니다!
 
 ### 1. YouTube API를 사용한 음악 듣기
 
 YouTube Data API로 곡을 검색하고, 플레이어를 통해 바로 재생합니다.
 
 <img width="1901" height="915" alt="1" src="https://github.com/user-attachments/assets/0bf6a476-0452-4def-85f5-e92df8b34073" />
-
-
 
 <!-- 이미지 영역: 곡 검색 및 재생 -->
 
@@ -151,10 +154,8 @@ YouTube Data API로 곡을 검색하고, 플레이어를 통해 바로 재생합
 
 ### Refactoring
 
-- 토큰 리프레시 로직 정리
 - 쿼리 키 관리 (쿼리 팩토리 패턴 적용)
 - 공통 사용 영역 분리 및 재사용 적용
-- Button 컴포넌트 shadcn의 asChild 동작 참고하여 수정 진행
 - 모달에 React Portal 사용 및 모달 재사용성 확장
 
 ### Enhancement
@@ -180,7 +181,7 @@ YouTube Data API로 곡을 검색하고, 플레이어를 통해 바로 재생합
 
 ```bash
 npm install
-npm run dev
+npm run dev || npm run dev:https
 ```
 
-[http://localhost:3000](http://localhost:3000) 에서 확인할 수 있습니다.
+감사합니다!
