@@ -7,6 +7,8 @@ import IconButton from '@/components/IconButton';
 
 type KebabModalProps = {
   children: ReactNode;
+  trigger?: ReactNode;
+  triggerLabel?: string;
 };
 
 type KebabItemProps = {
@@ -15,7 +17,7 @@ type KebabItemProps = {
   variant?: 'default' | 'danger';
 };
 
-function KebabModal({ children }: KebabModalProps) {
+function KebabModal({ children, trigger, triggerLabel }: KebabModalProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
@@ -37,13 +39,24 @@ function KebabModal({ children }: KebabModalProps) {
 
   return (
     <div className="relative shrink-0" ref={menuRef}>
-      <IconButton size="sm" onClick={() => setIsMenuOpen((prev) => !prev)}>
-        <MoreIcon className="text-white" />
-      </IconButton>
+      {trigger ? (
+        <button
+          type="button"
+          aria-label={triggerLabel}
+          className="cursor-pointer"
+          onClick={() => setIsMenuOpen((prev) => !prev)}
+        >
+          {trigger}
+        </button>
+      ) : (
+        <IconButton size="sm" onClick={() => setIsMenuOpen((prev) => !prev)}>
+          <MoreIcon className="text-white" />
+        </IconButton>
+      )}
 
       {isMenuOpen && (
         <div
-          className="absolute top-8 right-0 z-10 flex w-max min-w-40 flex-col rounded-lg bg-zinc-800 p-2"
+          className="absolute top-full right-0 z-10 mt-2 flex w-max min-w-40 flex-col rounded-lg bg-zinc-800 p-2"
           onClick={() => setIsMenuOpen(false)}
         >
           {children}

@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useLayoutEffect, useRef } from 'react';
 
 import SyncLogo from '@/assets/icons/syncLogo.svg';
+import KebabModal from '@/components/domain/KebabModal';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 import { useUserStore } from '@/providers/user-store-provider';
 
@@ -12,6 +14,7 @@ import NotificationBell from './NotificationsBell';
 
 export default function Header() {
   const headerRef = useRef<HTMLElement>(null);
+  const router = useRouter();
   const user = useUserStore((state) => state.user);
   const isLoading = useUserStore((state) => state.isLoading);
   const showLoading = useDelayedLoading(isLoading);
@@ -58,25 +61,34 @@ export default function Header() {
         ) : user ? (
           // 로그인 상태
 
-          <Link aria-label="프로필" href={`/profile/${user.id}`}>
-            {user.image ? (
-              // eslint-disable-next-line @next/next/no-img-element -- 유저 업로드 CDN 호스트가 가변
-              <img
-                src={user.image}
-                alt="프로필"
-                width={45}
-                height={45}
-                className="size-11.25 shrink-0 rounded-full object-cover"
-              />
-            ) : (
-              <div
-                className="bg-input flex size-11.25 shrink-0 items-center justify-center rounded-full"
-                aria-hidden
-              >
-                <SyncLogo width={24} height={24} />
-              </div>
-            )}
-          </Link>
+          <KebabModal
+            triggerLabel="프로필 메뉴"
+            trigger={
+              user.image ? (
+                // eslint-disable-next-line @next/next/no-img-element -- 유저 업로드 CDN 호스트가 가변
+                <img
+                  src={user.image}
+                  alt="프로필"
+                  width={45}
+                  height={45}
+                  className="size-11.25 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <div
+                  className="bg-input flex size-11.25 shrink-0 items-center justify-center rounded-full"
+                  aria-hidden
+                >
+                  <SyncLogo width={24} height={24} />
+                </div>
+              )
+            }
+          >
+            <KebabModal.Item
+              onClick={() => router.push(`/profile/${user.id}`)}
+            >
+              마이페이지
+            </KebabModal.Item>
+          </KebabModal>
         ) : (
           // 로그아웃 상태
           <Link
