@@ -107,6 +107,7 @@ export default function PlayroomHeader({
           </>
         }
         confirmLabel="종료하기"
+        isConfirming={isClosing}
       />
     </div>
   );
