@@ -206,7 +206,7 @@ export default function Profile(props: ProfileProps) {
                 alt={`${profile.nickname} 프로필`}
                 width={64}
                 height={64}
-                className="size-16 shrink-0 rounded-full object-cover"
+                className="aspect-square size-16 shrink-0 rounded-full object-cover"
               />
             ) : (
               <div
