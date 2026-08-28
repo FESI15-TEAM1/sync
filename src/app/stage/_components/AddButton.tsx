@@ -4,12 +4,10 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { useGetMyPlayroomList } from '@/app/stage/_hooks/useGetMyPlayroomList';
+import ConfirmModal from '@/components/domain/ConfirmModal';
 import IconButton from '@/components/IconButton';
 import { MY_PLAYROOM_MAX_COUNT } from '@/constants/playroom';
 import { useUserStore } from '@/providers/user-store-provider';
-
-import LoginRequiredModal from './LoginRequiredModal';
-import PlayroomLimitModal from './PlayroomLimitModal';
 
 export default function AddButton() {
   const user = useUserStore((state) => state.user);
@@ -60,16 +58,33 @@ export default function AddButton() {
         <span className="text-3xl text-white">+</span>
       </IconButton>
 
-      {/* 비회원 로그인 요구 모달 */}
-      <LoginRequiredModal
+      {/* 비회원 접근 로그인 안내 모달 */}
+      <ConfirmModal
         isOpen={isLoginRequiredOpen}
-        onClose={() => setIsLoginRequiredOpen(false)}
+        title="로그인이 필요합니다"
+        description={
+          <>
+            플레이룸을 만들려면 로그인이 필요합니다.
+            <br /> 로그인 페이지로 이동하시겠습니까?
+          </>
+        }
+        confirmLabel="로그인"
         onConfirm={handleConfirmLogin}
+        onClose={() => setIsLoginRequiredOpen(false)}
       />
 
       {/* 개설 상한 도달 안내 모달 */}
-      <PlayroomLimitModal
+      <ConfirmModal
         isOpen={isLimitReachedOpen}
+        title="최대 생성 가능 개수에 도달하였습니다"
+        description={
+          <>
+            플레이룸은 최대 {MY_PLAYROOM_MAX_COUNT}개까지 만들 수 있습니다.
+            <br /> 기존 플레이룸을 닫은 뒤 다시 시도해주세요.
+          </>
+        }
+        hasCancel={false}
+        onConfirm={() => setIsLimitReachedOpen(false)}
         onClose={() => setIsLimitReachedOpen(false)}
       />
     </>
