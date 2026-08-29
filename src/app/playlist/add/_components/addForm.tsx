@@ -94,14 +94,16 @@ export default function AddForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
-      <ConfirmModal
-        isOpen={isOpen}
-        description={'다시 시도해 주세요'}
-        errorMessage={''}
-        title={'플레이리스트 생성중 오류가 발생하였습니다.'}
-        onConfirm={() => setIsOpen(false)}
-        onClose={() => setIsOpen(false)}
-      />
+      {isOpen && (
+        <ConfirmModal
+          isOpen={isOpen}
+          description={'다시 시도해 주세요'}
+          errorMessage={''}
+          title={'플레이리스트 생성중 오류가 발생하였습니다.'}
+          onConfirm={() => setIsOpen(false)}
+          onClose={() => setIsOpen(false)}
+        />
+      )}
       <div className="flex w-full">
         <BackButton type="button" fallbackUrl="/playlist" />
       </div>
