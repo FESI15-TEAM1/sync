@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import { type SubmitEvent, useState } from 'react';
 
@@ -22,6 +23,8 @@ import type {
 import { updatePlaylist } from '@/services/playlist/playlist.api';
 import { requestUploadUrl } from '@/services/upload/upload.api';
 import type { UploadUrlRequest } from '@/services/upload/upload.types';
+
+const ConfirmModal = dynamic(() => import('@/components/domain/ConfirmModal'));
 
 export default function EditForm() {
   const params = useParams();
@@ -76,6 +79,7 @@ function EditPlaylistForm({
   }));
   const [imgFile, setImgFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const addedVideoIds = new Set(form.tracks.map((track) => track.videoId));
 
@@ -123,7 +127,7 @@ function EditPlaylistForm({
     } catch (error) {
       if (error instanceof APIError) {
         if (error.status === 400) {
-          alert(error.message);
+          setIsOpen(true);
         }
         if (error.status === 401) {
           router.push('/login');
@@ -139,6 +143,14 @@ function EditPlaylistForm({
       onSubmit={handleSubmit}
       className="flex w-4xl flex-col items-center gap-4"
     >
+      <ConfirmModal
+        isOpen={isOpen}
+        description={'다시 시도해 주세요'}
+        errorMessage={''}
+        title={'플레이리스트 수정 중 오류가 발생하였습니다.'}
+        onConfirm={() => setIsOpen(false)}
+        onClose={() => setIsOpen(false)}
+      />
       <div className="flex w-full">
         <BackButton type="button" fallbackUrl={`/playlist/detail/${id}`} />
       </div>

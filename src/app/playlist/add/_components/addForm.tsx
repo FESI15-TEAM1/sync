@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { type SubmitEvent, useState } from 'react';
 
@@ -20,6 +21,8 @@ import type {
 import { requestUploadUrl } from '@/services/upload/upload.api';
 import type { UploadUrlRequest } from '@/services/upload/upload.types';
 
+const ConfirmModal = dynamic(() => import('@/components/domain/ConfirmModal'));
+
 export default function AddForm() {
   const [form, setForm] = useState<CreatePlaylistRequest>({
     title: '',
@@ -30,6 +33,7 @@ export default function AddForm() {
   });
   const [imgFile, setImgFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const { createPlaylist, isCreating } = usePostPlaylist();
   const isSubmitting = isUploadingImage || isCreating;
@@ -79,7 +83,7 @@ export default function AddForm() {
     } catch (error) {
       if (error instanceof APIError) {
         if (error.status === 400) {
-          alert(error.message);
+          setIsOpen(true);
         }
         if (error.status === 401) {
           router.replace('/login');
@@ -90,6 +94,14 @@ export default function AddForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
+      <ConfirmModal
+        isOpen={isOpen}
+        description={'다시 시도해 주세요'}
+        errorMessage={''}
+        title={'플레이리스트 생성중 오류가 발생하였습니다.'}
+        onConfirm={() => setIsOpen(false)}
+        onClose={() => setIsOpen(false)}
+      />
       <div className="flex w-full">
         <BackButton type="button" fallbackUrl="/playlist" />
       </div>
