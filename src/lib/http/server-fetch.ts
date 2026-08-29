@@ -40,7 +40,11 @@ async function parseJson(response: Response) {
   try {
     return JSON.parse(text);
   } catch {
-    return null;
+    throw new APIError(
+      response.status,
+      'INTERNAL_SERVER_ERROR',
+      `서버 응답을 처리하는 중 오류가 발생했습니다. (${response.status})`,
+    );
   }
 }
 
