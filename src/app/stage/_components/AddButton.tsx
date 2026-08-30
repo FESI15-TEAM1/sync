@@ -20,7 +20,10 @@ export default function AddButton() {
     useGetMyPlayroomList();
 
   const loginRequiredModal = useConfirmModal({
-    onConfirm: () => router.push('/login'),
+    onConfirm: () => {
+      loginRequiredModal.close();
+      router.push('/login');
+    },
   });
   // 확인 버튼만 있는 안내 모달이라 확인은 닫기와 같습니다.
   const limitReachedModal = useConfirmModal();
