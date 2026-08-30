@@ -6,6 +6,7 @@ import BackButton from '@/components/common/BackButton';
 import ConfirmModal from '@/components/domain/ConfirmModal';
 import KebabModal from '@/components/domain/KebabModal';
 import LiveHeartbeat from '@/components/domain/playroom/LiveHeartbeat';
+import { useConfirmModal } from '@/hooks/useConfirmModal';
 
 import { useDeletePlayroom } from '../_hooks/useDeletePlayroom';
 import PlayroomEditModal from './PlayroomEditModal';
@@ -26,11 +27,18 @@ export default function PlayroomHeader({
   onBeforeBack?: () => boolean;
   isHostOnline: boolean;
 }) {
-  const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const { closePlayroom, isClosing, errorMessage, reset } =
     useDeletePlayroom(playroomId);
+
+  const closeConfirmModal = useConfirmModal({
+    onConfirm: () => closePlayroom(),
+    isConfirming: isClosing,
+    errorMessage,
+    // 지난 종료 시도의 에러 문구가 남아 있지 않게 합니다.
+    onReset: reset,
+  });
 
   const handleRoomEdit = () => {
     setIsEditModalOpen(true);
@@ -38,23 +46,6 @@ export default function PlayroomHeader({
 
   const handleEditModalDismiss = () => {
     setIsEditModalOpen(false);
-  };
-
-  const handleRoomClose = () => {
-    reset();
-    setIsCloseModalOpen(true);
-  };
-
-  const handleCloseModalDismiss = () => {
-    if (isClosing) return;
-
-    setIsCloseModalOpen(false);
-  };
-
-  const handleRoomCloseConfirm = () => {
-    if (isClosing) return;
-
-    closePlayroom();
   };
 
   return (
@@ -75,7 +66,10 @@ export default function PlayroomHeader({
           <KebabModal.Item onClick={handleRoomEdit}>
             방 정보 수정
           </KebabModal.Item>
-          <KebabModal.Item onClick={handleRoomClose} variant="danger">
+          <KebabModal.Item
+            onClick={() => closeConfirmModal.open()}
+            variant="danger"
+          >
             플레이룸 종료
           </KebabModal.Item>
         </KebabModal>
@@ -94,10 +88,7 @@ export default function PlayroomHeader({
 
       {/* 플레이룸 종료 확인 모달 */}
       <ConfirmModal
-        isOpen={isCloseModalOpen}
-        errorMessage={errorMessage}
-        onClose={handleCloseModalDismiss}
-        onConfirm={handleRoomCloseConfirm}
+        {...closeConfirmModal.modalProps}
         title="플레이룸을 종료하시겠습니까?"
         variant="danger"
         description={
@@ -107,7 +98,6 @@ export default function PlayroomHeader({
           </>
         }
         confirmLabel="종료하기"
-        isConfirming={isClosing}
       />
     </div>
   );
