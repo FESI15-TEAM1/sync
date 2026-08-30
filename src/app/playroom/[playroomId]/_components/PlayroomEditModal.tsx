@@ -76,7 +76,7 @@ function PlayroomEditModalContent({
       isOpen
       onClose={handleClose}
       // 수정 요청 중에는 배경 클릭으로 닫히지 않게 합니다.
-      closeOnBackdropClick={!isEditing}
+      closeOnBackdropClick={false}
       ariaLabelledBy="playroom-edit-modal-title"
     >
       <Modal.Header ariaLabelledById="playroom-edit-modal-title">
