@@ -44,7 +44,7 @@ export default function ConfirmModal({
   isConfirming = false,
   confirmingLabel = '처리 중...',
   errorMessage,
-  closeOnBackdropClick,
+  closeOnBackdropClick = true,
   onConfirm,
   onClose,
 }: ConfirmModalProps) {
@@ -55,7 +55,7 @@ export default function ConfirmModal({
       isOpen={isOpen}
       onClose={onClose}
       // 처리 중에는 배경 클릭으로 닫히지 않게 합니다.
-      closeOnBackdropClick={closeOnBackdropClick ?? !isConfirming}
+      closeOnBackdropClick={closeOnBackdropClick && !isConfirming}
       ariaLabelledBy={titleId}
     >
       <Modal.Body>
