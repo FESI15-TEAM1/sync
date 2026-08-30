@@ -12,7 +12,7 @@ import {
 } from '@/constants/playroom';
 import { hashTagToArray } from '@/utils/playroom/hashTag';
 
-import { useEditPlayroom } from '../../_hooks/useEditPlayroom';
+import { useEditPlayroom } from '../_hooks/useEditPlayroom';
 
 const EDIT_FORM_ID = 'playroom-edit-form';
 

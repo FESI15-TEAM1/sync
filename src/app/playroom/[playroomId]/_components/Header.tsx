@@ -8,7 +8,7 @@ import KebabModal from '@/components/domain/KebabModal';
 import LiveHeartbeat from '@/components/domain/playroom/LiveHeartbeat';
 
 import { useDeletePlayroom } from '../_hooks/useDeletePlayroom';
-import PlayroomEditModal from './Modal/PlayroomEditModal';
+import PlayroomEditModal from './PlayroomEditModal';
 
 export default function PlayroomHeader({
   playroomId,
