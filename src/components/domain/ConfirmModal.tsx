@@ -9,7 +9,7 @@ import Modal from '@/components/Modal';
 /** 확인 버튼의 성격. danger는 되돌릴 수 없는 동작(삭제·종료·강퇴 등)에 씁니다. */
 type ConfirmVariant = 'primary' | 'danger';
 
-type ConfirmModalProps = {
+export type ConfirmModalProps = {
   isOpen: boolean;
   title: ReactNode;
   description?: ReactNode;
