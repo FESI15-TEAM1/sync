@@ -1,12 +1,12 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 
 import { useGetMyPlayroomList } from '@/app/stage/_hooks/useGetMyPlayroomList';
 import ConfirmModal from '@/components/domain/ConfirmModal';
 import IconButton from '@/components/IconButton';
 import { MY_PLAYROOM_MAX_COUNT } from '@/constants/playroom';
+import { useConfirmModal } from '@/hooks/useConfirmModal';
 import { useUserStore } from '@/providers/user-store-provider';
 
 export default function AddButton() {
@@ -19,28 +19,29 @@ export default function AddButton() {
   const { playrooms, isFetching: isMyPlayroomsFetching } =
     useGetMyPlayroomList();
 
-  const [isLoginRequiredOpen, setIsLoginRequiredOpen] = useState(false);
-  const [isLimitReachedOpen, setIsLimitReachedOpen] = useState(false);
+  const loginRequiredModal = useConfirmModal({
+    onConfirm: () => {
+      loginRequiredModal.close();
+      router.push('/login');
+    },
+  });
+  // 확인 버튼만 있는 안내 모달이라 확인은 닫기와 같습니다.
+  const limitReachedModal = useConfirmModal();
 
   const handleDirectToCreate = () => {
     // 비회원은 로그인 요구 모달을 먼저 띄웁니다.
     if (!user) {
-      setIsLoginRequiredOpen(true);
+      loginRequiredModal.open();
       return;
     }
 
     // 목록 조회에 실패하면 개수를 알 수 없으므로 막지 않고 넘깁니다(생성 시 서버가 거절).
     if (playrooms && playrooms.length >= MY_PLAYROOM_MAX_COUNT) {
-      setIsLimitReachedOpen(true);
+      limitReachedModal.open();
       return;
     }
 
     router.push('/playroom/add');
-  };
-
-  const handleConfirmLogin = () => {
-    setIsLoginRequiredOpen(false);
-    router.push('/login');
   };
 
   return (
@@ -60,7 +61,7 @@ export default function AddButton() {
 
       {/* 비회원 접근 로그인 안내 모달 */}
       <ConfirmModal
-        isOpen={isLoginRequiredOpen}
+        {...loginRequiredModal.modalProps}
         title="로그인이 필요합니다"
         description={
           <>
@@ -69,13 +70,11 @@ export default function AddButton() {
           </>
         }
         confirmLabel="로그인"
-        onConfirm={handleConfirmLogin}
-        onClose={() => setIsLoginRequiredOpen(false)}
       />
 
       {/* 개설 상한 도달 안내 모달 */}
       <ConfirmModal
-        isOpen={isLimitReachedOpen}
+        {...limitReachedModal.modalProps}
         title="최대 생성 가능 개수에 도달하였습니다"
         description={
           <>
@@ -84,8 +83,6 @@ export default function AddButton() {
           </>
         }
         hasCancel={false}
-        onConfirm={() => setIsLimitReachedOpen(false)}
-        onClose={() => setIsLimitReachedOpen(false)}
       />
     </>
   );
