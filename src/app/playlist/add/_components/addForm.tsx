@@ -13,6 +13,7 @@ import BackButton from '@/components/common/BackButton';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
 import Toggle from '@/components/Toggle';
+import { useConfirmModal } from '@/hooks/useConfirmModal';
 import { APIError } from '@/lib/http/error';
 import type {
   CreatePlaylistRequest,
@@ -33,7 +34,8 @@ export default function AddForm() {
   });
   const [imgFile, setImgFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const myModal = useConfirmModal();
+
   const router = useRouter();
   const { createPlaylist, isCreating } = usePostPlaylist();
   const isSubmitting = isUploadingImage || isCreating;
@@ -83,7 +85,7 @@ export default function AddForm() {
     } catch (error) {
       if (error instanceof APIError) {
         if (error.status === 400) {
-          setIsOpen(true);
+          myModal.open();
         }
         if (error.status === 401) {
           router.replace('/login');
@@ -94,14 +96,11 @@ export default function AddForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
-      {isOpen && (
+      {myModal.isOpen && (
         <ConfirmModal
-          isOpen={isOpen}
-          description={'다시 시도해 주세요'}
-          errorMessage={''}
-          title={'플레이리스트 생성중 오류가 발생하였습니다.'}
-          onConfirm={() => setIsOpen(false)}
-          onClose={() => setIsOpen(false)}
+          {...myModal.modalProps}
+          description="다시 시도해 주세요"
+          title="플레이리스트 생성중 오류가 발생하였습니다."
         />
       )}
       <div className="flex w-full">
