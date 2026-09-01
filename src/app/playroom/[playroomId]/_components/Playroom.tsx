@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import ChatMembers from '@/app/playroom/[playroomId]/_components/Chat/ChatMembers';
 import Player from '@/app/playroom/[playroomId]/_components/Player/Player';
 import { playroomListQueryKey } from '@/app/stage/_hooks/useGetPlayroomList';
+import ConfirmModal from '@/components/domain/ConfirmModal';
 import LoadingFallback from '@/components/LoadingFallback';
 import { useUserStore } from '@/providers/user-store-provider';
 
@@ -18,9 +19,6 @@ import {
 import { useHostLeaveGuard } from '../_hooks/useHostLeaveGuard';
 import { useWSConnect } from '../_hooks/useWSConnect';
 import PlayroomHeader from './Header';
-import HostLeaveModal from './Modal/HostLeaveModal';
-import LoginRequiredModal from './Modal/LoginRequiredModal';
-import RoomClosedModal from './Modal/RoomClosedModal';
 
 export type ChatMessageTypes = {
   id: number;
@@ -182,23 +180,55 @@ export default function Playroom({ playroomId }: { playroomId: number }) {
         </div>
       )}
 
-      <RoomClosedModal
+      {/* 플레이룸 종료 안내 모달 */}
+      <ConfirmModal
         isOpen={isClosedNoticeOpen}
+        title="플레이룸이 종료되었습니다"
+        description={
+          <>
+            방장이 플레이룸을 종료했습니다.
+            <br /> 확인을 누르면 플레이룸 목록으로 이동합니다.
+          </>
+        }
+        hasCancel={false}
+        // 이미 종료된 방이라 남아 있을 수 없으므로, 배경 클릭으로 닫지 못하게 합니다.
+        closeOnBackdropClick={false}
         onConfirm={handleClosedNoticeConfirm}
+        onClose={handleClosedNoticeConfirm}
+        variant="danger"
       />
 
-      {/* 방장이 페이지를 벗어나려 할 때의 동기화 종료 안내 */}
-      <HostLeaveModal
+      {/* 방장 페이지 이동 시도 안내 모달 */}
+      <ConfirmModal
         isOpen={isLeaveNoticeOpen}
-        onCancel={cancelLeave}
+        title="플레이룸을 벗어날까요?"
+        description={
+          <>
+            방장이 페이지를 벗어나면 재생 동기화가 종료되어
+            <br /> 참가자에게 음악이 전달되지 않습니다.
+          </>
+        }
+        variant="danger"
+        confirmLabel="나가기"
+        cancelLabel="머무르기"
         onConfirm={confirmLeave}
+        onClose={cancelLeave}
       />
 
-      {/* 비회원 로그인 요구 안내 */}
-      <LoginRequiredModal
+      {/* 비회원 로그인 안내 모달 */}
+      <ConfirmModal
         isOpen={isLoginRequiredOpen}
-        onCancel={handleLoginRequiredCancel}
+        title="로그인이 필요합니다"
+        description={
+          <>
+            플레이룸에 참여하려면 로그인이 필요합니다.
+            <br /> 로그인 페이지로 이동하시겠습니까?
+          </>
+        }
+        confirmLabel="로그인"
+        cancelLabel="취소"
         onConfirm={handleLoginRequiredConfirm}
+        onClose={handleLoginRequiredCancel}
       />
     </div>
   );

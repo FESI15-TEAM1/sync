@@ -1,15 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 
 import { useGetMyPlayroomList } from '@/app/stage/_hooks/useGetMyPlayroomList';
+import ConfirmModal from '@/components/domain/ConfirmModal';
 import IconButton from '@/components/IconButton';
 import { MY_PLAYROOM_MAX_COUNT } from '@/constants/playroom';
+import { useConfirmModal } from '@/hooks/useConfirmModal';
 import { useUserStore } from '@/providers/user-store-provider';
-
-import LoginRequiredModal from './LoginRequiredModal';
-import PlayroomLimitModal from './PlayroomLimitModal';
 
 export default function AddButton() {
   const user = useUserStore((state) => state.user);
@@ -21,28 +19,29 @@ export default function AddButton() {
   const { playrooms, isFetching: isMyPlayroomsFetching } =
     useGetMyPlayroomList();
 
-  const [isLoginRequiredOpen, setIsLoginRequiredOpen] = useState(false);
-  const [isLimitReachedOpen, setIsLimitReachedOpen] = useState(false);
+  const loginRequiredModal = useConfirmModal({
+    onConfirm: () => {
+      loginRequiredModal.close();
+      router.push('/login');
+    },
+  });
+  // 확인 버튼만 있는 안내 모달이라 확인은 닫기와 같습니다.
+  const limitReachedModal = useConfirmModal();
 
   const handleDirectToCreate = () => {
     // 비회원은 로그인 요구 모달을 먼저 띄웁니다.
     if (!user) {
-      setIsLoginRequiredOpen(true);
+      loginRequiredModal.open();
       return;
     }
 
     // 목록 조회에 실패하면 개수를 알 수 없으므로 막지 않고 넘깁니다(생성 시 서버가 거절).
     if (playrooms && playrooms.length >= MY_PLAYROOM_MAX_COUNT) {
-      setIsLimitReachedOpen(true);
+      limitReachedModal.open();
       return;
     }
 
     router.push('/playroom/add');
-  };
-
-  const handleConfirmLogin = () => {
-    setIsLoginRequiredOpen(false);
-    router.push('/login');
   };
 
   return (
@@ -60,17 +59,30 @@ export default function AddButton() {
         <span className="text-3xl text-white">+</span>
       </IconButton>
 
-      {/* 비회원 로그인 요구 모달 */}
-      <LoginRequiredModal
-        isOpen={isLoginRequiredOpen}
-        onClose={() => setIsLoginRequiredOpen(false)}
-        onConfirm={handleConfirmLogin}
+      {/* 비회원 접근 로그인 안내 모달 */}
+      <ConfirmModal
+        {...loginRequiredModal.modalProps}
+        title="로그인이 필요합니다"
+        description={
+          <>
+            플레이룸을 만들려면 로그인이 필요합니다.
+            <br /> 로그인 페이지로 이동하시겠습니까?
+          </>
+        }
+        confirmLabel="로그인"
       />
 
       {/* 개설 상한 도달 안내 모달 */}
-      <PlayroomLimitModal
-        isOpen={isLimitReachedOpen}
-        onClose={() => setIsLimitReachedOpen(false)}
+      <ConfirmModal
+        {...limitReachedModal.modalProps}
+        title="최대 생성 가능 개수에 도달하였습니다"
+        description={
+          <>
+            플레이룸은 최대 {MY_PLAYROOM_MAX_COUNT}개까지 만들 수 있습니다.
+            <br /> 기존 플레이룸을 닫은 뒤 다시 시도해주세요.
+          </>
+        }
+        hasCancel={false}
       />
     </>
   );
