@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import { type SubmitEvent, useState } from 'react';
 
@@ -12,6 +13,7 @@ import ReorderableTrackList from '@/components/domain/playlists/ReorderableTrack
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
 import Toggle from '@/components/Toggle';
+import { useConfirmModal } from '@/hooks/useConfirmModal';
 import { clientFetch } from '@/lib/http/client-fetch';
 import { APIError } from '@/lib/http/error';
 import type { PlaylistDetail } from '@/services/playlist/PlatylistDetail.type';
@@ -22,6 +24,8 @@ import type {
 import { updatePlaylist } from '@/services/playlist/playlist.api';
 import { requestUploadUrl } from '@/services/upload/upload.api';
 import type { UploadUrlRequest } from '@/services/upload/upload.types';
+
+const ConfirmModal = dynamic(() => import('@/components/domain/ConfirmModal'));
 
 export default function EditForm() {
   const params = useParams();
@@ -76,6 +80,7 @@ function EditPlaylistForm({
   }));
   const [imgFile, setImgFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const myModal = useConfirmModal();
 
   const addedVideoIds = new Set(form.tracks.map((track) => track.videoId));
 
@@ -123,7 +128,7 @@ function EditPlaylistForm({
     } catch (error) {
       if (error instanceof APIError) {
         if (error.status === 400) {
-          alert(error.message);
+          myModal.open();
         }
         if (error.status === 401) {
           router.push('/login');
@@ -139,6 +144,13 @@ function EditPlaylistForm({
       onSubmit={handleSubmit}
       className="flex w-4xl flex-col items-center gap-4"
     >
+      {myModal.isOpen && (
+        <ConfirmModal
+          {...myModal.modalProps}
+          description="다시 시도해 주세요"
+          title="플레이리스트 생성중 오류가 발생하였습니다."
+        />
+      )}
       <div className="flex w-full">
         <BackButton type="button" fallbackUrl={`/playlist/detail/${id}`} />
       </div>
