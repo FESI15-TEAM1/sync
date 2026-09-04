@@ -2,7 +2,6 @@
 
 import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useLayoutEffect, useRef } from 'react';
 
 import SyncLogo from '@/assets/icons/syncLogo.svg';
@@ -16,23 +15,20 @@ import NotificationBell from './NotificationsBell';
 
 export default function Header() {
   const headerRef = useRef<HTMLElement>(null);
-  const router = useRouter();
   const queryClient = useQueryClient();
   const user = useUserStore((state) => state.user);
   const isLoading = useUserStore((state) => state.isLoading);
   const setUser = useUserStore((state) => state.setUser);
   const showLoading = useDelayedLoading(isLoading);
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      setUser(null);
-      // 계정에 묶인 캐시(내 프로필·내 플레이룸 등)가 다음 계정으로 새지 않도록 전부 비웁니다.
-      queryClient.clear();
-      router.push('/');
-    } catch (error) {
+  const handleLogout = () => {
+    // 이동은 Link가 즉시 처리하고, API 호출과 정리 작업은 백그라운드로 진행합니다.
+    logout().catch((error) => {
       console.error('로그아웃 실패:', error);
-    }
+    });
+    setUser(null);
+    // 계정에 묶인 캐시(내 프로필·내 플레이룸 등)가 다음 계정으로 새지 않도록 전부 비웁니다.
+    queryClient.clear();
   };
 
   useLayoutEffect(() => {
@@ -99,12 +95,12 @@ export default function Header() {
               )
             }
           >
-            <KebabModal.Item
-              onClick={() => router.push(`/profile/${user.id}`)}
-            >
+            <KebabModal.Item as={Link} href={`/profile/${user.id}`}>
               마이페이지
             </KebabModal.Item>
-            <KebabModal.Item onClick={handleLogout}>로그아웃</KebabModal.Item>
+            <KebabModal.Item as={Link} href="/" onClick={handleLogout}>
+              로그아웃
+            </KebabModal.Item>
           </KebabModal>
         ) : (
           // 로그아웃 상태
