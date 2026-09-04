@@ -133,15 +133,6 @@ export default function Profile(props: ProfileProps) {
                   <KebabModal.Item onClick={handleLogout}>
                     로그아웃
                   </KebabModal.Item>
-                  <KebabModal.Item
-                    onClick={() => {
-                      setWithdrawError('');
-                      setIsWithdrawModalOpen(true);
-                    }}
-                    variant="danger"
-                  >
-                    회원 탈퇴
-                  </KebabModal.Item>
                 </KebabModal>
               </div>
               {logoutError ? (
@@ -206,7 +197,7 @@ export default function Profile(props: ProfileProps) {
                 alt={`${profile.nickname} 프로필`}
                 width={64}
                 height={64}
-                className="size-16 shrink-0 rounded-full object-cover"
+                className="aspect-square size-16 shrink-0 rounded-full object-cover"
               />
             ) : (
               <div
@@ -318,6 +309,21 @@ export default function Profile(props: ProfileProps) {
                 불러오는 중...
               </p>
             ) : null}
+          </div>
+        ) : null}
+
+        {isOwn ? (
+          <div className="flex justify-end">
+            <button
+              type="button"
+              className="cursor-pointer text-sm font-bold text-red-500 hover:underline"
+              onClick={() => {
+                setWithdrawError('');
+                setIsWithdrawModalOpen(true);
+              }}
+            >
+              회원 탈퇴
+            </button>
           </div>
         ) : null}
       </div>
