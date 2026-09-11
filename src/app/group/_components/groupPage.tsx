@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useProcessGroupRequest } from '@/app/group/_hooks/useProcessGroupRequest';
 import Button from '@/components/Button';
-import ConfirmModal from '@/components/ConfirmModal';
+import ConfirmModal from '@/components/domain/ConfirmModal';
 import GroupList from '@/components/domain/group/GroupList';
 import { useGroupRequestsQuery } from '@/hooks/useGroupRequestsQuery';
 import { formatTimeAgo } from '@/lib/formatITimeAgo';
@@ -299,7 +299,10 @@ export default function GroupPage() {
         confirmLabel="거절"
         confirmingLabel="거절하는 중..."
         isConfirming={isProcessingRequest}
-        destructive
+        variant="danger"
+        cancelLabel="취소"
+        hasCancel={false}
+        closeOnBackdropClick={false}
         onConfirm={handleConfirmReject}
         onClose={handleCloseRejectModal}
       />

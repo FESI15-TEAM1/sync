@@ -7,7 +7,7 @@ import { useState } from 'react';
 
 import Crown from '@/assets/icons/crown.svg';
 import SyncLogo from '@/assets/icons/syncLogo.svg';
-import ConfirmModal from '@/components/ConfirmModal';
+import ConfirmModal from '@/components/domain/ConfirmModal';
 import ProfilePreviewModal from '@/components/domain/user/ProfilePreviewModal';
 import { APIError } from '@/lib/http/error';
 import { leaveGroup } from '@/services/group/group.api';
@@ -182,7 +182,9 @@ export default function GroupMemberList({
           kickTarget !== null && kickingUserId === kickTarget.userId
         }
         errorMessage={kickErrorMessage}
-        destructive
+        variant="danger"
+        hasCancel={false}
+        closeOnBackdropClick={false}
         onConfirm={handleConfirmKick}
         onClose={handleCloseKickModal}
       />
