@@ -152,7 +152,7 @@ export default function GroupPlaylistGrid({
       {/* 플레이리스트 제거 확인 모달 */}
       <ConfirmModal
         isOpen={removeTarget !== null}
-        title={`‘${removeTarget?.title}’ 그룹을 제거하시겠습니까?`}
+        title={`‘${removeTarget?.title}’ 그룹에서 제거하시겠습니까?`}
         confirmLabel="제거하기"
         confirmingLabel="제거하는 중..."
         isConfirming={isRemovingPlaylist}
