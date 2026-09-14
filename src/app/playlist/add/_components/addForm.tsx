@@ -1,8 +1,11 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { type SubmitEvent, useState } from 'react';
+import { useState } from 'react';
+import type { SubmitHandler } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 
 import AddedTracksSection from '@/app/playlist/add/_components/AddedTracksSection';
 import PlaylistThumbnailField from '@/app/playlist/add/_components/PlaylistThumbnailField';
@@ -22,15 +25,29 @@ import type {
 import { requestUploadUrl } from '@/services/upload/upload.api';
 import type { UploadUrlRequest } from '@/services/upload/upload.types';
 
+import {
+  type AddPlaylistFormValues,
+  addPlaylistSchema,
+} from '../_schemas/addPlaylist.schema';
+
 const ConfirmModal = dynamic(() => import('@/components/domain/ConfirmModal'));
 
 export default function AddForm() {
-  const [form, setForm] = useState<CreatePlaylistRequest>({
-    title: '',
-    description: '',
-    image: '',
-    isPublic: true,
-    tracks: [],
+  const [tracks, setTracks] = useState<PlaylistTrack[]>([]);
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isValid },
+  } = useForm<AddPlaylistFormValues>({
+    resolver: zodResolver(addPlaylistSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      image: '',
+      isPublic: true,
+      tracks: [],
+    },
   });
   const [imgFile, setImgFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -40,25 +57,23 @@ export default function AddForm() {
   const { createPlaylist, isCreating } = usePostPlaylist();
   const isSubmitting = isUploadingImage || isCreating;
 
-  const addedVideoIds = new Set(form.tracks.map((track) => track.videoId));
+  const addedVideoIds = new Set(tracks.map((track) => track.videoId));
 
   const handleAddTrack = (track: PlaylistTrack) => {
-    setForm((prev) => ({ ...prev, tracks: [...prev.tracks, track] }));
+    setTracks((prev) => [...prev, track]);
   };
   const handleDeleteTrack = (track: PlaylistTrack) => {
-    setForm((prev) => ({
-      ...prev,
-      tracks: prev.tracks.filter((item) => item.videoId !== track.videoId),
-    }));
+    setTracks((prev) => prev.filter((item) => item.videoId !== track.videoId));
   };
   const handleReorderTracks = (tracks: PlaylistTrack[]) => {
-    setForm((prev) => ({ ...prev, tracks }));
+    setTracks(tracks);
   };
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleCreatePlaylist: SubmitHandler<CreatePlaylistRequest> = async (
+    data,
+  ) => {
     if (isSubmitting) return;
     try {
-      let image = form.image;
+      let image = '';
 
       if (imgFile) {
         setIsUploadingImage(true);
@@ -80,8 +95,7 @@ export default function AddForm() {
           setIsUploadingImage(false);
         }
       }
-
-      await createPlaylist({ ...form, image });
+      await createPlaylist({ ...data, image, tracks: tracks });
     } catch (error) {
       if (error instanceof APIError) {
         if (error.status === 400) {
@@ -95,7 +109,10 @@ export default function AddForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
+    <form
+      onSubmit={handleSubmit(handleCreatePlaylist)}
+      className="flex flex-col items-center gap-4"
+    >
       {myModal.isOpen && (
         <ConfirmModal
           {...myModal.modalProps}
@@ -114,23 +131,17 @@ export default function AddForm() {
         <InputField className="w-full">
           <InputField.Label>플레이리스트 이름 </InputField.Label>
           <InputField.Input
-            value={form.title}
-            onChange={(e) =>
-              setForm((prev) => ({ ...prev, title: e.target.value }))
-            }
+            {...register('title')}
+
             placeholder="플레이리스트 이름을 입력하세요"
           ></InputField.Input>
-          <InputField.Error>
-            {form.title.trim() ? '' : '플레이리스트 이름은 필수입니다.'}
-          </InputField.Error>
+          <InputField.Error>{errors.title?.message}</InputField.Error>
         </InputField>
         <div className="mb-4 w-full">
           <Textarea
+            {...register('description')}
             label="플레이리스트 설명"
-            value={form.description}
-            onChange={(e) =>
-              setForm((prev) => ({ ...prev, description: e.target.value }))
-            }
+
             placeholder={`공부할때 들으면 집중 잘되는 노래들로 모아봤습니다.\n비슷한 취향있으신 분은 좋아요 그룹생성 요청 눌러주세요!`}
           />
         </div>
@@ -138,9 +149,12 @@ export default function AddForm() {
           <label className="ml-2 text-base font-bold text-white">
             공개여부
           </label>
-          <Toggle
-            checked={form.isPublic}
-            onChange={(isPublic) => setForm((prev) => ({ ...prev, isPublic }))}
+          <Controller
+            name="isPublic"
+            control={control}
+            render={({ field }) => {
+              return <Toggle checked={field.value} onChange={field.onChange} />;
+            }}
           />
         </div>
 
@@ -150,7 +164,7 @@ export default function AddForm() {
         />
 
         <AddedTracksSection
-          tracks={form.tracks}
+          tracks={tracks}
           onReorder={handleReorderTracks}
           onRemoveTrack={handleDeleteTrack}
         />
@@ -159,7 +173,7 @@ export default function AddForm() {
       <Button
         type="submit"
         className="w-full"
-        isDisabled={isSubmitting || !form.title.trim()}
+        isDisabled={isSubmitting || !isValid}
       >
         {isSubmitting ? '저장 중...' : '저장하기'}
       </Button>
