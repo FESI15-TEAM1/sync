@@ -4,7 +4,6 @@
 // form의 입력값을 Zod 스키마로 검사할 수 있게 해줌
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 // react-hook-form에서 사용할 기능들
 // useForm: 폼 전체 관리
@@ -15,19 +14,17 @@ import Button from '@/components/Button';
 import InputField from '@/components/InputField';
 // 회원가입 폼 타입과 Zod 회원가입 검증 스키마
 import { type SignupFormValues, signupSchema } from '@/lib/auth-validation';
-// 회원가입 및 이메일 인증 API 함수
-import {
-  confirmEmailVerification, // 이메일 인증코드 확인
-  requestEmailVerification, // 이메일 인증코드 발송
-  signup,
-} from '@/services/auth/auth.api';
 
 // 닉네임 중복확인을 위한 커스텀 훅
 import { useCheckNicknameMutation } from '../_hooks/useCheckNicknameMutation';
+// 이메일 인증코드 확인을 위한 커스텀 훅
+import { useConfirmEmailVerificationMutation } from '../_hooks/useConfirmEmailVerificationMutation';
+// 이메일 인증코드 발송을 위한 커스텀 훅
+import { useRequestEmailVerificationMutation } from '../_hooks/useRequestEmailVerificationMutation';
+// 회원가입을 위한 커스텀 훅
+import { useSignupMutation } from '../_hooks/useSignupMutation';
 
 export default function Signup() {
-  const router = useRouter();
-
   const {
     // register:
     // input을 react-hook-form에 등록해서 입력값과 연결
@@ -84,9 +81,6 @@ export default function Signup() {
   const [isCodeValid, setIsCodeValid] = useState(false);
   // 이메일 인증 전체가 완료되었는지 여부
   const [isEmailVerified, setIsEmailVerified] = useState(false);
-  // 이메일 인증코드를 발송하는 중인지 여부
-  // true일 때 버튼을 비활성화해서 중복 요청을 막음
-  const [isSendingCode, setIsSendingCode] = useState(false);
 
   // 닉네임 중복확인 API를 실행하는 커스텀 훅
   const {
@@ -95,6 +89,22 @@ export default function Signup() {
     // 현재 닉네임 중복확인 요청 중인지 여부
     isCheckingNickname,
   } = useCheckNicknameMutation();
+
+  // 이메일 인증코드 발송 API를 실행하는 커스텀 훅
+  const {
+    // 이메일 인증코드 발송 함수를 가져옴
+    requestEmailVerificationMutate,
+    // 이메일 인증코드를 발송하는 중인지 여부
+    // true일 때 버튼을 비활성화해서 중복 요청을 막음
+    isSendingCode,
+  } = useRequestEmailVerificationMutation();
+
+  // 이메일 인증코드 확인 API를 실행하는 커스텀 훅
+  const { confirmEmailVerificationMutate } =
+    useConfirmEmailVerificationMutation();
+
+  // 회원가입 API를 실행하는 커스텀 훅
+  const { signupMutate, isSigningUp } = useSignupMutation();
 
   const nickname = useWatch({ control, name: 'nickname' });
   // email input의 값을 실시간으로 감시
@@ -148,9 +158,8 @@ export default function Signup() {
     const valid = await trigger('email');
     if (!valid) return;
 
-    setIsSendingCode(true);
     try {
-      await requestEmailVerification(getValues('email'));
+      await requestEmailVerificationMutate(getValues('email'));
 
       setIsCodeSent(true);
 
@@ -159,14 +168,15 @@ export default function Signup() {
       if (error instanceof Error) {
         alert(error.message);
       }
-    } finally {
-      setIsSendingCode(false);
     }
   };
 
   const handleVerifyCode = async () => {
     try {
-      await confirmEmailVerification(getValues('email'), verificationCode);
+      await confirmEmailVerificationMutate({
+        email: getValues('email'),
+        code: verificationCode,
+      });
 
       setIsCodeValid(true);
       setIsEmailVerified(true);
@@ -198,12 +208,11 @@ export default function Signup() {
 
     try {
       // 서버에 회원가입 요청
-      await signup({
+      await signupMutate({
         nickname: data.nickname,
         email: data.email,
         password: data.password,
       });
-      router.push('/login');
     } catch (error) {
       if (error instanceof Error) {
         alert(error.message);
@@ -300,7 +309,8 @@ export default function Signup() {
               // 이메일 인증을 하지 않았거나
               !isCodeValid ||
               // 회원가입 API 요청 중이라면
-              isSubmitting
+              isSubmitting ||
+              isSigningUp
             }
           >
             회원가입
