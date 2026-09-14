@@ -1,86 +1,141 @@
 'use client';
 
+// react-hook-form과 Zod를 연결해주는 resolver
+// form의 입력값을 Zod 스키마로 검사할 수 있게 해줌
+import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
-import { type SubmitEvent } from 'react';
+import { useState } from 'react';
+// react-hook-form에서 사용할 기능들
+// useForm: 폼 전체 관리
+// useWatch: 특정 input의 값을 실시간으로 감시
+import { useForm, useWatch } from 'react-hook-form';
 
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
+// 회원가입 폼 타입과 Zod 회원가입 검증 스키마
+import { type SignupFormValues, signupSchema } from '@/lib/auth-validation';
+// 회원가입 및 이메일 인증 API 함수
 import {
-  getEmailError,
-  getNicknameError,
-  getPasswordError,
-} from '@/lib/auth-validation';
-import {
-  confirmEmailVerification,
-  requestEmailVerification,
+  confirmEmailVerification, // 이메일 인증코드 확인
+  requestEmailVerification, // 이메일 인증코드 발송
   signup,
 } from '@/services/auth/auth.api';
 
+// 닉네임 중복확인을 위한 커스텀 훅
 import { useCheckNicknameMutation } from '../_hooks/useCheckNicknameMutation';
 
 export default function Signup() {
   const router = useRouter();
-  const [nickname, setNickname] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [nicknameError, setNicknameError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [passwordConfirmError, setPasswordConfirmError] = useState('');
-  const [emailError, setEmailError] = useState('');
 
-  const [isNicknameValid, setIsNicknameValid] = useState(false);
-  const [isEmailValid, setIsEmailValid] = useState(false);
+  const {
+    // register:
+    // input을 react-hook-form에 등록해서 입력값과 연결
+    register,
+
+    // handleSubmit:
+    // form이 제출되었을 때 유효성 검사를 먼저 실행한 뒤
+    // 문제가 없으면 전달한 함수를 실행
+    handleSubmit,
+    // control:
+    // useWatch 등 react-hook-form의 다른 기능에서 사용하는 객체
+    control,
+    // getValues:
+    // 현재 form에 입력되어 있는 값을 가져옴
+    getValues,
+    // trigger:
+    // 특정 input의 유효성 검사를 직접 실행
+    trigger,
+    // setError:
+    // 특정 input에 직접 에러를 등록
+    setError,
+    // clearErrors:
+    // 특정 input에 등록된 에러를 제거
+    clearErrors,
+    formState: {
+      errors,
+      // form이 제출되는 동안 true
+      // 중복 제출을 방지할 때 사용
+      isSubmitting,
+      isValid,
+    },
+  } = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    mode: 'onChange',
+    defaultValues: {
+      nickname: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
+
+  // 닉네임 중복확인이 성공했는지 저장
+  // true라면 사용 가능한 닉네임이라는 의미
+  const [isNicknameAvailable, setIsNicknameAvailable] = useState(false);
+  // 사용자가 입력한 이메일 인증코드
   const [verificationCode, setVerificationCode] = useState('');
+  // 이메일 인증코드 관련 에러 메시지
   const [verificationCodeError, setVerificationCodeError] = useState('');
 
+  // 이메일 인증코드를 서버에 발송했는지 여부
   const [isCodeSent, setIsCodeSent] = useState(false);
+  // 이메일 인증코드가 올바른지 여부
   const [isCodeValid, setIsCodeValid] = useState(false);
+  // 이메일 인증 전체가 완료되었는지 여부
   const [isEmailVerified, setIsEmailVerified] = useState(false);
+  // 이메일 인증코드를 발송하는 중인지 여부
+  // true일 때 버튼을 비활성화해서 중복 요청을 막음
   const [isSendingCode, setIsSendingCode] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { checkNicknameMutate, isCheckingNickname } =
-    useCheckNicknameMutation();
+  // 닉네임 중복확인 API를 실행하는 커스텀 훅
+  const {
+    // 닉네임 중복확인 함수를 가져옴
+    checkNicknameMutate,
+    // 현재 닉네임 중복확인 요청 중인지 여부
+    isCheckingNickname,
+  } = useCheckNicknameMutation();
 
-  // 확인 응답이 오는 사이 닉네임이 바뀌었는지 비교하기 위한 최신값 참조
-  const nicknameRef = useRef(nickname);
+  const nickname = useWatch({ control, name: 'nickname' });
+  // email input의 값을 실시간으로 감시
+  const email = useWatch({ control, name: 'email' });
 
   const handleCheckNickname = async () => {
     if (isCheckingNickname) return;
 
-    if (!nickname.trim()) {
-      setNicknameError('닉네임을 입력해주세요.');
-      setIsNicknameValid(false);
-      return;
-    }
+    // nickname input만 validation 실행
+    // Zod에서 닉네임 규칙을 검사
+    const valid = await trigger('nickname');
+    // 닉네임 validation에 실패했다면 API 요청하지 않고 종료
+    if (!valid) return;
 
-    const lengthError = getNicknameError(nickname);
-    if (lengthError) {
-      setNicknameError(lengthError);
-      setIsNicknameValid(false);
-      return;
-    }
-
-    const nicknameAtRequest = nickname;
+    // API 요청을 보내는 순간의 닉네임을 저장
+    // 나중에 사용자가 닉네임을 변경했는지 확인하기 위해 사용
+    const nicknameAtRequest = getValues('nickname');
     try {
       const { available } = await checkNicknameMutate(nicknameAtRequest);
-      // 응답을 받는 사이 닉네임이 바뀌었다면 이 응답은 버립니다.
-      if (nicknameRef.current !== nicknameAtRequest) return;
+      // API 응답을 기다리는 동안 사용자가 닉네임을 변경했다면
+      // 이전 닉네임에 대한 응답은 무시
+      if (getValues('nickname') !== nicknameAtRequest) return;
 
+      //사용 가능한 닉네임이라면
       if (available) {
-        setNicknameError('');
-        setIsNicknameValid(true);
+        //기존 nickname 에러 제거
+        clearErrors('nickname');
+        // 닉네임 사용 가능 상태로 변경
+        setIsNicknameAvailable(true);
+        // 사용자에게 결과를 알려줌
         alert('사용 가능한 닉네임입니다.');
       } else {
-        setNicknameError('이미 사용 중인 닉네임입니다.');
-        setIsNicknameValid(false);
+        setError('nickname', {
+          type: 'manual',
+          message: '이미 사용 중인 닉네임입니다.',
+        });
+        setIsNicknameAvailable(false);
       }
     } catch (error) {
-      if (nicknameRef.current !== nicknameAtRequest) return;
-      setIsNicknameValid(false);
+      if (getValues('nickname') !== nicknameAtRequest) return;
+      setIsNicknameAvailable(false);
       if (error instanceof Error) {
         alert(error.message);
       }
@@ -90,26 +145,12 @@ export default function Signup() {
   const handleCheckEmail = async () => {
     if (isSendingCode) return;
 
-    if (!email.trim()) {
-      setEmailError('이메일을 입력해주세요.');
-      setIsEmailValid(false);
-      return;
-    }
+    const valid = await trigger('email');
+    if (!valid) return;
 
-    const error = getEmailError(email);
-    if (error) {
-      setEmailError(error);
-      setIsEmailValid(false);
-      return;
-    }
-
-    setEmailError('');
-    setIsEmailValid(true);
-
-    //인증코드 발송
     setIsSendingCode(true);
     try {
-      await requestEmailVerification(email);
+      await requestEmailVerification(getValues('email'));
 
       setIsCodeSent(true);
 
@@ -125,7 +166,7 @@ export default function Signup() {
 
   const handleVerifyCode = async () => {
     try {
-      await confirmEmailVerification(email, verificationCode);
+      await confirmEmailVerification(getValues('email'), verificationCode);
 
       setIsCodeValid(true);
       setIsEmailVerified(true);
@@ -138,15 +179,15 @@ export default function Signup() {
     }
   };
 
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!isNicknameValid) {
-      setNicknameError('닉네임 중복확인을 해주세요');
-      return;
-    }
-
-    if (!isEmailValid) {
-      setEmailError('이메일 형식을 확인해주세요');
+  // form이 제출됐을 때 실행되는 함수
+  // handleSubmit이 먼저 Zod validation을 실행한 후
+  // 문제가 없을 때 이 함수가 실행됨
+  const onSubmit = handleSubmit(async (data) => {
+    if (!isNicknameAvailable) {
+      setError('nickname', {
+        type: 'manual',
+        message: '닉네임 중복확인을 해주세요',
+      });
       return;
     }
 
@@ -155,23 +196,20 @@ export default function Signup() {
       return;
     }
 
-    if (password !== confirmPassword) {
-      setPasswordError('비밀번호가 일치하지 않습니다');
-      return;
-    }
-
-    setIsSubmitting(true);
     try {
-      await signup({ nickname, email, password });
+      // 서버에 회원가입 요청
+      await signup({
+        nickname: data.nickname,
+        email: data.email,
+        password: data.password,
+      });
       router.push('/login');
     } catch (error) {
       if (error instanceof Error) {
         alert(error.message);
       }
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+  });
 
   return (
     <div className="bg-bg-primary flex min-h-screen w-full flex-1 justify-center px-5 py-10">
@@ -186,47 +224,34 @@ export default function Signup() {
             지금 바로 그룹을 만들어보세요.
           </p>
         </div>
-        <form className="flex flex-col gap-1" onSubmit={handleSubmit}>
+        <form className="flex flex-col gap-1" onSubmit={onSubmit}>
           <InputField>
             <InputField.Label>닉네임</InputField.Label>
             <InputField.Input
               type="text"
-              value={nickname}
-              onChange={(e) => {
-                const value = e.target.value;
-                setNickname(value);
-                nicknameRef.current = value;
-                setNicknameError(getNicknameError(value));
-                setIsNicknameValid(false);
-              }}
+              {...register('nickname', {
+                onChange: () => setIsNicknameAvailable(false),
+              })}
             />
             <InputField.Button
               onClick={handleCheckNickname}
-              disabled={!nickname || !!nicknameError || isCheckingNickname}
+              disabled={!nickname || !!errors.nickname || isCheckingNickname}
             >
               중복확인
             </InputField.Button>
-            <InputField.Error>{nicknameError}</InputField.Error>
+            <InputField.Error>{errors.nickname?.message}</InputField.Error>
           </InputField>
 
           <InputField>
             <InputField.Label>이메일</InputField.Label>
-            <InputField.Input
-              type="email"
-              value={email}
-              onChange={(e) => {
-                const value = e.target.value;
-                setEmail(value);
-                setEmailError(getEmailError(value));
-              }}
-            />
+            <InputField.Input type="email" {...register('email')} />
             <InputField.Button
               onClick={handleCheckEmail}
-              disabled={!email || !!emailError || isSendingCode}
+              disabled={!email || !!errors.email || isSendingCode}
             >
               이메일 인증
             </InputField.Button>
-            <InputField.Error>{emailError}</InputField.Error>
+            <InputField.Error>{errors.email?.message}</InputField.Error>
           </InputField>
 
           {isCodeSent && !isEmailVerified ? (
@@ -250,28 +275,16 @@ export default function Signup() {
 
           <InputField>
             <InputField.Label>비밀번호</InputField.Label>
-            <InputField.Password
-              value={password}
-              onChange={(e) => {
-                const value = e.target.value;
-                setPassword(value);
-                setPasswordError(getPasswordError(value));
-              }}
-            />
-            <InputField.Error>{passwordError}</InputField.Error>
+            <InputField.Password {...register('password')} />
+            <InputField.Error>{errors.password?.message}</InputField.Error>
           </InputField>
 
           <InputField>
             <InputField.Label>비밀번호 확인</InputField.Label>
-            <InputField.Password
-              value={confirmPassword}
-              onChange={(e) => {
-                const value = e.target.value;
-                setConfirmPassword(value);
-                setPasswordConfirmError(getPasswordError(value));
-              }}
-            />
-            <InputField.Error>{passwordConfirmError}</InputField.Error>
+            <InputField.Password {...register('confirmPassword')} />
+            <InputField.Error>
+              {errors.confirmPassword?.message}
+            </InputField.Error>
           </InputField>
 
           <Button
@@ -280,10 +293,13 @@ export default function Signup() {
             variant="primary"
             className="w-full"
             isDisabled={
-              !isNicknameValid ||
-              !isEmailValid ||
+              // Zod validation을 통과하지 못했거나
+              !isValid ||
+              // 닉네임 중복확인을 하지 않았거나
+              !isNicknameAvailable ||
+              // 이메일 인증을 하지 않았거나
               !isCodeValid ||
-              password !== confirmPassword ||
+              // 회원가입 API 요청 중이라면
               isSubmitting
             }
           >
