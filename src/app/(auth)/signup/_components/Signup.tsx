@@ -172,17 +172,24 @@ export default function Signup() {
   };
 
   const handleVerifyCode = async () => {
+    // 인증 요청을 보내는 순간의 이메일을 저장
+    // 응답을 기다리는 동안 사용자가 이메일을 변경했는지 확인하기 위해 사용
+    const emailAtRequest = getValues('email');
     try {
       await confirmEmailVerificationMutate({
-        email: getValues('email'),
+        email: emailAtRequest,
         code: verificationCode,
       });
+      // API 응답을 기다리는 동안 사용자가 이메일을 변경했다면
+      // 이전 이메일에 대한 인증 결과는 반영하지 않음
+      if (getValues('email') !== emailAtRequest) return;
 
       setIsCodeValid(true);
       setIsEmailVerified(true);
 
       alert('이메일 인증이 완료되었습니다.');
     } catch (error) {
+      if (getValues('email') !== emailAtRequest) return;
       if (error instanceof Error) {
         alert(error.message);
       }
@@ -253,7 +260,19 @@ export default function Signup() {
 
           <InputField>
             <InputField.Label>이메일</InputField.Label>
-            <InputField.Input type="email" {...register('email')} />
+            <InputField.Input
+              type="email"
+              {...register('email', {
+                onChange: () => {
+                  // 이메일이 바뀌면 이전 이메일 기준의 인증 상태는 무효이므로 초기화
+                  setVerificationCode('');
+                  setVerificationCodeError('');
+                  setIsCodeSent(false);
+                  setIsCodeValid(false);
+                  setIsEmailVerified(false);
+                },
+              })}
+            />
             <InputField.Button
               onClick={handleCheckEmail}
               disabled={!email || !!errors.email || isSendingCode}
