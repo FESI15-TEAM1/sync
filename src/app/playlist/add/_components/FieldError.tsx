@@ -9,7 +9,7 @@ import type { AddPlaylistFormValues } from '../_schemas/addPlaylist.schema';
 
 interface FieldErrorProps {
   control: Control<AddPlaylistFormValues>;
-  name: 'title';
+  name: keyof Omit<AddPlaylistFormValues, 'tracks'>;
 }
 
 export default function FieldError({ control, name }: FieldErrorProps) {

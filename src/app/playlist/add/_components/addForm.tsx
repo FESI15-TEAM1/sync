@@ -141,6 +141,7 @@ export default function AddForm() {
 
             placeholder={`공부할때 들으면 집중 잘되는 노래들로 모아봤습니다.\n비슷한 취향있으신 분은 좋아요 그룹생성 요청 눌러주세요!`}
           />
+          <FieldError control={control} name="description" />
         </div>
         <div className="mb-4 flex w-full flex-col gap-4">
           <label className="ml-2 text-base font-bold text-white">
