@@ -11,7 +11,6 @@ import AddedTracksSection from '@/app/playlist/add/_components/AddedTracksSectio
 import PlaylistThumbnailField from '@/app/playlist/add/_components/PlaylistThumbnailField';
 import TrackSearchSection from '@/app/playlist/add/_components/TrackSearchSection';
 import { usePostPlaylist } from '@/app/playlist/add/_hooks/usePostPlaylist';
-import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
@@ -29,6 +28,7 @@ import {
   type AddPlaylistFormValues,
   addPlaylistSchema,
 } from '../_schemas/addPlaylist.schema';
+import SubmitButton from './SubmitButton';
 
 const ConfirmModal = dynamic(() => import('@/components/domain/ConfirmModal'));
 
@@ -38,7 +38,7 @@ export default function AddForm() {
     register,
     handleSubmit,
     control,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<AddPlaylistFormValues>({
     resolver: zodResolver(addPlaylistSchema),
     defaultValues: {
@@ -170,13 +170,7 @@ export default function AddForm() {
         />
       </fieldset>
 
-      <Button
-        type="submit"
-        className="w-full"
-        isDisabled={isSubmitting || !isValid}
-      >
-        {isSubmitting ? '저장 중...' : '저장하기'}
-      </Button>
+      <SubmitButton control={control} isSubmitting={isSubmitting} />
     </form>
   );
 }
