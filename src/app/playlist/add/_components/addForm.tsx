@@ -8,6 +8,7 @@ import type { SubmitHandler } from 'react-hook-form';
 import { Controller, useForm } from 'react-hook-form';
 
 import AddedTracksSection from '@/app/playlist/add/_components/AddedTracksSection';
+import FieldError from '@/app/playlist/add/_components/FieldError';
 import PlaylistThumbnailField from '@/app/playlist/add/_components/PlaylistThumbnailField';
 import TrackSearchSection from '@/app/playlist/add/_components/TrackSearchSection';
 import { usePostPlaylist } from '@/app/playlist/add/_hooks/usePostPlaylist';
@@ -34,13 +35,9 @@ const ConfirmModal = dynamic(() => import('@/components/domain/ConfirmModal'));
 
 export default function AddForm() {
   const [tracks, setTracks] = useState<PlaylistTrack[]>([]);
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<AddPlaylistFormValues>({
+  const { register, handleSubmit, control } = useForm<AddPlaylistFormValues>({
     resolver: zodResolver(addPlaylistSchema),
+    mode: 'onChange',
     defaultValues: {
       title: '',
       description: '',
@@ -135,7 +132,7 @@ export default function AddForm() {
 
             placeholder="플레이리스트 이름을 입력하세요"
           ></InputField.Input>
-          <InputField.Error>{errors.title?.message}</InputField.Error>
+          <FieldError control={control} name="title" />
         </InputField>
         <div className="mb-4 w-full">
           <Textarea
