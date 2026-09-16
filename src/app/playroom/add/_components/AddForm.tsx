@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Controller, useForm } from 'react-hook-form';
 
 import Button from '@/components/Button';
+import ConfirmModal from '@/components/domain/ConfirmModal';
 import LiveHeartbeat from '@/components/domain/playroom/LiveHeartbeat';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
@@ -37,7 +38,7 @@ export default function AddForm() {
     defaultValues: { title: '', description: '', playlistId: null },
   });
 
-  const { createPlayroom, isCreating, errorMessage } = usePostPlayroom();
+  const { createPlayroom, isCreating, errorMessage, reset } = usePostPlayroom();
 
   const isSubmitDisabled = !isValid || isCreating;
 
@@ -114,7 +115,7 @@ export default function AddForm() {
         />
 
         <p role="alert" className="min-h-5 text-sm text-red-500">
-          {errorMessage}
+          {errors.playlistId?.message}
         </p>
 
         {/* buttons */}
@@ -132,6 +133,16 @@ export default function AddForm() {
           </button>
         </div>
       </form>
+
+      {/* 생성 실패 안내. 닫으면 mutation 을 reset 해 다시 제출할 수 있게 합니다. */}
+      <ConfirmModal
+        isOpen={!!errorMessage}
+        title="오류"
+        description={errorMessage}
+        hasCancel={false}
+        onConfirm={reset}
+        onClose={reset}
+      />
     </div>
   );
 }
