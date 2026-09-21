@@ -1,12 +1,13 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { type ChangeEvent, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
+import { groupsQueryKey } from '@/app/group/_hooks/useGroupsQuery';
 import defaultCover from '@/assets/images/default.png';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
@@ -34,6 +35,7 @@ export default function AddPage({
   playlists: MyPlaylistItem[];
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -107,6 +109,7 @@ export default function AddPage({
       }
     },
     onSuccess: ({ id }) => {
+      queryClient.invalidateQueries({ queryKey: groupsQueryKey() });
       router.push(`/group/${id}`);
     },
     onError: (error) => {
