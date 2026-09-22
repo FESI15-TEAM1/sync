@@ -1,12 +1,13 @@
 'use client';
 
 import { clsx } from 'clsx';
-import type { ReactNode } from 'react';
-import { type InputHTMLAttributes, useState } from 'react';
+import type { ReactNode, Ref } from 'react';
+import { type InputHTMLAttributes } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   children?: ReactNode;
+  ref?: Ref<HTMLInputElement>;
 };
 // 인풋 스타일 공유 사용!
 export const fieldStyle = twMerge(
@@ -18,12 +19,14 @@ export const fieldStyle = twMerge(
 export default function Input({
   type = 'text',
   className,
+  ref,
   ...props
 }: InputProps) {
   return (
     <div className="relative min-w-0 flex-1">
       <input
         {...props}
+        ref={ref}
         type={type}
         className={twMerge(fieldStyle, className)}
       />
