@@ -1,4 +1,4 @@
-import AddForm from './_components/addForm';
+import AddForm from './_components/AddForm';
 
 export default function add() {
   return (
