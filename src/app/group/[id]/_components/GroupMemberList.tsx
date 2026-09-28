@@ -137,7 +137,7 @@ export default function GroupMemberList({
                 }}
                 href={`/profile/${member.userId}`}
               >
-                <p className="text-text-primary text-md truncate">
+                <p className="text-text-primary text-md truncate hover:underline">
                   {member.nickname}
                 </p>
               </Link>
