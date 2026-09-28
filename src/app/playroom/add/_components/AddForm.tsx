@@ -1,10 +1,11 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
-import type { SubmitEvent } from 'react';
-import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
 import Button from '@/components/Button';
+import ConfirmModal from '@/components/domain/ConfirmModal';
 import LiveHeartbeat from '@/components/domain/playroom/LiveHeartbeat';
 import InputField from '@/components/InputField';
 import Textarea from '@/components/Textarea';
@@ -15,33 +16,39 @@ import {
 import { hashTagToArray } from '@/utils/playroom/hashTag';
 
 import { usePostPlayroom } from '../_hooks/usePostPlayroom';
+import {
+  type AddFormInput,
+  addFormSchema,
+  type AddFormValues,
+} from '../_schemas/addForm.schema';
 import DescriptionHint from './DescriptionHint';
 import PlaylistSelector from './PlaylistSelector';
 
 export default function AddForm() {
   const router = useRouter();
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [selectedPlaylistId, setSelectedPlaylistId] = useState<number | null>(
-    null,
-  );
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<AddFormInput, unknown, AddFormValues>({
+    resolver: zodResolver(addFormSchema),
+    mode: 'onChange',
+    defaultValues: { title: '', description: '', playlistId: null },
+  });
 
-  const { createPlayroom, isCreating, errorMessage } = usePostPlayroom();
+  const { createPlayroom, isCreating, errorMessage, reset } = usePostPlayroom();
 
-  const isSubmitDisabled =
-    !title.trim() || selectedPlaylistId === null || isCreating;
+  const isSubmitDisabled = !isValid || isCreating;
 
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle || selectedPlaylistId === null || isCreating) return;
+  const onSubmit = ({ title, description, playlistId }: AddFormValues) => {
+    if (isCreating) return;
 
     createPlayroom({
-      title: trimmedTitle,
+      title,
       description,
-      playlistId: selectedPlaylistId,
+      playlistId,
       hashtags: hashTagToArray(description),
     });
   };
@@ -61,28 +68,33 @@ export default function AddForm() {
         있습니다!
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        className="flex flex-col gap-4"
+      >
         {/* set playroom title */}
         <InputField>
           <InputField.Label>제목</InputField.Label>
           <InputField.Input
             placeholder="제목을 입력해주세요."
-            value={title}
             maxLength={PLAYROOM_TITLE_MAX_LENGTH}
-            onChange={(e) => setTitle(e.target.value)}
+            aria-invalid={!!errors.title}
+            {...register('title')}
           />
+          <InputField.Error>{errors.title?.message}</InputField.Error>
         </InputField>
 
         {/* set playroom description */}
         <Textarea
           label={<DescriptionHint />}
           placeholder="설명을 입력해주세요. 플레이룸 설명은 목록에서만 나타납니다."
-          value={description}
           maxLength={PLAYROOM_DESCRIPTION_MAX_LENGTH}
-          onChange={(e) => setDescription(e.target.value)}
+          errorMessage={errors.description?.message}
           resizable={true}
           minResize="66px"
           maxResize="100px"
+          {...register('description')}
         />
 
         {/* pick playlist */}
@@ -90,13 +102,20 @@ export default function AddForm() {
           공유 할 플레이리스트 선택
         </h3>
 
-        <PlaylistSelector
-          selectedPlaylistId={selectedPlaylistId}
-          onSelect={setSelectedPlaylistId}
+        {/* 카드 클릭으로 값을 정하는 커스텀 입력이라 register 대신 Controller 로 연결합니다. */}
+        <Controller
+          control={control}
+          name="playlistId"
+          render={({ field }) => (
+            <PlaylistSelector
+              selectedPlaylistId={field.value}
+              onSelect={field.onChange}
+            />
+          )}
         />
 
         <p role="alert" className="min-h-5 text-sm text-red-500">
-          {errorMessage}
+          {errors.playlistId?.message}
         </p>
 
         {/* buttons */}
@@ -114,6 +133,16 @@ export default function AddForm() {
           </button>
         </div>
       </form>
+
+      {/* 생성 실패 안내. 닫으면 mutation 을 reset 해 다시 제출할 수 있게 합니다. */}
+      <ConfirmModal
+        isOpen={!!errorMessage}
+        title="오류"
+        description={errorMessage}
+        hasCancel={false}
+        onConfirm={reset}
+        onClose={reset}
+      />
     </div>
   );
 }

@@ -1,7 +1,10 @@
 import { redirect } from 'next/navigation';
 
-import { APIError } from '@/lib/http/error';
-import { serverFetch } from '@/lib/http/server-fetch';
+import {
+  getCurrentUserId,
+  loadPlaylistPageData,
+} from '@/app/playlist/_lib/loadPlaylistPageData';
+import PlaylistView from '@/app/playlist/[id]/_components/PlaylistView';
 
 export default async function PlayList() {
   const userId = await getCurrentUserId();
@@ -10,17 +13,11 @@ export default async function PlayList() {
     redirect('/login');
   }
 
-  redirect(`/playlist/${userId}`);
-}
+  const data = await loadPlaylistPageData(String(userId), userId);
 
-async function getCurrentUserId() {
-  try {
-    const me = await serverFetch<{ id: number }>('/users/me', {
-      method: 'GET',
-    });
-    return me.id;
-  } catch (error) {
-    if (error instanceof APIError) return null;
-    throw error;
-  }
+  return (
+    <div>
+      <PlaylistView {...data} />
+    </div>
+  );
 }

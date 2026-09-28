@@ -1,10 +1,13 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { type ChangeEvent, type SubmitEvent, useState } from 'react';
+import { type ChangeEvent, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 
+import { groupsQueryKey } from '@/app/group/_hooks/useGroupsQuery';
 import defaultCover from '@/assets/images/default.png';
 import Button from '@/components/Button';
 import BackButton from '@/components/common/BackButton';
@@ -18,6 +21,11 @@ import type { MyPlaylistItem } from '@/services/playlist/playlistCard.type';
 import { requestUploadUrl } from '@/services/upload/upload.api';
 import type { UploadUrlRequest } from '@/services/upload/upload.types';
 
+import {
+  addGroupSchema,
+  type GroupFormValues,
+} from '../_schemas/addGroup.schema';
+
 const SUBMIT_ERROR_MESSAGE =
   '그룹 생성에 실패했습니다. 잠시 후 다시 시도해주세요.';
 
@@ -27,17 +35,27 @@ export default function AddPage({
   playlists: MyPlaylistItem[];
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [groupName, setGroupName] = useState('');
-  const [groupDescription, setGroupDescription] = useState('');
-  const [isPublic, setIsPublic] = useState(false);
-  const [selectedPlaylists, setSelectedPlaylists] = useState<number[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const trimmedName = groupName.trim();
-  const trimmedDescription = groupDescription.trim();
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<GroupFormValues>({
+    resolver: zodResolver(addGroupSchema),
+    mode: 'onChange',
+    defaultValues: {
+      groupName: '',
+      groupDescription: '',
+      isPublic: false,
+      selectedPlaylists: [],
+    },
+  });
 
   const handleCoverChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -45,25 +63,18 @@ export default function AddPage({
 
     setCoverFile(file);
 
-    // 사용자가 선택한 파일(file)을 브라우저에서 미리 볼 수 있는 임시 URL 생성
-    const url = URL.createObjectURL(file);
-    // 기존에 저장되어 있던 미리보기 URL을 확인하면서 상태 업데이트
+    //기존 미리보기 URL을 메모리에서 해제
     setCoverPreview((prev) => {
-      // 이전 미리보기 URL이 있다면 더 이상 사용하지 않으므로 메모리에서 해제
-      if (prev) URL.revokeObjectURL(prev);
-      // 새로 만든 이미지 미리보기 URL을 상태에 저장
-      return url;
+      if (prev) {
+        URL.revokeObjectURL(prev);
+      }
+
+      return URL.createObjectURL(file);
     });
   };
 
-  const togglePlaylist = (id: number) => {
-    setSelectedPlaylists((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
-  };
-
   const { mutate: submitGroup, isPending: isSubmitting } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (data: GroupFormValues) => {
       try {
         let image: string | undefined;
 
@@ -86,11 +97,11 @@ export default function AddPage({
         }
 
         return await createGroup({
-          title: trimmedName,
-          description: trimmedDescription,
+          title: data.groupName,
+          description: data.groupDescription,
           image,
-          isPublic,
-          playlistIds: selectedPlaylists,
+          isPublic: data.isPublic,
+          playlistIds: data.selectedPlaylists,
         });
       } catch (error) {
         if (error instanceof APIError) throw error;
@@ -98,6 +109,7 @@ export default function AddPage({
       }
     },
     onSuccess: ({ id }) => {
+      queryClient.invalidateQueries({ queryKey: groupsQueryKey() });
       router.push(`/group/${id}`);
     },
     onError: (error) => {
@@ -107,19 +119,15 @@ export default function AddPage({
     },
   });
 
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (isSubmitting || !trimmedName || selectedPlaylists.length === 0) return;
-
+  const onSubmit = (data: GroupFormValues) => {
     setErrorMessage(null);
-    submitGroup();
+    submitGroup(data);
   };
 
   return (
     <div className="mx-auto flex flex-col gap-4 px-5 py-6">
       <BackButton />
-      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)}>
         <div className="flex items-center gap-3">
           <label
             htmlFor="image-upload"
@@ -145,27 +153,40 @@ export default function AddPage({
         <InputField>
           <InputField.Label>그룹 이름</InputField.Label>
           <InputField.Input
-            value={groupName}
+            {...register('groupName')}
             placeholder="그룹 이름을 입력해주세요."
             maxLength={50}
-            onChange={(e) => setGroupName(e.target.value)}
           />
+          {errors.groupName?.message && (
+            <p className="text-sm text-red-500">{errors.groupName.message}</p>
+          )}
         </InputField>
 
         <Textarea
           label="그룹 소개"
-          value={groupDescription}
+          {...register('groupDescription')}
           placeholder="그룹 소개를 입력해주세요."
           maxLength={200}
-          onChange={(e) => setGroupDescription(e.target.value)}
           resizable
           minResize="6rem"
           maxResize="16rem"
         />
+        {errors.groupDescription?.message && (
+          <p className="text-sm text-red-500">
+            {errors.groupDescription.message}
+          </p>
+        )}
 
         <div className="flex flex-col gap-4">
           <span className="text-md ml-2 font-bold text-white">공개 여부</span>
-          <Toggle onChange={() => setIsPublic(!isPublic)} checked={isPublic} />
+
+          <Controller
+            name="isPublic"
+            control={control}
+            render={({ field }) => (
+              <Toggle checked={field.value} onChange={field.onChange} />
+            )}
+          />
         </div>
 
         <div className="flex flex-col gap-4">
@@ -177,34 +198,48 @@ export default function AddPage({
               생성된 플레이리스트가 없습니다.
             </p>
           ) : (
-            <ul>
-              <div className="w-full scrollbar-none overflow-x-scroll">
-                <div className="flex w-max gap-4">
-                  {playlists.map((playlist) => {
-                    const isSelected = selectedPlaylists.includes(playlist.id);
+            <Controller
+              name="selectedPlaylists"
+              control={control}
+              render={({ field }) => (
+                <ul className="w-full overflow-x-scroll scrollbar-none">
+                  <div className="flex w-max gap-4">
+                    {playlists.map((playlist) => {
+                      const isSelected = field.value.includes(playlist.id);
 
-                    return (
-                      <button
-                        type="button"
-                        aria-pressed={isSelected}
-                        className="relative w-fit cursor-pointer appearance-none border-0 bg-transparent p-0 text-left"
-                        key={playlist.id}
-                        onClick={() => togglePlaylist(playlist.id)}
-                      >
-                        <PlaylistCard
-                          img={playlist.image}
-                          title={playlist.title}
-                          trackCount={playlist.trackCount}
-                        />
-                        {isSelected && (
-                          <div className='absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-2xl bg-[rgba(0,0,0,50%)] after:block after:text-white after:content-["선택됨"]' />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </ul>
+                      const handlePlaylistClick = () => {
+                        const nextValue = isSelected
+                          ? field.value.filter((id) => id !== playlist.id)
+                          : [...field.value, playlist.id];
+
+                        field.onChange(nextValue);
+                      };
+
+                      return (
+                        <li key={playlist.id}>
+                          <button
+                            type="button"
+                            aria-pressed={isSelected}
+                            className="relative w-fit cursor-pointer appearance-none border-0 bg-transparent p-0 text-left"
+                            onClick={handlePlaylistClick}
+                          >
+                            <PlaylistCard
+                              img={playlist.image}
+                              title={playlist.title}
+                              trackCount={playlist.trackCount}
+                            />
+
+                            {isSelected && (
+                              <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-2xl bg-[rgba(0,0,0,50%)] after:block after:text-white after:content-['선택됨']" />
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </div>
+                </ul>
+              )}
+            />
           )}
         </div>
 
@@ -212,11 +247,7 @@ export default function AddPage({
           {errorMessage}
         </p>
 
-        <Button
-          isDisabled={
-            !trimmedName || selectedPlaylists.length === 0 || isSubmitting
-          }
-        >
+        <Button isDisabled={!isValid || isSubmitting}>
           {isSubmitting ? '생성 중...' : '그룹 생성하기'}
         </Button>
       </form>
