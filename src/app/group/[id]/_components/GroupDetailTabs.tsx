@@ -22,7 +22,7 @@ export default function GroupDetailTabs({
         aria-selected={activeTab === 'playlists'}
         onClick={() => onChange('playlists')}
         className={clsx(
-          'text-md w-1/2',
+          'text-md w-1/2 cursor-pointer',
           activeTab === 'playlists'
             ? 'text-text-primary font-bold'
             : 'text-text-secondary',
@@ -37,7 +37,7 @@ export default function GroupDetailTabs({
         aria-selected={activeTab === 'members'}
         onClick={() => onChange('members')}
         className={clsx(
-          'text-md w-1/2',
+          'text-md w-1/2 cursor-pointer',
           activeTab === 'members'
             ? 'text-text-primary font-bold'
             : 'text-text-secondary',
