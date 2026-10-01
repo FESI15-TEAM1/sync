@@ -29,29 +29,44 @@ export async function getCurrentUserId() {
 
 // knownCurrentUserId를 넘기면 /users/me를 다시 조회하지 않는다
 // (/playlist가 로그인 사용자 id를 이미 알고 있는 경우 중복 호출을 피하기 위함)
+// 이 경우 isOwner도 미리 확정되므로 liked-playlists 요청까지 같은 배치로 병렬 처리한다.
 export async function loadPlaylistPageData(
   routeUserId: string,
   knownCurrentUserId?: number | null,
 ): Promise<PlaylistPageData> {
-  const [initialMyData, initialProfile, currentUserId] = await Promise.all([
-    serverFetch<MyplaylistResponse>(`/users/${routeUserId}/playlists`, {
-      method: 'GET',
-    }),
-    serverFetch<UserProfile>(`/users/${routeUserId}`, {
-      method: 'GET',
-    }),
+  const knownIsOwner =
     knownCurrentUserId !== undefined
-      ? Promise.resolve(knownCurrentUserId)
-      : getCurrentUserId(),
-  ]);
+      ? knownCurrentUserId === Number(routeUserId)
+      : null;
+
+  const [initialMyData, initialProfile, currentUserId, likedByDefault] =
+    await Promise.all([
+      serverFetch<MyplaylistResponse>(`/users/${routeUserId}/playlists`, {
+        method: 'GET',
+      }),
+      serverFetch<UserProfile>(`/users/${routeUserId}`, {
+        method: 'GET',
+      }),
+      knownCurrentUserId !== undefined
+        ? Promise.resolve(knownCurrentUserId)
+        : getCurrentUserId(),
+      knownIsOwner
+        ? serverFetch<LikePlaylistResponse>(`/users/me/liked-playlists`, {
+            method: 'GET',
+          })
+        : null,
+    ]);
 
   const isOwner = currentUserId === Number(routeUserId);
 
-  const initialLikeData = isOwner
-    ? await serverFetch<LikePlaylistResponse>(`/users/me/liked-playlists`, {
-        method: 'GET',
-      })
-    : null;
+  // knownIsOwner를 미리 알 수 없었던 경우([id]/page.tsx)만 여기서 따로 조회한다
+  const initialLikeData =
+    likedByDefault ??
+    (isOwner
+      ? await serverFetch<LikePlaylistResponse>(`/users/me/liked-playlists`, {
+          method: 'GET',
+        })
+      : null);
 
   return {
     userId: routeUserId,

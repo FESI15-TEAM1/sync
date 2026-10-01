@@ -100,15 +100,15 @@ function getIsCurrent(href: string, pathname: string, userId: number | null) {
   // 내 그룹: 목록(/group) 자체만 활성 — 남의 그룹이든 내 그룹이든 상세(/group/[id])에서는 비활성
   if (href === '/group') return pathname === '/group';
 
-  // 내 플레이리스트: 상세 경로의 userId가 로그인한 내 id와 같을 때만 활성
+  // 내 플레이리스트: id 없는 /playlist는 항상 내 목록이라 바로 활성,
+  // /playlist/{id}는 그 id가 로그인한 내 id와 같을 때만 활성
   if (href === '/playlist') {
-    const routeUserId = pathname.split('/')[2];
+    const [, firstSegment, routeUserId] = pathname.split('/');
 
-    return (
-      pathname.split('/')[1] === 'playlist' &&
-      userId !== null &&
-      routeUserId === String(userId)
-    );
+    if (firstSegment !== 'playlist') return false;
+    if (routeUserId === undefined) return true;
+
+    return userId !== null && routeUserId === String(userId);
   }
 
   return getFirstSegment(pathname) === getFirstSegment(href);
