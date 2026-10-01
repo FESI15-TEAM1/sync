@@ -15,6 +15,7 @@ import {
 } from '@/constants/playroom';
 import { hashTagToArray } from '@/utils/playroom/hashTag';
 
+import { useAddFormDraft } from '../_hooks/useAddFormDraft';
 import { usePostPlayroom } from '../_hooks/usePostPlayroom';
 import {
   type AddFormInput,
@@ -27,16 +28,22 @@ import PlaylistSelector from './PlaylistSelector';
 export default function AddForm() {
   const router = useRouter();
 
+  const form = useForm<AddFormInput, unknown, AddFormValues>({
+    resolver: zodResolver(addFormSchema),
+    mode: 'onChange',
+    defaultValues: { title: '', description: '', playlistId: null },
+  });
+
   const {
     register,
     control,
     handleSubmit,
     formState: { errors, isValid },
-  } = useForm<AddFormInput, unknown, AddFormValues>({
-    resolver: zodResolver(addFormSchema),
-    mode: 'onChange',
-    defaultValues: { title: '', description: '', playlistId: null },
-  });
+  } = form;
+
+  // 작성 중이던 내용을 브라우저에 임시 저장해두고, 다시 들어오면 이어서 쓸지 물어봅니다.
+  const { hasPendingDraft, restoreDraft, discardDraft, clearDraft } =
+    useAddFormDraft(form);
 
   const { createPlayroom, isCreating, errorMessage, reset } = usePostPlayroom();
 
@@ -45,12 +52,16 @@ export default function AddForm() {
   const onSubmit = ({ title, description, playlistId }: AddFormValues) => {
     if (isCreating) return;
 
-    createPlayroom({
-      title,
-      description,
-      playlistId,
-      hashtags: hashTagToArray(description),
-    });
+    createPlayroom(
+      {
+        title,
+        description,
+        playlistId,
+        hashtags: hashTagToArray(description),
+      },
+      // 방이 만들어졌으면 임시 저장분은 더 필요 없습니다.
+      { onSuccess: clearDraft },
+    );
   };
 
   return (
@@ -133,6 +144,18 @@ export default function AddForm() {
           </button>
         </div>
       </form>
+
+      {/* 임시 저장분 이어쓰기 안내. 둘 중 하나를 고르기 전까지는 닫히지 않습니다. */}
+      <ConfirmModal
+        isOpen={hasPendingDraft}
+        title="작성 중이던 내용이 있습니다"
+        description="이어서 작성하시겠습니까? 새로 작성하면 저장된 내용은 사라집니다."
+        confirmLabel="이어서 작성"
+        cancelLabel="새로 작성"
+        closeOnBackdropClick={false}
+        onConfirm={restoreDraft}
+        onClose={discardDraft}
+      />
 
       {/* 생성 실패 안내. 닫으면 mutation 을 reset 해 다시 제출할 수 있게 합니다. */}
       <ConfirmModal
