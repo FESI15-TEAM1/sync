@@ -1,4 +1,4 @@
-export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { z } from 'zod';
 
 export const PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
@@ -16,47 +16,44 @@ function getByteLength(value: string): number {
   return byteLength;
 }
 
-export function getNicknameError(nickname: string): string {
-  // 빈 값이면 에러를 표시하지 않음
-  if (!nickname) {
-    return '';
-  }
+export const nicknameSchema = z
+  .string()
+  .min(1, '닉네임을 입력해주세요.')
+  .min(NICKNAME_MIN_LENGTH, '닉네임은 최소 2자 이상이어야 합니다.')
+  .refine((value) => getByteLength(value) <= NICKNAME_MAX_BYTE_LENGTH, {
+    message: '닉네임은 한글 기준 최대 10자까지 입력 가능합니다.',
+  });
 
-  if (nickname.length < NICKNAME_MIN_LENGTH) {
-    return '닉네임은 최소 2자 이상이어야 합니다.';
-  }
+export const emailSchema = z
+  .string()
+  .min(1, '이메일을 입력해주세요.')
+  .email('올바른 이메일 형식이 아닙니다.');
 
-  if (getByteLength(nickname) > NICKNAME_MAX_BYTE_LENGTH) {
-    return '닉네임은 한글 기준 최대 10자까지 입력 가능합니다.';
-  }
+export const passwordSchema = z
+  .string()
+  .min(1, '비밀번호를 입력해주세요.')
+  .regex(
+    PASSWORD_REGEX,
+    '8자 이상, 영문 대·소문자, 숫자, 특수문자를 포함해주세요.',
+  );
 
-  return '';
-}
+export const loginSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(1, '비밀번호를 입력해주세요.'),
+});
 
-export function getEmailError(email: string): string {
-  // 빈 값이면 에러를 표시하지 않음
-  if (!email) {
-    return '';
-  }
+export type LoginFormValues = z.infer<typeof loginSchema>;
 
-  // 이메일 형식이 잘못된 경우
-  if (!EMAIL_REGEX.test(email)) {
-    return '올바른 이메일 형식이 아닙니다.';
-  }
+export const signupSchema = z
+  .object({
+    nickname: nicknameSchema,
+    email: emailSchema,
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, '비밀번호를 입력해주세요.'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: '비밀번호가 일치하지 않습니다',
+    path: ['confirmPassword'],
+  });
 
-  return '';
-}
-
-export function getPasswordError(password: string): string {
-  // 빈 값이면 에러를 표시하지 않음
-  if (!password) {
-    return '';
-  }
-
-  // 비밀번호 규칙이 맞지 않는 경우
-  if (!PASSWORD_REGEX.test(password)) {
-    return '8자 이상, 영문 대·소문자, 숫자, 특수문자를 포함해주세요.';
-  }
-
-  return '';
-}
+export type SignupFormValues = z.infer<typeof signupSchema>;

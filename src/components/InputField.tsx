@@ -1,6 +1,11 @@
 'use client';
 
-import { type InputHTMLAttributes, type ReactNode, useState } from 'react';
+import {
+  type InputHTMLAttributes,
+  type ReactNode,
+  type Ref,
+  useState,
+} from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import EyeIcon from '@/assets/icons/eye.svg';
@@ -32,8 +37,11 @@ function InputField({ children, className }: InputFieldProps) {
 // Password
 function Password({
   className,
+  ref,
   ...props
-}: Omit<InputHTMLAttributes<HTMLInputElement>, 'type'>) {
+}: Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & {
+  ref?: Ref<HTMLInputElement>;
+}) {
   // 비밀번호 보이기/숨기기 상태
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -41,6 +49,7 @@ function Password({
     <div className="relative min-w-0 flex-1">
       <Input
         {...props}
+        ref={ref}
         type={isPasswordVisible ? 'text' : 'password'}
         className={twMerge('pr-10', className)}
       />

@@ -1,35 +1,41 @@
 'use client';
 
+// react-hook-form과 Zod를 연결해주는 resolver
+// form의 입력값을 Zod 스키마로 검사할 수 있게 해줌
+import { zodResolver } from '@hookform/resolvers/zod';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
-import { type SubmitEvent } from 'react';
+// react-hook-form에서 사용할 기능들
+// useForm: 폼 전체 관리
+import { useForm } from 'react-hook-form';
 
 import Google from '@/assets/images/google-login.png';
 import Kakao from '@/assets/images/kakao-login.png';
 import Button from '@/components/Button';
 import InputField from '@/components/InputField';
-import { getEmailError } from '@/lib/auth-validation';
+import { type LoginFormValues, loginSchema } from '@/lib/auth-validation';
 
 import { useLoginMutation } from '../_hooks/useLoginMutation';
 
 export default function Login() {
-  const [email, setEmail] = useState('97power@naver.com');
-  const [password, setPassword] = useState('password123');
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-
   const { loginMutate, isSubmitting } = useLoginMutation();
 
-  const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    mode: 'onChange',
+    defaultValues: {
+      email: '97power@naver.com',
+      password: 'password123',
+    },
+  });
 
-    if (!email || !password || !!emailError || !!passwordError) {
-      return;
-    }
-
-    loginMutate({ email, password });
-  };
+  const onSubmit = handleSubmit((data) => {
+    loginMutate(data);
+  });
 
   function handleSocialLogin(provider: 'kakao' | 'google') {
     window.location.href = `/api/auth/login/${provider}`;
@@ -48,42 +54,23 @@ export default function Login() {
         </p>
       </div>
 
-      <form className="flex flex-col gap-1" onSubmit={handleSubmit}>
+      <form className="flex flex-col gap-1" onSubmit={onSubmit}>
         <InputField>
           <InputField.Label>이메일</InputField.Label>
-          <InputField.Input
-            type="email"
-            value={email}
-            onChange={(e) => {
-              const value = e.target.value;
-              setEmail(value);
-              setEmailError(getEmailError(value));
-            }}
-          />
-          <InputField.Error>{emailError}</InputField.Error>
+          <InputField.Input type="email" {...register('email')} />
+          <InputField.Error>{errors.email?.message}</InputField.Error>
         </InputField>
 
         <InputField>
           <InputField.Label>비밀번호</InputField.Label>
-          <InputField.Password
-            value={password}
-            onChange={(e) => {
-              const value = e.target.value;
-              setPassword(value);
-            }}
-          />
+          <InputField.Password {...register('password')} />
+          <InputField.Error>{errors.password?.message}</InputField.Error>
         </InputField>
 
         <Button
           className="mt-6"
           type="submit"
-          isDisabled={
-            !email ||
-            !password ||
-            !!emailError ||
-            !!passwordError ||
-            isSubmitting
-          }
+          isDisabled={!isValid || isSubmitting}
         >
           {isSubmitting ? '로그인 중...' : '로그인'}
         </Button>
