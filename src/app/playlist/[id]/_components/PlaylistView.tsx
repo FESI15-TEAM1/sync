@@ -88,6 +88,9 @@ export default function PlaylistView({
         className="fixed right-6 bottom-6 text-xl"
         as={Link}
         href={'/playlist/add'}
+        // 비로그인 사용자도 보는 공개 플레이리스트 페이지라, 기본 prefetch가
+        // 로그인 전 login-required 리다이렉트를 캐싱해버리는 걸 막는다.
+        prefetch={false}
       >
         <span className="text-3xl text-white">+</span>
       </IconButton>

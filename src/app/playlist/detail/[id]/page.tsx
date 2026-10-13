@@ -1,6 +1,7 @@
+import { cookies } from 'next/headers';
+
 import PlaylistDetailView from '@/app/playlist/detail/[id]/_components/PlaylistDetailView';
-import { APIError } from '@/lib/http/error';
-import { serverFetch } from '@/lib/http/server-fetch';
+import { getUserIdFromAccessToken } from '@/lib/http/auth-cookies';
 
 export default async function PlaylistDeatilPage() {
   const userId = await getCurrentUserId();
@@ -11,14 +12,8 @@ export default async function PlaylistDeatilPage() {
     </div>
   );
 }
+
 async function getCurrentUserId() {
-  try {
-    const me = await serverFetch<{ id: string }>('/users/me', {
-      method: 'GET',
-    });
-    return me.id;
-  } catch (error) {
-    if (error instanceof APIError && error.status === 401) return null;
-    throw error;
-  }
+  const cookieStore = await cookies();
+  return getUserIdFromAccessToken(cookieStore.get('accessToken')?.value);
 }

@@ -1,4 +1,6 @@
-import { APIError } from '@/lib/http/error';
+import { cookies } from 'next/headers';
+
+import { getUserIdFromAccessToken } from '@/lib/http/auth-cookies';
 import { serverFetch } from '@/lib/http/server-fetch';
 import type {
   LikePlaylistResponse,
@@ -16,15 +18,10 @@ export interface PlaylistPageData {
 }
 
 export async function getCurrentUserId() {
-  try {
-    const me = await serverFetch<{ id: number }>('/users/me', {
-      method: 'GET',
-    });
-    return me.id;
-  } catch (error) {
-    if (error instanceof APIError) return null;
-    throw error;
-  }
+  const cookieStore = await cookies();
+  const sub = getUserIdFromAccessToken(cookieStore.get('accessToken')?.value);
+  const id = Number(sub);
+  return sub === null || Number.isNaN(id) ? null : id;
 }
 
 // knownCurrentUserId를 넘기면 /users/me를 다시 조회하지 않는다
