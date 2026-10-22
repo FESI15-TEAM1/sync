@@ -31,9 +31,12 @@ export function clearAuthCookies(cookieStore: CookieStore) {
   cookieStore.delete('refreshToken');
 }
 
-// accessToken(JWT) payload의 sub가 유저 id다. 서명 검증은 하지 않는다 —
-// 실제 인가는 백엔드가 Bearer 토큰으로 다시 하므로, 여기선 "누구인지"를
-// 네트워크 호출(/users/me) 없이 알아내는 용도로만 쓴다.
+/**
+ * 액세스 토큰의 JWT payload에서 사용자 ID인 sub를 읽습니다.
+ * 서명 검증 없이 표시용 ID만 추출하며, 실제 인가는 백엔드가 Bearer 토큰으로 처리합니다.
+ * @param accessToken 쿠키에서 읽은 액세스 토큰입니다.
+ * @returns payload의 sub 값입니다. payload가 없거나 디코딩 또는 JSON 파싱이 실패하면 null입니다.
+ */
 export function getUserIdFromAccessToken(accessToken: string | undefined) {
   const payload = accessToken?.split('.')[1];
   if (!payload) return null;
