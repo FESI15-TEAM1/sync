@@ -43,7 +43,8 @@ export function getUserIdFromAccessToken(accessToken: string | undefined) {
       payload.replace(/-/g, '+').replace(/_/g, '/'),
       'base64',
     ).toString('utf8');
-    return JSON.parse(decoded).sub as string;
+    const { sub } = JSON.parse(decoded);
+    return typeof sub === 'string' ? sub : null;
   } catch {
     return null;
   }
