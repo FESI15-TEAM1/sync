@@ -22,6 +22,9 @@ import {
 
 type Tab = 'mine' | 'liked';
 
+/**
+ * 사용자 프로필과 플레이리스트를 표시하고, 소유자에게 좋아요 목록 전환을 제공합니다.
+ */
 export default function PlaylistView({
   userId,
   initialMyData,
