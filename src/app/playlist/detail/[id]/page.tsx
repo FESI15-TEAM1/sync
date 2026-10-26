@@ -1,7 +1,11 @@
-import PlaylistDetailView from '@/app/playlist/detail/[id]/_components/PlaylistDetailView';
-import { APIError } from '@/lib/http/error';
-import { serverFetch } from '@/lib/http/server-fetch';
+import { cookies } from 'next/headers';
 
+import PlaylistDetailView from '@/app/playlist/detail/[id]/_components/PlaylistDetailView';
+import { getUserIdFromAccessToken } from '@/lib/http/auth-cookies';
+
+/**
+ * 액세스 토큰에서 읽은 뷰어 ID를 전달하여 플레이리스트 상세 화면을 렌더링합니다.
+ */
 export default async function PlaylistDeatilPage() {
   const userId = await getCurrentUserId();
 
@@ -11,14 +15,11 @@ export default async function PlaylistDeatilPage() {
     </div>
   );
 }
+
+/**
+ * 상세 화면의 뷰어 식별용으로 액세스 토큰 쿠키의 sub를 서명 검증 없이 읽습니다.
+ */
 async function getCurrentUserId() {
-  try {
-    const me = await serverFetch<{ id: string }>('/users/me', {
-      method: 'GET',
-    });
-    return me.id;
-  } catch (error) {
-    if (error instanceof APIError && error.status === 401) return null;
-    throw error;
-  }
+  const cookieStore = await cookies();
+  return getUserIdFromAccessToken(cookieStore.get('accessToken')?.value);
 }
